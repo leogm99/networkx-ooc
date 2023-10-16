@@ -1,6 +1,6 @@
 NetworkX
 ========
-
+test
 
 .. image:: https://github.com/networkx/networkx/workflows/test/badge.svg?branch=main
   :target: https://github.com/networkx/networkx/actions?query=workflow%3A%22test%22
