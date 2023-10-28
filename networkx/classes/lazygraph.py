@@ -29,15 +29,16 @@ class LazyGraph(Graph):
         ) = self.add_edge = self.add_edges_from = self.add_weighted_edges_from = not_supported
 
     @classmethod
-    def from_edgelist_file(cls, path_to_edgelist: str, sep: str = "\t"):
+    def from_edgelist_file(cls, path_to_edgelist: str, sep: str = None):
         def read_file_sep():
             with open(path_to_edgelist, "r") as edgelist:
                 while True:
                     line = edgelist.readline().strip('\n')
                     if not line:
                         break
-                    yield line.split(sep)
+
+                    yield line.split(sep) if sep != None else line.split()
 
         G = cls()
-        super(cls).add_edges_from(read_file_sep())
+        super(LazyGraph, cls).add_edges_from(G, read_file_sep())
         return G
