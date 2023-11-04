@@ -2,7 +2,6 @@ import pytest
 import networkx as nx
 from networkx.classes.tests.test_graph import TestGraph
 from networkx.structures.out_of_core_dict import OutOfCoreDict
-from functools import partial
 
 
 def raises(exception):
@@ -10,8 +9,11 @@ def raises(exception):
         def __inner(*args, **kwargs):
             with pytest.raises(exception) as _:
                 return func(*args, **kwargs)
+
         return __inner
+
     return inner
+
 
 class TestLazyGraph(TestGraph):
     def setup_method(self):
@@ -31,11 +33,11 @@ class TestLazyGraph(TestGraph):
     @raises(nx.NotSupportedForLazyGraph)
     def test_add_edge(self):
         return super().test_add_edge()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_add_edges_from(self):
         return super().test_add_edges_from()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_add_node(self):
         return super().test_add_node()
@@ -43,23 +45,23 @@ class TestLazyGraph(TestGraph):
     @raises(nx.NotSupportedForLazyGraph)
     def test_add_nodes_from(self):
         return super().test_add_nodes_from()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_remove_node(self):
         return super().test_remove_node()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_remove_nodes_from(self):
         return super().test_remove_nodes_from()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_remove_edge(self):
         return super().test_remove_edge()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_remove_edges_from(self):
         return super().test_remove_edges_from()
-    
+
     @raises(nx.NotSupportedForLazyGraph)
     def test_none_node(self):
         return super().test_none_node()

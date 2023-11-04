@@ -4,6 +4,8 @@ from typing import MutableMapping
 import plyvel
 import pickle
 
+from networkx.structures.proxy_dict import ProxyDict
+
 
 class OutOfCoreDict(MutableMapping):
     def __init__(self) -> None:
@@ -23,7 +25,10 @@ class OutOfCoreDict(MutableMapping):
         key_b = OutOfCoreDict.__to_bytes(key)
         if self._inner.get(key_b) is None:
             raise KeyError(key)
-        return OutOfCoreDict.__from_bytes(self._inner.get(key_b))
+        item = OutOfCoreDict.__from_bytes(self._inner.get(key_b))
+        if isinstance(item, dict):
+            return ProxyDict(context_key=key, context=self, inner=item)
+        return item
 
     def __setitem__(self, key, value):
         key_b = OutOfCoreDict.__to_bytes(key)
