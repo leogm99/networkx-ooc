@@ -20,7 +20,11 @@ class TestLazyGraph(TestGraph):
         self.Graph = nx.LazyGraph
         # build dict-of-dict-of-dict K3
         ed1, ed2, ed3 = ({}, {}, {})
-        self.k3adj = {0: {1: ed1, 2: ed2}, 1: {0: ed1, 2: ed3}, 2: {0: ed2, 1: ed3}}
+        adj = OutOfCoreDict()
+        adj[0] = {1: ed1, 2: ed2}
+        adj[1] = {0: ed1, 2: ed3}
+        adj[2] = {0: ed2, 1: ed3}
+        self.k3adj = adj
         self.k3edges = [(0, 1), (0, 2), (1, 2)]
         self.k3nodes = [0, 1, 2]
         self.K3 = self.Graph()

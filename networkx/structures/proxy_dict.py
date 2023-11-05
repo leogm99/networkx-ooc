@@ -16,7 +16,8 @@ class ProxyDict(MutableMapping):
         self._context[self._context_key] = self._inner
 
     def __getitem__(self, key):
-        return self._inner[key]
+        item = self._inner[key]
+        return ProxyDict(context=self, context_key=key, inner=item) if isinstance(item, dict) else item
 
     def __len__(self):
         return len(self._inner)
