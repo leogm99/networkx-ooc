@@ -1,33 +1,33 @@
+import pickle
 from typing import MutableMapping
 
 
 class ProxyDict(MutableMapping):
-    def __init__(self, context, context_key, inner):
+    # Node or Edge?
+    def __init__(self, context, inner_dict, key):
         self._context = context
-        self._context_key = context_key
-        self._inner = inner
+        self._inner_dict = inner_dict
+        self._key = key
 
     def __setitem__(self, key, value):
-        self._inner[key] = value
-        self._context[self._context_key] = self._inner
+        self._inner_dict[key] = value
+        self._context[self._key] = self._inner_dict
 
     def __delitem__(self, key):
-        del self._inner[key]
-        self._context[self._context_key] = self._inner
+        del self._inner_dict[key]
+        self._context[self._key] = self._inner_dict
 
     def __getitem__(self, key):
-        item = self._inner[key]
-        return ProxyDict(context=self, context_key=key, inner=item) if isinstance(item, dict) else item
+        return self._inner_dict[key]
 
     def __len__(self):
-        return len(self._inner)
+        return len(self._inner_dict)
 
     def __iter__(self):
-        return self._inner.__iter__()
+        return iter(self._inner_dict)
 
     def __repr__(self):
-        return self._inner.__repr__()
+        return repr(self._inner_dict)
 
     def __str__(self):
-        return self._inner.__str__()
-
+        return str(self._inner_dict)

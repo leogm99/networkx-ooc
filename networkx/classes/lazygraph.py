@@ -3,6 +3,8 @@ from networkx.structures.out_of_core_dict import OutOfCoreDict
 
 __all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
 
+from networkx.structures.lazy_adjacency_list import LazyAdjacencyList
+
 
 class NotSupportedForLazyGraph(BaseException):
     def __init__(self, message):
@@ -15,11 +17,8 @@ def not_supported(*_, **__):
 
 class LazyGraph(Graph):
     node_dict_factory = OutOfCoreDict
-    adjlist_outer_dict_factory = OutOfCoreDict
-
-    # node_attr_dict_factory = OutOfCoreDict
-    # adjlist_inner_dict_factory = partial(shelf_factory, filename="adjlist_inner.db")
-    # edge_attr_dict_factory = partial(shelf_factory, filename="edge_attrs.db")
+    adjlist_outer_dict_factory = LazyAdjacencyList
+    adjlist_inner_dict_factory = lambda _: None
     graph_attr_dict_factory = OutOfCoreDict
 
     def __init__(self, incoming_graph_data=None, **attr):
@@ -40,7 +39,7 @@ class LazyGraph(Graph):
                     if not line:
                         break
 
-                    yield line.split(sep) if sep != None else line.split()
+                    yield line.split(sep) if sep is not None else line.split()
 
         G = cls()
         super(LazyGraph, cls).add_edges_from(G, read_file_sep())
