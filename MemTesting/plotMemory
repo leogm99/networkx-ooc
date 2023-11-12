@@ -1,0 +1,28 @@
+import matplotlib.pyplot as plt
+import sys
+
+def plot_memory_usage(output_path, plot_path):
+    memory_data = []
+    with open(output_path, 'r') as input_file:
+        for line in input_file:
+            if line.startswith('Memory Usage'):
+                break
+        for line in input_file:
+            memory_data.append(int(line))
+
+    plt.plot(memory_data)
+    plt.xlabel('Time (MiliSeconds)')
+    plt.ylabel('Memory Usage (bytes)')
+    plt.title('Memory Usage Over Time')
+    plt.savefig(plot_path)
+    plt.show()
+
+if __name__ == '__main__':
+    if len(sys.argv) != 2:
+        print("Usage: python plot_script.py <resource_file.txt>")
+        sys.exit(1)
+
+    resource_file = "results/" + sys.argv[1] + ".txt"
+    plot_output_path = "results/" + sys.argv[1] + ".png"
+
+    plot_memory_usage(resource_file, plot_output_path)
