@@ -1,5 +1,8 @@
+from typing import MutableSet
 from networkx.classes.graph import Graph
 from networkx.structures.out_of_core_dict import OutOfCoreDict
+from networkx.structures.out_of_core_node_dict import OutOfCoreNodeDict
+from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
 
@@ -14,7 +17,7 @@ def not_supported(*_, **__):
 
 
 class LazyGraph(Graph):
-    node_dict_factory = OutOfCoreDict
+    node_dict_factory = OutOfCoreNodeDict
     adjlist_outer_dict_factory = OutOfCoreDict
 
     # node_attr_dict_factory = OutOfCoreDict
@@ -45,3 +48,6 @@ class LazyGraph(Graph):
         G = cls()
         super(LazyGraph, cls).add_edges_from(G, read_file_sep())
         return G
+
+    def get_node_set(self):
+        return OutOfCoreSet(self._node)
