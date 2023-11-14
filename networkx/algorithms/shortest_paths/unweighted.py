@@ -59,10 +59,10 @@ def single_source_shortest_path_length(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = [source]
-    return dict(_single_shortest_path_length(G._adj, nextlevel, cutoff))
+    return dict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
 
 
-def _single_shortest_path_length(adj, firstlevel, cutoff):
+def _single_shortest_path_length(G, adj, firstlevel, cutoff):
     """Yields (node, level) in a breadth first search
 
     Shortest Path Length helper function
@@ -75,7 +75,11 @@ def _single_shortest_path_length(adj, firstlevel, cutoff):
         cutoff : int or float
             level at which we stop the process
     """
-    seen = set(firstlevel)
+    #seen = set(firstlevel)
+    seen = G.get_node_set()
+    for i in firstlevel:
+        seen.add(i)
+
     nextlevel = firstlevel
     level = 0
     n = len(adj)
@@ -145,7 +149,7 @@ def single_target_shortest_path_length(G, target, cutoff=None):
     nextlevel = [target]
     # for version 3.3 we will return a dict like this:
     # return dict(_single_shortest_path_length(adj, nextlevel, cutoff))
-    return _single_shortest_path_length(adj, nextlevel, cutoff)
+    return _single_shortest_path_length(G, adj, nextlevel, cutoff)
 
 
 @nx._dispatch
