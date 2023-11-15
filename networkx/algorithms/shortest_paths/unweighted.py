@@ -76,9 +76,7 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
             level at which we stop the process
     """
     #seen = set(firstlevel)
-    seen = G.get_node_set()
-    for i in firstlevel:
-        seen.add(i)
+    seen = G.get_node_set(initial_list=firstlevel)
 
     nextlevel = firstlevel
     level = 0

@@ -49,5 +49,5 @@ class LazyGraph(Graph):
         super(LazyGraph, cls).add_edges_from(G, read_file_sep())
         return G
 
-    def get_node_set(self):
-        return OutOfCoreSet(self._node)
+    def get_node_set(self, initial_list = None):
+        return OutOfCoreSet(self._node, initial_list)
