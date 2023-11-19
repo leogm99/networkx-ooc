@@ -1,29 +1,34 @@
-from typing import MutableMapping
+import pickle
+from collections.abc import MutableMapping
 
 from networkx.structures.lazy_edge import LazyEdge
-from networkx.structures.out_of_core_dict import OutOfCoreDict, OutOfCoreDictKeyMode
-from cachetools import LRUCache
+from networkx.structures.out_of_core_dict import OutOfCoreDict
 
 
 class LazyAdjacencyList(MutableMapping):
     def __init__(self):
-        self._inner = OutOfCoreDict(mode=OutOfCoreDictKeyMode.COMPOSITE)
-        self._cache = LRUCache(1024)
+        self._inner = OutOfCoreDict()
 
     def __setitem__(self, key, value):
         # Nothing to really do here
         pass
 
     def __delitem__(self, key):
-        for k in self._inner.keys():
+        for k in self._inner:
             u, v = k
             if key in (u, v):
                 del self._inner[k]
 
-    def __getitem__(self, key):
-        if not key in self._cache:
-            self._cache[key] = LazyEdge(inner_dict=self._inner, key=key)
-        return self._cache[key]
+    def add_edge(self, u, v, **attr):
+        if len(attr) == 0:
+            self._inner[LazyAdjacencyList.__serialize_edge(u, v)] = b""
+        else:
+            self._inner[
+                LazyAdjacencyList.__serialize_edge(u, v)
+            ] = LazyAdjacencyList.__serialize_attr(**attr)
+
+    def __getitem__(self, u):
+        return LazyEdge(source_node=u, store=self._inner)
 
     def __len__(self):
         # directed or undirected?
@@ -33,7 +38,25 @@ class LazyAdjacencyList(MutableMapping):
         # hackish
         last_seen = None
         for k in self._inner:
-            if k == last_seen:
+            u, v = LazyAdjacencyList.__deserialize_edge(k)
+            if u == last_seen:
                 continue
-            last_seen = k
-            yield k
+            last_seen = u
+            yield u
+
+    @staticmethod
+    def __serialize_edge(u, v):
+        return u.encode() + b"\x00" + v.encode()
+
+    @staticmethod
+    def __deserialize_edge(data: bytes):
+        sep = data.find(b"\x00")
+        return data[:sep].decode(), data[sep + 1 :].decode()
+
+    @staticmethod
+    def __serialize_attr(**attr):
+        return pickle.dumps(attr)
+
+    @staticmethod
+    def __deserialize_attr(data):
+        return pickle.loads(data)
