@@ -12,10 +12,7 @@ class LazyNodeList(MutableMapping):
         return self._inner[LazyNodeList.__serialize_node(key)]
 
     def __len__(self):
-        count = 0
-        for _ in self._inner:
-            count += 1
-        return count
+        return len(self._inner)
 
     def __iter__(self):
         for k in self._inner:
@@ -28,7 +25,6 @@ class LazyNodeList(MutableMapping):
         if value == b"":
             self._inner[LazyNodeList.__serialize_node(key)] = value
         else:
-            raise
             self._inner[
                 LazyNodeList.__serialize_node(key)
             ] = LazyNodeList.__serialize_node_attr(value)

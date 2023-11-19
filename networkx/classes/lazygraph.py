@@ -48,9 +48,7 @@ class LazyGraph(Graph):
             u, v = e
             if u is None or v is None:
                 raise ValueError("None cannot be a node")
-            if u not in self._node:
-                self._node.add_node(u)
-            if v not in self._node:
-                self._node.add_node(v)
+            self._node.add_node(u)
+            self._node.add_node(v)
             self._adj.add_edge(u, v)
             self._adj.add_edge(v, u)
