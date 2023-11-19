@@ -8,6 +8,8 @@ class OutOfCoreDict(MutableMapping):
     # search by pairs of keys
 
     def __setitem__(self, key, value):
+        if self._inner.get(key) is None:
+            self._count += 1
         self._inner.put(key, value)
 
     def __getitem__(self, key):
