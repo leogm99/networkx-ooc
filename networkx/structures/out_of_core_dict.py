@@ -21,9 +21,6 @@ class OutOfCoreDict(MutableMapping):
         self._inner = plyvel.DB(
             f"{self._temp.name}",
             create_if_missing=True,
-            write_buffer_size=2**12,
-            lru_cache_size=2**12,
-            block_size=2**12,
         )
 
     def __len__(self):
