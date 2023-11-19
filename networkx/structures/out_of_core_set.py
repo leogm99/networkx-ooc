@@ -2,9 +2,43 @@ from typing import MutableSet
 from pyroaring import BitMap
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 
-__all__ = ["OutOfCoreSet", "BitmapSet"]
+__all__ = ["OutOfCoreSet", "OutOfCoreDictSet", "BitmapSet"]
 
 class OutOfCoreSet(MutableSet):
+    def __init__(self, initial_list = None):
+        self._set = BitmapSet()
+        self._int_type = True
+        
+        if (initial_list != None):
+            for node in initial_list:
+                self.add(node)
+
+    def add(self, node):
+        if self._int_type and not isinstance(node, int):
+            self._set_out_of_core_dict_set()
+        self._set.add(node)
+
+    def _set_out_of_core_dict_set(self):
+        out_of_core_dict_set = OutOfCoreDictSet()
+        for k in self._set:
+            out_of_core_dict_set.add(k)
+        self._set = out_of_core_dict_set
+        self._int_type = False
+
+    def discard(self, node):
+        self._set.discard(node)
+
+    def __len__(self):
+        return len(self._set)
+    
+    def __contains__(self, node):
+        return node in self._set
+    
+    def __iter__(self):
+        for k in self._set:
+            yield k
+
+class OutOfCoreDictSet(MutableSet):
     def __init__(self, initial_list = None):
         self._out_of_core_dict = OutOfCoreDict()
 

@@ -5,6 +5,8 @@ import warnings
 
 import networkx as nx
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = [
     "bidirectional_shortest_path",
     "single_source_shortest_path",
@@ -76,7 +78,7 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
             level at which we stop the process
     """
     #seen = set(firstlevel)
-    seen = G.get_node_set(initial_list=firstlevel)
+    seen = OutOfCoreSet(firstlevel)
 
     nextlevel = firstlevel
     level = 0
