@@ -9,8 +9,6 @@ import os
 def run_and_monitor_script(script_path, output_dir):
     start_time = time.time()
     memory_usage = []
-    function_memory_summary = {'function_calls': 0, 'total_memory_allocated': 0}
-
     process = subprocess.Popen(['python', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process_pid = process.pid
 
