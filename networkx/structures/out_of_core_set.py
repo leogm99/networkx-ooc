@@ -4,17 +4,22 @@ from networkx.structures.out_of_core_dict import OutOfCoreDict
 
 __all__ = ["OutOfCoreSet", "OutOfCoreDictSet", "BitmapSet"]
 
+DUAL = "dual"
+OUT_OF_CORE_DICT = "out_of_core_dict"
+BITMAP = "bitmap"
+
 class OutOfCoreSet(MutableSet):
     def __init__(self, initial_list = None):
-        self._set = BitmapSet()
-        self._int_type = True
+        self._mode = BITMAP
+        self._set = BitmapSet() if self._mode != OUT_OF_CORE_DICT else OutOfCoreDictSet()
+        self._int_type = self._mode != OUT_OF_CORE_DICT
         
         if (initial_list != None):
             for node in initial_list:
                 self.add(node)
 
     def add(self, node):
-        if self._int_type and not isinstance(node, int):
+        if self._mode == DUAL and self._int_type and not isinstance(node, int):
             self._set_out_of_core_dict_set()
         self._set.add(node)
 
