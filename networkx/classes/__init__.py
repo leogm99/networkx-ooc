@@ -9,3 +9,5 @@ from .multidigraph import MultiDiGraph
 from .multigraph import MultiGraph
 
 from networkx.structures.out_of_core_set import OutOfCoreSet, OutOfCoreDictSet, BitmapSet
+from networkx.structures.out_of_core_list import OutOfCoreList
+
