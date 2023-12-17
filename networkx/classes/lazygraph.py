@@ -1,8 +1,11 @@
-from typing import MutableSet
+from networkx import NetworkXError
 from networkx.classes.graph import Graph
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 
 __all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
+
+from networkx.structures.lazy_adjacency_list import LazyAdjacencyList
+from networkx.structures.lazy_node_list import LazyNodeList
 
 
 class NotSupportedForLazyGraph(BaseException):
@@ -15,37 +18,40 @@ def not_supported(*_, **__):
 
 
 class LazyGraph(Graph):
-    node_dict_factory = OutOfCoreDict
-    adjlist_outer_dict_factory = OutOfCoreDict
-
-    # node_attr_dict_factory = OutOfCoreDict
-    # adjlist_inner_dict_factory = partial(shelf_factory, filename="adjlist_inner.db")
-    # edge_attr_dict_factory = partial(shelf_factory, filename="edge_attrs.db")
-    graph_attr_dict_factory = OutOfCoreDict
+    node_dict_factory = LazyNodeList
+    adjlist_outer_dict_factory = LazyAdjacencyList
+    adjlist_inner_dict_factory = lambda _: None
+    # graph_attr_dict_factory = OutOfCoreDict
 
     def __init__(self, incoming_graph_data=None, **attr):
         super().__init__(incoming_graph_data, **attr)
 
-        self.add_node = (
-            self.add_nodes_from
-        ) = (
-            self.add_edge
-        ) = self.add_edges_from = self.add_weighted_edges_from = not_supported
+    @staticmethod
+    def read_file_sep(path_to_edgelist, sep=" "):
+        with open(path_to_edgelist) as edgelist:
+            while True:
+                line = edgelist.readline().strip("\n")
+                if not line:
+                    break
+
+                yield line.split(sep) if sep is not None else line.split()
 
     @classmethod
     def from_edgelist_file(cls, path_to_edgelist: str, sep: str = None):
-        def read_file_sep():
-            with open(path_to_edgelist, "r") as edgelist:
-                while True:
-                    line = edgelist.readline().strip("\n")
-                    if not line:
-                        break
-
-                    yield line.split(sep) if sep != None else line.split()
-
         G = cls()
-        super(LazyGraph, cls).add_edges_from(G, read_file_sep())
+        G.lazy_add_edges_from(LazyGraph.read_file_sep(path_to_edgelist, sep))
         return G
+
+    def lazy_add_edges_from(self, ebunch_to_add):
+        for e in ebunch_to_add:
+            # losing attrs
+            u, v = e
+            if u is None or v is None:
+                raise ValueError("None cannot be a node")
+            self._node.add_node(u)
+            self._node.add_node(v)
+            self._adj.add_edge(u, v)
+            self._adj.add_edge(v, u)
 
     #def get_node_set(self, initial_list = None):
     #    return OutOfCoreSet(self._node, initial_list)
