@@ -2,6 +2,8 @@ from typing import MutableSet
 from pyroaring import BitMap
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 
+import pickle
+
 __all__ = ["OutOfCoreSet", "OutOfCoreDictSet", "BitmapSet"]
 
 DUAL = "dual"
@@ -52,21 +54,29 @@ class OutOfCoreDictSet(MutableSet):
                 self.add(node)
 
     def add(self, node):
-        self._out_of_core_dict[node] = None
+        self._out_of_core_dict[self.__to_bytes(node)] = ''.encode()
 
     def discard(self, node):
         if (node in self._out_of_core_dict):
-            del self._out_of_core_dict[node]
+            del self._out_of_core_dict[self.__to_bytes(node)]
 
     def __len__(self):
         return len(self._out_of_core_dict)
     
     def __contains__(self, node):
-        return node in self._out_of_core_dict
+        return self.__to_bytes(node) in self._out_of_core_dict
 
     def __iter__(self):
         for k in self._out_of_core_dict:
-            yield k
+            yield self.__from_bytes(k)
+    
+    @staticmethod
+    def __to_bytes(_any):
+        return pickle.dumps(_any)
+
+    @staticmethod
+    def __from_bytes(any_bytes):
+        return pickle.loads(any_bytes)
 
 class BitmapSet(MutableSet):
     def __init__(self, initial_list = None):
