@@ -1,4 +1,5 @@
 import pickle
+import struct
 from collections.abc import MutableMapping
 
 from networkx.structures.lazy_edge import LazyEdge
@@ -46,12 +47,11 @@ class LazyAdjacencyList(MutableMapping):
 
     @staticmethod
     def __serialize_edge(u, v):
-        return u.encode() + b"\x00" + v.encode()
+        return struct.pack('@2l', u, v)
 
     @staticmethod
     def __deserialize_edge(data: bytes):
-        sep = data.find(b"\x00")
-        return data[:sep].decode(), data[sep + 1 :].decode()
+        return struct.unpack('@2l', data)
 
     @staticmethod
     def __serialize_attr(**attr):

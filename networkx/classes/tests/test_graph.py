@@ -28,7 +28,7 @@ class BaseGraphTester:
 
     def test_nodes(self):
         G = self.K3
-        # assert isinstance(G._node, G.node_dict_factory) esto falla por razones obvias. estamos usando otro tipo de factory
+        assert isinstance(G._node, G.node_dict_factory)
         assert isinstance(G._adj, G.adjlist_outer_dict_factory)
         assert all(
             isinstance(adj, G.adjlist_inner_dict_factory) for adj in G._adj.values()

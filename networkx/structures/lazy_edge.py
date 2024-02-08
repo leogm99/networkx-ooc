@@ -1,4 +1,5 @@
 import pickle
+import struct
 from collections.abc import MutableMapping
 
 
@@ -16,7 +17,7 @@ class LazyEdge(MutableMapping):
     def __getitem__(self, v):
         edge_key = LazyEdge.__serialize_edge(self._source_node, v)
         inner_attr = self._store[LazyEdge.__serialize_edge(self._source_node, v)]
-        if inner_attr is None:
+        if inner_attr is None or inner_attr == b"":
             inner_attr = {}
             self._store[edge_key] = LazyEdge.__serialize_attr(inner_attr)
         else:
@@ -25,24 +26,23 @@ class LazyEdge(MutableMapping):
 
     def __len__(self):
         count = 0
-        for _ in self._store.prefix_iter(prefix=self._source_node.encode() + b"\x00"):
+        for _ in self._store.prefix_iter(prefix=struct.pack('@l', self._source_node)):
             count += 1
         return count
 
     def __iter__(self):
         for k, _ in self._store.prefix_iter(
-            prefix=self._source_node.encode() + b"\x00"
+            prefix=struct.pack('@l', self._source_node)
         ):
-            yield k.decode()
+            yield struct.unpack('@l', k)[0]
 
     @staticmethod
     def __serialize_edge(u, v):
-        return u.encode() + b"\x00" + v.encode()
+        return struct.pack('@2l', u, v)
 
     @staticmethod
     def __deserialize_edge(data: bytes):
-        sep = data.find(b"\x00")
-        return data[:sep].decode(), data[sep + 1 :].decode()
+        return struct.unpack('@2l', data)
 
     @staticmethod
     def __serialize_attr(attr):
