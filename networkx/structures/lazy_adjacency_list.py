@@ -24,11 +24,18 @@ class LazyAdjacencyList(MutableMapping):
         if len(attr) == 0:
             self._inner[LazyAdjacencyList.__serialize_edge(u, v)] = b""
         else:
+            dd = {}
+            dd.update(attr)
             self._inner[
                 LazyAdjacencyList.__serialize_edge(u, v)
-            ] = LazyAdjacencyList.__serialize_attr(**attr)
+            ] = LazyAdjacencyList.__serialize_attr(dd)
 
     def __getitem__(self, u):
+        # hackish
+        try:
+            next(self._inner.prefix_iter(struct.pack('@1l', u)))
+        except StopIteration:
+            raise KeyError(f"Node {u} not found")
         return LazyEdge(source_node=u, store=self._inner)
 
     def __len__(self):
@@ -54,7 +61,7 @@ class LazyAdjacencyList(MutableMapping):
         return struct.unpack('@2l', data)
 
     @staticmethod
-    def __serialize_attr(**attr):
+    def __serialize_attr(attr):
         return pickle.dumps(attr)
 
     @staticmethod

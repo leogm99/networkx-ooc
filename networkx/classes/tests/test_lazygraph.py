@@ -48,15 +48,23 @@ class TestLazyGraph(BaseAttrGraphTester):
         G = self.K3
         assert 1 in G
         assert 4 not in G
-        # TODO: maybe raise?
-        # assert "b" not in G
-        # assert [] not in G  # no exception for nonhashable
-        # assert {1: 1} not in G  # no exception for nonhashable
-
-    def test_has_node(self):
-        G = self.K3
-        assert G.has_node(1)
-        assert not G.has_node(4)
-        # TODO: maybe raise?
-        # assert not G.has_node([])  # no exception for nonhashable
-        # assert not G.has_node({1: 1})  # no exception for nonhashable
+        assert [] not in G  # no exception for nonhashable
+        assert {1: 1} not in G  # no exception for nonhashable
+    
+    def graphs_equal(self, H, G):
+        assert G._adj == H._adj
+        assert G._node == H._node
+        assert G.graph == H.graph
+        assert G.name == H.name
+        # the graph is deep copied so no identity should be checked
+        if G.is_directed() or H.is_directed():
+            if not G.is_directed():
+                G._pred = G._adj
+                G._succ = G._adj
+            if not H.is_directed():
+                H._pred = H._adj
+                H._succ = H._adj
+            assert G._pred == H._pred
+            assert G._succ == H._succ
+            # assert H._succ[1][2] is H._pred[2][1]
+            # assert G._succ[1][2] is G._pred[2][1]

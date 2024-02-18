@@ -1,11 +1,8 @@
-from networkx import NetworkXError
 from networkx.classes.graph import Graph
-from networkx.structures.out_of_core_dict import OutOfCoreDict
-
-__all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
-
 from networkx.structures.lazy_adjacency_list import LazyAdjacencyList
 from networkx.structures.lazy_node_list import LazyNodeList
+
+__all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
 
 
 class NotSupportedForLazyGraph(BaseException):
@@ -21,8 +18,6 @@ class LazyGraph(Graph):
     node_dict_factory = LazyNodeList
     adjlist_outer_dict_factory = LazyAdjacencyList
     adjlist_inner_dict_factory = lambda _: None
-
-    # graph_attr_dict_factory = OutOfCoreDict
 
     def __init__(self, incoming_graph_data=None, **attr):
         super().__init__(incoming_graph_data, **attr)
@@ -61,10 +56,22 @@ class LazyGraph(Graph):
 
     def add_nodes_from(self, nodes_for_adding, **attr):
         for n in nodes_for_adding:
-            if n is None:
+            if len(n) == 2:
+                u, dd = n
+            else:
+                u = n
+                dd = None
+            if u is None:
                 raise ValueError("Node cannot be None")
-            self.add_node(n, **attr)
+            if dd is not None:
+                self.add_node(u, **dd)
+            else:
+                self.add_node(u)
 
     def add_edges_from(self, ebunch_to_add, **attr):
-        for u, v in ebunch_to_add:
+        for x in ebunch_to_add:
+            if len(x) == 3:
+                u, v, _ = x
+            else:
+                u, v = x
             self.add_edge(u, v)
