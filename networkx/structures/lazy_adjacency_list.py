@@ -17,8 +17,7 @@ class LazyAdjacencyList(MutableMapping):
 
     def __delitem__(self, key):
         for k in self._inner:
-            u, v = k
-            if key in (u, v):
+            if k == key:
                 del self._inner[k]
 
     def add_edge(self, u, v, **attr):
@@ -27,8 +26,9 @@ class LazyAdjacencyList(MutableMapping):
         else:
             try:
                 dd = LazyAdjacencyList.__deserialize_attr(self._inner[LazyAdjacencyList.__serialize_edge(u, v)])
-            except KeyError:
+            except (KeyError, EOFError):
                 dd = {}
+
             dd.update(attr)
             self._inner[
                 LazyAdjacencyList.__serialize_edge(u, v)
