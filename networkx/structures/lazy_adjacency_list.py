@@ -1,5 +1,6 @@
 import pickle
 import struct
+import typing
 from collections.abc import MutableMapping
 
 from networkx.structures.lazy_edge import LazyEdge
@@ -24,13 +25,18 @@ class LazyAdjacencyList(MutableMapping):
         if len(attr) == 0:
             self._inner[LazyAdjacencyList.__serialize_edge(u, v)] = b""
         else:
-            dd = {}
+            try:
+                dd = LazyAdjacencyList.__deserialize_attr(self._inner[LazyAdjacencyList.__serialize_edge(u, v)])
+            except KeyError:
+                dd = {}
             dd.update(attr)
             self._inner[
                 LazyAdjacencyList.__serialize_edge(u, v)
             ] = LazyAdjacencyList.__serialize_attr(dd)
 
     def __getitem__(self, u):
+        if not isinstance(u, typing.Hashable):
+            raise TypeError(f"unhashable type: {type(u)}")
         # hackish
         try:
             next(self._inner.prefix_iter(struct.pack('@1l', u)))

@@ -41,8 +41,7 @@ class LazyGraph(Graph):
     def add_node(self, node_for_adding, **attr):
         if node_for_adding is None:
             raise ValueError("Node cannot be None")
-        if node_for_adding not in self._node:
-            self._node.add_node(node_for_adding, **attr)
+        self._node.add_node(node_for_adding, **attr)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         if None in (u_of_edge, v_of_edge):
@@ -51,17 +50,17 @@ class LazyGraph(Graph):
             self._node.add_node(u_of_edge)
         if v_of_edge not in self._node:
             self._node.add_node(v_of_edge)
-        self._adj.add_edge(u_of_edge, v_of_edge)
-        self._adj.add_edge(v_of_edge, u_of_edge)
+        self._adj.add_edge(u_of_edge, v_of_edge, **attr)
+        self._adj.add_edge(v_of_edge, u_of_edge, **attr)
 
     def add_nodes_from(self, nodes_for_adding, **attr):
         for n in nodes_for_adding:
-            if len(n) == 2:
+            try:
                 u, dd = n
-            else:
+            except TypeError:
                 u = n
                 dd = None
-            if u is None:
+            if n is None:
                 raise ValueError("Node cannot be None")
             if dd is not None:
                 self.add_node(u, **dd)
@@ -71,7 +70,14 @@ class LazyGraph(Graph):
     def add_edges_from(self, ebunch_to_add, **attr):
         for x in ebunch_to_add:
             if len(x) == 3:
-                u, v, _ = x
+                u, v, data = x
+                dd = {}
+                dd.update(data)
+                dd.update(attr)
+                self.add_edge(u, v, **dd)
             else:
                 u, v = x
-            self.add_edge(u, v)
+                if len(attr) != 0:
+                    self.add_edge(u, v, **attr)
+                else:
+                    self.add_edge(u, v)
