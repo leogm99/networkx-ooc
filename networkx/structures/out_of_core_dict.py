@@ -57,8 +57,11 @@ class OutOfCoreDict(MutableMapping):
 
 
 class OutOfCorePickleDict(OutOfCoreDict):
-    def __init__(self) -> None:
+    def __init__(self, initial_values = None) -> None:
         super().__init__()
+
+        if (initial_values != None):
+            super().update(initial_values)
 
     def __setitem__(self, key, value):
         super().__setitem__(self.__to_bytes(key), self.__to_bytes(value))
