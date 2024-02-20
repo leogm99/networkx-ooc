@@ -56,26 +56,19 @@ class OutOfCoreDict(MutableMapping):
         yield from self._inner.prefixed_db(prefix)
 
 
-#possibly refact this later
 class OutOfCorePickleDict(OutOfCoreDict):
     def __init__(self) -> None:
-        self._dict = OutOfCoreDict()
+        super().__init__()
 
     def __setitem__(self, key, value):
-        self._dict[self.__to_bytes(key)] = self.__to_bytes(value)
+        super().__setitem__(self.__to_bytes(key), self.__to_bytes(value))
 
     def __getitem__(self, key):
-        return self.__from_bytes(self._dict[self.__to_bytes(key)])
+        return self.__from_bytes(super().__getitem__(self.__to_bytes(key)))
     
     def __iter__(self):
-        for k in self._dict:
+        for k in super().__iter__():
             yield self.__from_bytes(k)
-
-    def __len__(self):
-        return len(self._dict)
-    
-    def __del__(self):
-        del self._dict
     
     @staticmethod
     def __to_bytes(_any):
