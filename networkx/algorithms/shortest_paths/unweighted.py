@@ -4,6 +4,7 @@ Shortest path algorithms for unweighted graphs.
 import warnings
 
 import networkx as nx
+from networkx.structures.out_of_core_dict import OutOfCorePickleDict
 
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.out_of_core_list import OutOfCoreList
@@ -386,10 +387,11 @@ def _single_shortest_path(adj, firstlevel, paths, cutoff, join):
             `p1 + p2` (forward from source) or `p2 + p1` (backward from target)
     """
     level = 0  # the current level
-    nextlevel = firstlevel
+    nextlevel = OutOfCorePickleDict(firstlevel)
+    #lo que hay que ver es como manejamos la variable "Paths", en cual estructura, o si cremaos una nueva.
     while nextlevel and cutoff > level:
         thislevel = nextlevel
-        nextlevel = {}
+        nextlevel = OutOfCorePickleDict()
         for v in thislevel:
             for w in adj[v]:
                 if w not in paths:
@@ -542,13 +544,13 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
         raise nx.NodeNotFound(f"Source {source} not in G")
 
     level = 0  # the current level
-    nextlevel = [source]  # list of nodes to check at next level
-    seen = {source: level}  # level (number of hops) when seen in BFS
+    nextlevel = OutOfCoreList([source]) # list of nodes to check at next level
+    seen = OutOfCorePickleDict({source: level}) # level (number of hops) when seen in BFS
     pred = {source: []}  # predecessor dictionary
     while nextlevel:
         level = level + 1
         thislevel = nextlevel
-        nextlevel = []
+        nextlevel = OutOfCoreList()
         for v in thislevel:
             for w in G[v]:
                 if w not in seen:
