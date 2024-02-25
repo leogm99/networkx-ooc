@@ -30,7 +30,7 @@ class LazyGraph(Graph):
                 if not line:
                     break
 
-                yield line.split(sep) if sep is not None else line.split()
+                yield [int(x) for x in line.split(sep)] if sep is not None else [int(x) for x in line.split()]
 
     @classmethod
     def from_edgelist_file(cls, path_to_edgelist: str, sep: str = None):
