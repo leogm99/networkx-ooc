@@ -1,4 +1,6 @@
 import pickle
+import struct
+import typing
 from collections.abc import MutableMapping
 
 from networkx.structures.lazy_edge import LazyEdge
@@ -15,19 +17,31 @@ class LazyAdjacencyList(MutableMapping):
 
     def __delitem__(self, key):
         for k in self._inner:
-            u, v = k
-            if key in (u, v):
+            if k == key:
                 del self._inner[k]
 
     def add_edge(self, u, v, **attr):
         if len(attr) == 0:
             self._inner[LazyAdjacencyList.__serialize_edge(u, v)] = b""
         else:
+            try:
+                dd = LazyAdjacencyList.__deserialize_attr(self._inner[LazyAdjacencyList.__serialize_edge(u, v)])
+            except (KeyError, EOFError):
+                dd = {}
+
+            dd.update(attr)
             self._inner[
                 LazyAdjacencyList.__serialize_edge(u, v)
-            ] = LazyAdjacencyList.__serialize_attr(**attr)
+            ] = LazyAdjacencyList.__serialize_attr(dd)
 
     def __getitem__(self, u):
+        if not isinstance(u, typing.Hashable):
+            raise TypeError(f"unhashable type: {type(u)}")
+        # hackish
+        try:
+            next(self._inner.prefix_iter(struct.pack('@1l', u)))
+        except StopIteration:
+            raise KeyError(f"Node {u} not found")
         return LazyEdge(source_node=u, store=self._inner)
 
     def __len__(self):
@@ -46,15 +60,14 @@ class LazyAdjacencyList(MutableMapping):
 
     @staticmethod
     def __serialize_edge(u, v):
-        return u.encode() + b"\x00" + v.encode()
+        return struct.pack('@2l', u, v)
 
     @staticmethod
     def __deserialize_edge(data: bytes):
-        sep = data.find(b"\x00")
-        return data[:sep].decode(), data[sep + 1 :].decode()
+        return struct.unpack('@2l', data)
 
     @staticmethod
-    def __serialize_attr(**attr):
+    def __serialize_attr(attr):
         return pickle.dumps(attr)
 
     @staticmethod
