@@ -3,6 +3,7 @@ import struct
 from collections.abc import MutableMapping
 
 from networkx.structures.out_of_core_dict import OutOfCoreDict
+from typing import Hashable
 
 
 class LazyNodeList(MutableMapping):
@@ -10,6 +11,8 @@ class LazyNodeList(MutableMapping):
         self._inner.__delitem__(LazyNodeList.__serialize_node(key))
 
     def __getitem__(self, key):
+        if not isinstance(key, Hashable):
+            raise TypeError("Key must be hashable")
         data = self._inner[LazyNodeList.__serialize_node(key)]
         if data == b"":
             data = {}
@@ -27,19 +30,21 @@ class LazyNodeList(MutableMapping):
     def __init__(self):
         self._inner = OutOfCoreDict()
 
-    def __setitem__(self, key, value):
-        if value == b"":
-            self._inner[LazyNodeList.__serialize_node(key)] = value
+    def __setitem__(self, key, **attr):
+        if len(attr) == 0:
+            self._inner[LazyNodeList.__serialize_node(key)] = b""
         else:
+            try:
+                dd = LazyNodeList.__deserialize_node_attr(self._inner[LazyNodeList.__serialize_node(key)])
+            except KeyError:
+                dd = {}
+            dd.update(attr)
             self._inner[
                 LazyNodeList.__serialize_node(key)
-            ] = LazyNodeList.__serialize_node_attr(value)
+            ] = LazyNodeList.__serialize_node_attr(dd)
 
-    def add_node(self, key, value=None):
-        if value:
-            self.__setitem__(key, value)
-            return
-        self.__setitem__(key, b"")
+    def add_node(self, key, **attr):
+        self.__setitem__(key, **attr)
 
     @staticmethod
     def __serialize_node(u):

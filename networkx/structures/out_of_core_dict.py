@@ -6,12 +6,15 @@ import plyvel
 
 
 class OutOfCoreDict(MutableMapping):
-    # search by pairs of keys
-
     def __setitem__(self, key, value):
-        self._inner.put(key, value)
+        self._wb.put(key, value)
+        if self._wb.approximate_size() > 32 * 1024:
+            self._wb.write()
+            self._wb.clear()
 
     def __getitem__(self, key):
+        self._wb.write()
+        self._wb.clear()
         data = self._inner.get(key)
         if data is None:
             raise KeyError(key)
@@ -22,12 +25,15 @@ class OutOfCoreDict(MutableMapping):
         self._inner = plyvel.DB(
             f"{self._temp.name}",
             create_if_missing=True,
+            write_buffer_size=24*1024*1024,
+            compression='snappy'
         )
+        self._wb = self._inner.write_batch(sync=False)
 
     def __len__(self):
         count = 0
         with self._inner.iterator(
-            include_key=False, include_value=False, fill_cache=False
+                include_key=False, include_value=False, fill_cache=False
         ) as it:
             for _ in it:
                 count += 1
