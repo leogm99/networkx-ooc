@@ -30,6 +30,8 @@ class OutOfCoreDict(MutableMapping):
         self._wb = self._inner.write_batch(sync=False)
 
     def __len__(self):
+        self._wb.write()
+        self._wb.clear()
         count = 0
         with self._inner.iterator(
                 include_key=False, include_value=False, fill_cache=False
@@ -42,6 +44,8 @@ class OutOfCoreDict(MutableMapping):
         yield from self._inner
 
     def __iter__(self):
+        self._wb.write()
+        self._wb.clear()
         for k, _ in self.__inner_iter_items():
             yield k
 
@@ -49,6 +53,8 @@ class OutOfCoreDict(MutableMapping):
         self.__dealloc()
 
     def __delitem__(self, key) -> None:
+        self._wb.write()
+        self._wb.clear()
         if not self._inner.get(key):
             raise KeyError(key)
         self._inner.delete(key)
@@ -58,4 +64,6 @@ class OutOfCoreDict(MutableMapping):
         self._temp.cleanup()
 
     def prefix_iter(self, prefix):
+        self._wb.write()
+        self._wb.clear()
         yield from self._inner.prefixed_db(prefix)
