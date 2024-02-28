@@ -9,6 +9,9 @@ is incident to at least one node in the subset.
 """
 import networkx as nx
 
+from networkx.structures.out_of_core_dict import OutOfCorePickleDict
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = ["min_weighted_vertex_cover"]
 
 
@@ -66,10 +69,10 @@ def min_weighted_vertex_cover(G, weight=None):
        <http://www.cs.technion.ac.il/~reuven/PDF/vc_lr.pdf>
 
     """
-    cost = dict(G.nodes(data=weight, default=1))
+    cost = OutOfCorePickleDict(G.nodes(data=weight, default=1))
     # While there are uncovered edges, choose an uncovered and update
     # the cost of the remaining edges.
-    cover = set()
+    cover = OutOfCoreSet()
     for u, v in G.edges():
         if u in cover or v in cover:
             continue

@@ -4,6 +4,10 @@ Shortest path algorithms for unweighted graphs.
 import warnings
 
 import networkx as nx
+from networkx.structures.out_of_core_dict import OutOfCorePickleDict
+
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.out_of_core_list import OutOfCoreList
 
 __all__ = [
     "bidirectional_shortest_path",
@@ -59,10 +63,10 @@ def single_source_shortest_path_length(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = [source]
-    return dict(_single_shortest_path_length(G._adj, nextlevel, cutoff))
+    return dict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
 
 
-def _single_shortest_path_length(adj, firstlevel, cutoff):
+def _single_shortest_path_length(G, adj, firstlevel, cutoff):
     """Yields (node, level) in a breadth first search
 
     Shortest Path Length helper function
@@ -75,8 +79,11 @@ def _single_shortest_path_length(adj, firstlevel, cutoff):
         cutoff : int or float
             level at which we stop the process
     """
-    seen = set(firstlevel)
-    nextlevel = firstlevel
+    #seen = set(firstlevel)
+    seen = OutOfCoreSet(firstlevel)
+
+    # nextlevel = firstlevel
+    nextlevel = OutOfCoreList(firstlevel)
     level = 0
     n = len(adj)
     for v in nextlevel:
@@ -84,7 +91,7 @@ def _single_shortest_path_length(adj, firstlevel, cutoff):
     while nextlevel and cutoff > level:
         level += 1
         thislevel = nextlevel
-        nextlevel = []
+        nextlevel = OutOfCoreList()
         for v in thislevel:
             for w in adj[v]:
                 if w not in seen:
@@ -145,7 +152,7 @@ def single_target_shortest_path_length(G, target, cutoff=None):
     nextlevel = [target]
     # for version 3.3 we will return a dict like this:
     # return dict(_single_shortest_path_length(adj, nextlevel, cutoff))
-    return _single_shortest_path_length(adj, nextlevel, cutoff)
+    return _single_shortest_path_length(G, adj, nextlevel, cutoff)
 
 
 @nx._dispatch
@@ -380,10 +387,11 @@ def _single_shortest_path(adj, firstlevel, paths, cutoff, join):
             `p1 + p2` (forward from source) or `p2 + p1` (backward from target)
     """
     level = 0  # the current level
-    nextlevel = firstlevel
+    nextlevel = OutOfCorePickleDict(firstlevel)
+    #lo que hay que ver es como manejamos la variable "Paths", en cual estructura, o si cremaos una nueva.
     while nextlevel and cutoff > level:
         thislevel = nextlevel
-        nextlevel = {}
+        nextlevel = OutOfCorePickleDict()
         for v in thislevel:
             for w in adj[v]:
                 if w not in paths:
@@ -536,13 +544,13 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
         raise nx.NodeNotFound(f"Source {source} not in G")
 
     level = 0  # the current level
-    nextlevel = [source]  # list of nodes to check at next level
-    seen = {source: level}  # level (number of hops) when seen in BFS
+    nextlevel = OutOfCoreList([source]) # list of nodes to check at next level
+    seen = OutOfCorePickleDict({source: level}) # level (number of hops) when seen in BFS
     pred = {source: []}  # predecessor dictionary
     while nextlevel:
         level = level + 1
         thislevel = nextlevel
-        nextlevel = []
+        nextlevel = OutOfCoreList()
         for v in thislevel:
             for w in G[v]:
                 if w not in seen:

@@ -1,3 +1,4 @@
+import pickle
 import tempfile
 from collections.abc import MutableMapping
 
@@ -67,3 +68,29 @@ class OutOfCoreDict(MutableMapping):
         self._wb.write()
         self._wb.clear()
         yield from self._inner.prefixed_db(prefix)
+
+
+class OutOfCorePickleDict(OutOfCoreDict):
+    def __init__(self, initial_values = None) -> None:
+        super().__init__()
+
+        if (initial_values != None):
+            super().update(initial_values)
+
+    def __setitem__(self, key, value):
+        super().__setitem__(self.__to_bytes(key), self.__to_bytes(value))
+
+    def __getitem__(self, key):
+        return self.__from_bytes(super().__getitem__(self.__to_bytes(key)))
+    
+    def __iter__(self):
+        for k in super().__iter__():
+            yield self.__from_bytes(k)
+    
+    @staticmethod
+    def __to_bytes(_any):
+        return pickle.dumps(_any)
+
+    @staticmethod
+    def __from_bytes(any_bytes):
+        return pickle.loads(any_bytes)
