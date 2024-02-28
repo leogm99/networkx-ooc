@@ -1,6 +1,8 @@
 import networkx as nx
 from networkx.utils import not_implemented_for, py_random_state
 
+from networkx.structures.out_of_core_list import OutOfCoreList
+
 __all__ = ["average_clustering"]
 
 
@@ -55,9 +57,9 @@ def average_clustering(G, trials=1000, seed=None):
     """
     n = len(G)
     triangles = 0
-    nodes = list(G)
+    nodes = OutOfCoreList(G)
     for i in [int(seed.random() * n) for i in range(trials)]:
-        nbrs = list(G[nodes[i]])
+        nbrs = OutOfCoreList(G[nodes[i]])
         if len(nbrs) < 2:
             continue
         u, v = seed.sample(nbrs, 2)
