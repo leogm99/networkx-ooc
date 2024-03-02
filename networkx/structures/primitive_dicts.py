@@ -13,7 +13,7 @@ class PrimitiveType(str, enum.Enum):
     ULONG = "!L"
 
 
-class PrimiviteDict(OutOfCoreDict):
+class PrimitiveDict(OutOfCoreDict):
     def __init__(self, key_primitive_type: PrimitiveType, value_primitive_type: PrimitiveType):
         super().__init__()
         self._key_format = key_primitive_type.value
@@ -52,11 +52,11 @@ class PrimiviteDict(OutOfCoreDict):
         return struct.unpack(self._value_format, value)[0]
 
 
-class IntDict(PrimiviteDict):
+class IntDict(PrimitiveDict):
     def __init__(self):
         super().__init__(PrimitiveType.INTEGER, PrimitiveType.INTEGER)
 
 
-class IntFloatDict(PrimiviteDict):
+class IntFloatDict(PrimitiveDict):
     def __init__(self):
         super().__init__(PrimitiveType.INTEGER, PrimitiveType.FLOAT)
