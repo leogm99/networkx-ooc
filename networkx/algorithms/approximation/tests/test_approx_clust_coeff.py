@@ -1,5 +1,8 @@
 import networkx as nx
 from networkx.algorithms.approximation import average_clustering
+from networkx import LazyGraph
+
+nx.Graph = nx.LazyGraph
 
 # This approximation has to be exact in regular graphs
 # with no triangles or with all possible triangles.
@@ -31,11 +34,20 @@ def test_dodecahedral():
 
 def test_empty():
     G = nx.empty_graph(5)
-    assert average_clustering(G, trials=len(G) // 2) == 0
+    LazyG = LazyGraph()
+    for e in G.nodes:
+        LazyG.add_node(e)
+    assert average_clustering(LazyG, trials=len(LazyG) // 2) == 0
 
 
 def test_complete():
     G = nx.complete_graph(5)
-    assert average_clustering(G, trials=len(G) // 2) == 1
+    LazyG = LazyGraph()
+    for e in G.edges:
+        LazyG.add_edge(*e)
+    assert average_clustering(LazyG, trials=len(LazyG) // 2) == 1
     G = nx.complete_graph(7)
-    assert average_clustering(G, trials=len(G) // 2) == 1
+    LazyG = LazyGraph()
+    for e in G.edges:
+        LazyG.add_edge(*e)
+    assert average_clustering(LazyG, trials=len(LazyG) // 2) == 1
