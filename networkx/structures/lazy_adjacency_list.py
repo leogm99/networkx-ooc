@@ -39,7 +39,7 @@ class LazyAdjacencyList(MutableMapping):
             raise TypeError(f"unhashable type: {type(u)}")
         # hackish
         try:
-            next(self._inner.prefix_iter(struct.pack('@1l', u)))
+            next(self._inner.prefix_iter(struct.pack('!l', u)))
         except StopIteration:
             raise KeyError(f"Node {u} not found")
         return LazyEdge(source_node=u, store=self._inner)
@@ -60,11 +60,11 @@ class LazyAdjacencyList(MutableMapping):
 
     @staticmethod
     def __serialize_edge(u, v):
-        return struct.pack('@2l', u, v)
+        return struct.pack('!2l', u, v)
 
     @staticmethod
     def __deserialize_edge(data: bytes):
-        return struct.unpack('@2l', data)
+        return struct.unpack('!2l', data)
 
     @staticmethod
     def __serialize_attr(attr):

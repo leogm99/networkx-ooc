@@ -26,23 +26,23 @@ class LazyEdge(MutableMapping):
 
     def __len__(self):
         count = 0
-        for _ in self._store.prefix_iter(prefix=struct.pack('@l', self._source_node)):
+        for _ in self._store.prefix_iter(prefix=struct.pack('!l', self._source_node)):
             count += 1
         return count
 
     def __iter__(self):
         for k, _ in self._store.prefix_iter(
-            prefix=struct.pack('@l', self._source_node)
+            prefix=struct.pack('!l', self._source_node)
         ):
-            yield struct.unpack('@l', k)[0]
+            yield struct.unpack('!l', k)[0]
 
     @staticmethod
     def __serialize_edge(u, v):
-        return struct.pack('@2l', u, v)
+        return struct.pack('!2l', u, v)
 
     @staticmethod
     def __deserialize_edge(data: bytes):
-        return struct.unpack('@2l', data)
+        return struct.unpack('!2l', data)
 
     @staticmethod
     def __serialize_attr(attr):
