@@ -48,11 +48,11 @@ class LazyNodeList(MutableMapping):
 
     @staticmethod
     def __serialize_node(u):
-        return struct.pack('@l', u)
+        return struct.pack('!l', u)
 
     @staticmethod
     def __deserialize_node(data):
-        return struct.unpack('@l', data)[0]
+        return struct.unpack('!l', data)[0]
 
     @staticmethod
     def __serialize_node_attr(attr):
