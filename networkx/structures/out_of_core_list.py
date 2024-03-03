@@ -1,5 +1,5 @@
 from typing import MutableSequence
-from networkx.structures.out_of_core_dict import OutOfCorePickleDict
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
 
 __all__ = ["OutOfCoreList"]
 
@@ -14,7 +14,7 @@ append, len e iter. Operaciones como insert o delete son muy costosas debido al 
 '''
 class OutOfCoreList(MutableSequence):
     def __init__(self, initial_list = None):
-        self._out_of_core_dict = OutOfCorePickleDict()
+        self._out_of_core_dict = IOutOfCoreDict()
         self._next_id = 0
 
         if (initial_list != None):

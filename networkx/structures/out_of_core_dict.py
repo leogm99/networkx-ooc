@@ -1,4 +1,5 @@
 import pickle
+import struct
 import tempfile
 from collections.abc import MutableMapping
 
@@ -70,7 +71,7 @@ class OutOfCoreDict(MutableMapping):
         yield from self._inner.prefixed_db(prefix)
 
 
-class OutOfCorePickleDict(OutOfCoreDict):
+class IOutOfCoreDict(OutOfCoreDict):
     def __init__(self, initial_values = None) -> None:
         super().__init__()
 
@@ -87,10 +88,18 @@ class OutOfCorePickleDict(OutOfCoreDict):
         for k in super().__iter__():
             yield self.__from_bytes(k)
     
-    @staticmethod
-    def __to_bytes(_any):
-        return pickle.dumps(_any)
+    # @staticmethod
+    # def __to_bytes(_any):
+    #     return pickle.dumps(_any)
+
+    # @staticmethod
+    # def __from_bytes(any_bytes):
+    #     return pickle.loads(any_bytes)
 
     @staticmethod
-    def __from_bytes(any_bytes):
-        return pickle.loads(any_bytes)
+    def __to_bytes(i: int):
+        return struct.pack('@l', i)
+
+    @staticmethod
+    def __from_bytes(b: bytes):
+        return struct.unpack('@l', b)[0]
