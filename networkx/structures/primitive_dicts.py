@@ -46,7 +46,7 @@ class PrimitiveDict(OutOfCoreDict):
         return struct.pack(self._value_format, value)
 
     def __deserialize_key(self, key):
-        return struct.unpack(self._value_format, key)[0]
+        return struct.unpack(self._key_format, key)[0]
 
     def __deserialize_value(self, value):
         return struct.unpack(self._value_format, value)[0]
