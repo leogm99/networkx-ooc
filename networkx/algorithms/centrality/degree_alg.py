@@ -2,6 +2,8 @@
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
 
+from networkx.structures.primitive_dicts import PrimitiveDict, PrimitiveType
+
 __all__ = ["degree_centrality", "in_degree_centrality", "out_degree_centrality"]
 
 
@@ -42,10 +44,15 @@ def degree_centrality(G):
     are possible.
     """
     if len(G) <= 1:
-        return {n: 1 for n in G}
+        centrality = PrimitiveDict(PrimitiveType.INTEGER, PrimitiveType.INTEGER)
+        for n in G:
+            centrality[n] = 1
+        return centrality
 
     s = 1.0 / (len(G) - 1.0)
-    centrality = {n: d * s for n, d in G.degree()}
+    centrality = PrimitiveDict(PrimitiveType.INTEGER, PrimitiveType.FLOAT)
+    for n, d in G:
+        centrality[n] = d * s
     return centrality
 
 
