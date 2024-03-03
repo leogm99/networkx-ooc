@@ -46,10 +46,10 @@ class LazyGraph(Graph):
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         if None in (u_of_edge, v_of_edge):
             raise ValueError("")
-        if u_of_edge not in self._node:
-            self._node.add_node(u_of_edge)
-        if v_of_edge not in self._node:
-            self._node.add_node(v_of_edge)
+        # really there is not a fast way to check if a node exists
+        # it its cheaper to add it
+        self._node.add_node(u_of_edge)
+        self._node.add_node(v_of_edge)
         self._adj.add_edge(u_of_edge, v_of_edge, **attr)
         self._adj.add_edge(v_of_edge, u_of_edge, **attr)
 
@@ -68,7 +68,9 @@ class LazyGraph(Graph):
                 self.add_node(u)
 
     def add_edges_from(self, ebunch_to_add, **attr):
-        for x in ebunch_to_add:
+        for i, x in enumerate(ebunch_to_add):
+            if i % 10000 == 0:
+                print(i)
             if len(x) == 3:
                 u, v, data = x
                 dd = {}
@@ -80,4 +82,4 @@ class LazyGraph(Graph):
                 if len(attr) != 0:
                     self.add_edge(u, v, **attr)
                 else:
-                    self.add_edge(u, v)
+                    self.add_edge(int(u), int(v))

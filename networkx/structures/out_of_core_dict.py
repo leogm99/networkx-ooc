@@ -9,12 +9,15 @@ class OutOfCoreDict(MutableMapping):
     def __setitem__(self, key, value):
         self._wb.put(key, value)
         if self._wb.approximate_size() > 32 * 1024:
-            self._wb.write()
-            self._wb.clear()
+            self._flush_write_batch()
 
-    def __getitem__(self, key):
+    def _flush_write_batch(self):
         self._wb.write()
         self._wb.clear()
+        self._wb = self._inner.write_batch(sync=False)
+
+    def __getitem__(self, key):
+        self._flush_write_batch()
         data = self._inner.get(key)
         if data is None:
             raise KeyError(key)
@@ -31,8 +34,7 @@ class OutOfCoreDict(MutableMapping):
         self._wb = self._inner.write_batch(sync=False)
 
     def __len__(self):
-        self._wb.write()
-        self._wb.clear()
+        self._flush_write_batch()
         count = 0
         with self._inner.iterator(
                 include_key=False, include_value=False, fill_cache=False
@@ -45,8 +47,7 @@ class OutOfCoreDict(MutableMapping):
         yield from self._inner
 
     def __iter__(self):
-        self._wb.write()
-        self._wb.clear()
+        self._flush_write_batch()
         for k, _ in self.__inner_iter_items():
             yield k
 
@@ -54,9 +55,8 @@ class OutOfCoreDict(MutableMapping):
         self.__dealloc()
 
     def __delitem__(self, key) -> None:
-        self._wb.write()
-        self._wb.clear()
-        if not self._inner.get(key):
+        self._flush_write_batch()
+        if self._inner.get(key) is None:
             raise KeyError(key)
         self._inner.delete(key)
 
@@ -65,8 +65,7 @@ class OutOfCoreDict(MutableMapping):
         self._temp.cleanup()
 
     def prefix_iter(self, prefix):
-        self._wb.write()
-        self._wb.clear()
+        self._flush_write_batch()
         yield from self._inner.prefixed_db(prefix)
 
 
