@@ -1,7 +1,9 @@
 import pytest
 
 import networkx as nx
+from networkx import LazyGraph
 
+nx.Graph = nx.LazyGraph
 
 def validate_grid_path(r, c, s, t, p):
     assert isinstance(p, list)
@@ -26,6 +28,9 @@ class TestUnweightedPath:
         cls.grid = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
         cls.cycle = nx.cycle_graph(7)
         cls.directed_cycle = nx.cycle_graph(7, create_using=nx.DiGraph())
+        cls.lazyCycleGraph = LazyGraph()
+        for e in cls.cycle.edges:
+            cls.lazyCycleGraph.add_edge(*e)
 
     def test_bidirectional_shortest_path(self):
         assert nx.bidirectional_shortest_path(self.cycle, 0, 3) == [0, 1, 2, 3]
@@ -73,7 +78,7 @@ class TestUnweightedPath:
     def test_single_source_shortest_path_length(self):
         pl = nx.single_source_shortest_path_length
         lengths = {0: 0, 1: 1, 2: 2, 3: 3, 4: 3, 5: 2, 6: 1}
-        assert dict(pl(self.cycle, 0)) == lengths
+        assert dict(pl(self.lazyCycleGraph, 0)) == lengths
         lengths = {0: 0, 1: 1, 2: 2, 3: 3, 4: 4, 5: 5, 6: 6}
         assert dict(pl(self.directed_cycle, 0)) == lengths
 
@@ -92,13 +97,13 @@ class TestUnweightedPath:
     def test_single_target_shortest_path_length(self):
         pl = nx.single_target_shortest_path_length
         lengths = {0: 0, 1: 1, 2: 2, 3: 3, 4: 3, 5: 2, 6: 1}
-        assert dict(pl(self.cycle, 0)) == lengths
+        assert dict(pl(self.lazyCycleGraph, 0)) == lengths
         lengths = {0: 0, 1: 6, 2: 5, 3: 4, 4: 3, 5: 2, 6: 1}
         assert dict(pl(self.directed_cycle, 0)) == lengths
         # test missing targets
         target = 8
         with pytest.raises(nx.NodeNotFound, match=f"Target {target} is not in G"):
-            nx.single_target_shortest_path_length(self.cycle, target)
+            nx.single_target_shortest_path_length(self.lazyCycleGraph, target)
 
     def test_all_pairs_shortest_path(self):
         p = dict(nx.all_pairs_shortest_path(self.cycle))
@@ -107,7 +112,7 @@ class TestUnweightedPath:
         validate_grid_path(4, 4, 1, 12, p[1][12])
 
     def test_all_pairs_shortest_path_length(self):
-        l = dict(nx.all_pairs_shortest_path_length(self.cycle))
+        l = dict(nx.all_pairs_shortest_path_length(self.lazyCycleGraph))
         assert l[0] == {0: 0, 1: 1, 2: 2, 3: 3, 4: 3, 5: 2, 6: 1}
         l = dict(nx.all_pairs_shortest_path_length(self.grid))
         assert l[1][16] == 6
