@@ -13,7 +13,7 @@ BITMAP = "bitmap"
 
 class OutOfCoreSet(MutableSet):
     def __init__(self, initial_list = None):
-        self._mode = OUT_OF_CORE_DICT
+        self._mode = DUAL
         self._set = BitmapSet() if self._mode != OUT_OF_CORE_DICT else OutOfCoreDictSet()
         self._int_type = self._mode != OUT_OF_CORE_DICT
         

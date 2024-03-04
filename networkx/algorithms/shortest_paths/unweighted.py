@@ -81,9 +81,8 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
     """
     #seen = set(firstlevel)
     seen = OutOfCoreSet(firstlevel)
-
-    nextlevel = firstlevel
-    #nextlevel = OutOfCoreList(firstlevel)
+    #nextlevel = firstlevel
+    nextlevel = OutOfCoreList(firstlevel)
     level = 0
     n = len(adj)
     for v in nextlevel:
@@ -91,7 +90,7 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
     while nextlevel and cutoff > level:
         level += 1
         thislevel = nextlevel
-        nextlevel = []
+        nextlevel = OutOfCoreList() #[]
         for v in thislevel:
             for w in adj[v]:
                 if w not in seen:
