@@ -125,7 +125,8 @@ def betweenness_centrality(
         nodes = G
     else:
         nodes = seed.sample(list(G.nodes()), k)
-    for s in nodes:
+    for i, s in enumerate(nodes):
+        print(i)
         # single source shortest paths
         if weight is None:  # use BFS
             S, P, sigma, _ = _single_source_shortest_path_basic(G, s)
@@ -262,7 +263,8 @@ def _single_source_shortest_path_basic(G, s):
         S.append(v)
         Dv = D[v]
         sigmav = sigma[v]
-        for w in G[v]:
+        neighbors = G[v]
+        for w in neighbors:
             if w not in D:
                 Q.append(w)
                 D[w] = Dv + 1

@@ -12,6 +12,7 @@ def run_and_monitor_script(script_path, output_dir):
 
     process = subprocess.Popen(['python', script_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     process_pid = process.pid
+    print(process_pid)
 
     while process.poll() is None:
         memory_usage.append(psutil.Process(process_pid).memory_info().rss)

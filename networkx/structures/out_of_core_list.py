@@ -12,12 +12,14 @@ Ver como se usan las listas para ver como conviene implementarla, buscar en inte
 Esta implementacion de Lista out of core deberia usarse unicamente para algoritmos que solo realicen las operaciones de set, get,
 append, len e iter. Operaciones como insert o delete son muy costosas debido al uso de pickle y deberian evitarse.
 '''
+
+
 class OutOfCoreList(MutableSequence):
-    def __init__(self, initial_list = None):
+    def __init__(self, initial_list=None):
         self._out_of_core_dict = OutOfCorePickleDict()
         self._next_id = 0
 
-        if (initial_list != None):
+        if initial_list != None:
             for item in initial_list:
                 self.append(item)
 
@@ -25,15 +27,17 @@ class OutOfCoreList(MutableSequence):
         return self._next_id
 
     def __getitem__(self, index):
-        if index < 0 or index >= self._next_id:
+        if index < 0:
+            index = len(self) + index
+        if index >= self._next_id:
             raise IndexError("list index out of range")
         return self._out_of_core_dict[index]
-    
+
     def __setitem__(self, index, item):
         if index < 0 or index >= self._next_id:
             raise IndexError("list index out of range")
         self._out_of_core_dict[index] = item
-    
+
     def __delitem__(self, index):
         if index < 0 or index >= self._next_id:
             raise IndexError("list index out of range")
@@ -56,7 +60,7 @@ class OutOfCoreList(MutableSequence):
 
     def __str__(self):
         return str([self._out_of_core_dict[i] for i in range(self._next_id)])
-    
+
     def __iter__(self):
         for i in range(self._next_id):
             yield self._out_of_core_dict[i]

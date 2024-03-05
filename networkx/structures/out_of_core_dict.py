@@ -7,18 +7,26 @@ import plyvel
 
 class OutOfCoreDict(MutableMapping):
     def __setitem__(self, key, value):
-        self._wb.put(key, value)
-        if self._wb.approximate_size() > 32 * 1024:
+        # self._wb.put(key, value)
+        self._wb[key] = value
+        if len(self._wb) > 4000:
+        # if self._wb.approximate_size() > 32 * 1024:
             self._flush_write_batch()
 
     def _flush_write_batch(self):
-        self._wb.write()
+        if not self._wb:
+            return
+        with self._inner.write_batch(sync=False) as wb:
+            for k, v in self._wb.items():
+                wb.put(k, v)
         self._wb.clear()
-        self._wb = self._inner.write_batch(sync=False)
 
     def __getitem__(self, key):
-        self._flush_write_batch()
-        data = self._inner.get(key)
+        value = self._wb.get(key)
+        if value is not None:
+            return value
+        # self._flush_write_batch()
+        data = self._inner.get(key, fill_cache=False)
         if data is None:
             raise KeyError(key)
         return data
@@ -28,10 +36,11 @@ class OutOfCoreDict(MutableMapping):
         self._inner = plyvel.DB(
             f"{self._temp.name}",
             create_if_missing=True,
-            write_buffer_size=24*1024*1024,
-            compression='snappy'
+            paranoid_checks=False,
+            bloom_filter_bits=100,
         )
-        self._wb = self._inner.write_batch(sync=False)
+        # self._wb = self._inner.write_batch(sync=False)
+        self._wb = {}
 
     def __len__(self):
         self._flush_write_batch()
@@ -48,8 +57,8 @@ class OutOfCoreDict(MutableMapping):
 
     def __iter__(self):
         self._flush_write_batch()
-        for k, _ in self.__inner_iter_items():
-            yield k
+        with self._inner.iterator(include_value=False, fill_cache=True) as it:
+            yield from it
 
     def __del__(self):
         self.__dealloc()
@@ -64,9 +73,19 @@ class OutOfCoreDict(MutableMapping):
         self._inner.close()
         self._temp.cleanup()
 
-    def prefix_iter(self, prefix):
+    def prefix_iter(self, prefix, prefix_len=4):
         self._flush_write_batch()
-        yield from self._inner.prefixed_db(prefix)
+        with self._inner.raw_iterator(fill_cache=True) as it:
+            it.seek(prefix)
+            if not it.valid():
+                raise KeyError(prefix)
+            while it.valid():
+                k = it.key()
+                p = k[:prefix_len]
+                if p != prefix:
+                    break
+                yield k[prefix_len:]
+                it.next()
 
 
 class OutOfCorePickleDict(OutOfCoreDict):

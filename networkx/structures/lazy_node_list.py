@@ -3,6 +3,7 @@ import struct
 from collections.abc import MutableMapping
 
 from networkx.structures.out_of_core_dict import OutOfCoreDict
+from networkx.structures.lazy_node import LazyNode
 from typing import Hashable
 
 
@@ -13,12 +14,8 @@ class LazyNodeList(MutableMapping):
     def __getitem__(self, key):
         if not isinstance(key, Hashable):
             raise TypeError("Key must be hashable")
-        data = self._inner[LazyNodeList.__serialize_node(key)]
-        if data == b"":
-            data = {}
-            self._inner[LazyNodeList.__serialize_node(key)] = LazyNodeList.__serialize_node_attr(data)
-            return data
-        return LazyNodeList.__deserialize_node_attr(data)
+        _ = self._inner[LazyNodeList.__serialize_node(key)]
+        return LazyNode(key, self._inner)
 
     def __len__(self):
         return len(self._inner)
