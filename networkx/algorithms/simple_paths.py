@@ -4,6 +4,7 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import not_implemented_for, pairwise
+from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = [
     "all_simple_paths",
@@ -84,7 +85,7 @@ def is_simple_path(G, nodes):
         return False
 
     # If the list contains repeated nodes, then it's not a simple path
-    if len(set(nodes)) != len(nodes):
+    if len(OutOfCoreSet(nodes)) != len(nodes):
         return False
 
     # Test that each adjacent pair of nodes is adjacent.
