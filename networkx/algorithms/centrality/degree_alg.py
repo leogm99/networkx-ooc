@@ -51,7 +51,7 @@ def degree_centrality(G):
 
     s = 1.0 / (len(G) - 1.0)
     centrality = PrimitiveDict(PrimitiveType.INTEGER, PrimitiveType.FLOAT)
-    for n, d in G:
+    for n, d in G.degree():
         centrality[n] = d * s
     return centrality
 

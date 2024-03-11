@@ -153,16 +153,19 @@ def gnp_random_graph(n, p, seed=None, directed=False):
         G = nx.DiGraph()
     else:
         edges = itertools.combinations(range(n), 2)
-        G = nx.Graph()
+        G = nx.LazyGraph()
     G.add_nodes_from(range(n))
     if p <= 0:
         return G
     if p >= 1:
         return complete_graph(n, create_using=G)
-
+    cont = 0
     for e in edges:
         if seed.random() < p:
+            cont+=1
+            if cont%10000==0: print(cont)
             G.add_edge(*e)
+
     return G
 
 
