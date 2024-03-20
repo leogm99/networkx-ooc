@@ -60,3 +60,22 @@ class OutOfCoreList(MutableSequence):
     def __iter__(self):
         for i in range(self._next_id):
             yield self._out_of_core_dict[i]
+
+    def __add__(self, other):
+        if not isinstance(other, OutOfCoreList) and not isinstance(other, list):
+            raise TypeError("Unsupported operand type(s) for +: 'OutOfCoreList' and '{}'".format(type(other).__name__))
+
+        result = OutOfCoreList()
+        result.extend(self)
+        result.extend(other)
+        return result
+
+    def __eq__(self, other):
+        if not isinstance(other, OutOfCoreList) and not isinstance(other, list):
+            return False
+        if len(self) != len(other):
+            return False
+        for item1, item2 in zip(self, other):
+            if item1 != item2:
+                return False
+        return True
