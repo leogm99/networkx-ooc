@@ -5,9 +5,9 @@ import warnings
 
 import networkx as nx
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
-
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 
 __all__ = [
     "bidirectional_shortest_path",
@@ -362,7 +362,9 @@ def single_source_shortest_path(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = {source: 1}  # list of nodes to check at next level
-    paths = {source: [source]}  # paths dictionary  (paths to key from source)
+    paths = OutOfCoreDictOfLists()
+    paths[source] = [source]
+    #paths = {source: [source]}  # paths dictionary  (paths to key from source)
     return dict(_single_shortest_path(G.adj, nextlevel, paths, cutoff, join))
 
 
@@ -441,14 +443,16 @@ def single_target_shortest_path(G, target, cutoff=None):
         raise nx.NodeNotFound(f"Target {target} not in G")
 
     def join(p1, p2):
-        return p2 + p1
+        return p1 + p2
 
     # handle undirected graphs
     adj = G.pred if G.is_directed() else G.adj
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = {target: 1}  # list of nodes to check at next level
-    paths = {target: [target]}  # paths dictionary  (paths to key from source)
+    paths = OutOfCoreDictOfLists()
+    paths[target] = [target]
+    #paths = {target: [target]}  # paths dictionary  (paths to key from source)
     return dict(_single_shortest_path(adj, nextlevel, paths, cutoff, join))
 
 
@@ -545,7 +549,9 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
     level = 0  # the current level
     nextlevel = OutOfCoreList([source]) # list of nodes to check at next level
     seen = IOutOfCoreDict({source: level}) # level (number of hops) when seen in BFS
-    pred = {source: []}  # predecessor dictionary
+    #pred = {source: []}  # predecessor dictionary
+    pred = OutOfCoreDictOfLists()
+    pred[source] = []
     while nextlevel:
         level = level + 1
         thislevel = nextlevel
