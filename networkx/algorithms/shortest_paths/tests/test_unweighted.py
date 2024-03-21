@@ -118,12 +118,16 @@ class TestUnweightedPath:
         assert l[1][16] == 6
 
     def test_predecessor_path(self):
-        G = nx.path_graph(4)
-        assert nx.predecessor(G, 0) == {0: [], 1: [0], 2: [1], 3: [2]}
+        G = self._get_path_graph()
+        predecessor_paths = nx.predecessor(G, 0)
+        paths = {0: [], 1: [0], 2: [1], 3: [2]}
+        # assert nx.predecessor(G, 0) == {0: [], 1: [0], 2: [1], 3: [2]}
+        assert len(predecessor_paths) == len(paths)
+        assert all(predecessor_paths[u] == paths[u] for u in paths)
         assert nx.predecessor(G, 0, 3) == [2]
 
     def test_predecessor_cycle(self):
-        G = nx.cycle_graph(4)
+        G = self._get_path_graph()
         pred = nx.predecessor(G, 0)
         assert pred[0] == []
         assert pred[1] == [0]
@@ -131,12 +135,12 @@ class TestUnweightedPath:
         assert pred[3] == [0]
 
     def test_predecessor_cutoff(self):
-        G = nx.path_graph(4)
+        G = self._get_path_graph()
         p = nx.predecessor(G, 0, 3)
         assert 4 not in p
 
     def test_predecessor_target(self):
-        G = nx.path_graph(4)
+        G = self._get_path_graph()
         p = nx.predecessor(G, 0, 3)
         assert p == [2]
         p = nx.predecessor(G, 0, 3, cutoff=2)
@@ -152,3 +156,11 @@ class TestUnweightedPath:
         source = 8
         with pytest.raises(nx.NodeNotFound, match=f"Source {source} not in G"):
             nx.predecessor(self.cycle, source)
+
+    @staticmethod
+    def _get_path_graph():
+        G = nx.path_graph(4)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG

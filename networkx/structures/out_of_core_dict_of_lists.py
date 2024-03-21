@@ -64,3 +64,15 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
     def __str_from_bytes(b: bytes):
         return b.decode('utf-8')
 
+    def __eq__(self, other):
+        if not isinstance(other, OutOfCoreDictOfLists) and not isinstance(other, dict):
+            return False
+
+        if len(self) != len(other):
+            return False
+
+        for key, value in self.items():
+            if key not in other or self[key] != other[key]:
+                return False
+
+        return True
