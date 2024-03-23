@@ -76,3 +76,11 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
                 return False
 
         return True
+    
+    def append(self, key, value):
+        path = OutOfCoreDictOfLists.__str_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
+        with open(path, 'a+') as f:
+            f.seek(0, 2)
+            if f.tell() > 0:
+                f.write('\n')
+            f.write(str(value))
