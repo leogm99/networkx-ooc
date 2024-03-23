@@ -33,6 +33,34 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
                 print(f"File {path} not found")
         super().__del__()
 
+    def __eq__(self, other):
+        if not isinstance(other, OutOfCoreDictOfLists) and not isinstance(other, dict):
+            return False
+
+        if len(self) != len(other):
+            return False
+
+        for key, value in self.items():
+            if key not in other or self[key] != other[key]:
+                return False
+
+        return True
+    
+    def append(self, key, value):
+        path = self._get_list_path(key)
+        with open(path, 'a+') as f:
+            f.seek(0, 2)
+            if f.tell() > 0:
+                f.write('\n')
+            f.write(str(value))
+
+    def _get_new_path(self):
+        _, path = tempfile.mkstemp()
+        return path
+
+    def _get_list_path(self, key):
+        return OutOfCoreDictOfLists.__str_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
+
     @staticmethod
     def __key_to_bytes(k):
         return struct.pack('@l', k)
@@ -66,31 +94,3 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
     @staticmethod
     def __str_from_bytes(b: bytes):
         return b.decode('utf-8')
-
-    def __eq__(self, other):
-        if not isinstance(other, OutOfCoreDictOfLists) and not isinstance(other, dict):
-            return False
-
-        if len(self) != len(other):
-            return False
-
-        for key, value in self.items():
-            if key not in other or self[key] != other[key]:
-                return False
-
-        return True
-    
-    def append(self, key, value):
-        path = self._get_list_path(key)
-        with open(path, 'a+') as f:
-            f.seek(0, 2)
-            if f.tell() > 0:
-                f.write('\n')
-            f.write(str(value))
-
-    def _get_new_path(self):
-        _, path = tempfile.mkstemp()
-        return path
-
-    def _get_list_path(self, key):
-        return OutOfCoreDictOfLists.__str_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
