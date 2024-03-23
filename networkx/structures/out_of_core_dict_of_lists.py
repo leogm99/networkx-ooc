@@ -11,7 +11,11 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         super().__init__()
 
     def __setitem__(self, key, value):
-        super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(value))
+        if super().__contains__(key):
+            path = self._get_list_path(key)
+        else:
+            path = self._get_new_path()
+        super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(path, value))
 
     def __getitem__(self, key):
         return self.__list_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
@@ -38,9 +42,8 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         return struct.unpack('@l', b)[0]
 
     @staticmethod
-    def __list_to_bytes(l):
-        _, path = tempfile.mkstemp()
-        #TODO se podria armar una logica de append dependiendo que operacion se le hizo a la lista
+    def __list_to_bytes(path, l):
+        #_, path = tempfile.mkstemp()
         with open(path, 'w') as f:
             f.write('\n'.join(map(str, l)))
             #Esta ok guardar como str? O seria mejor por ej en bytes?
@@ -78,9 +81,16 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         return True
     
     def append(self, key, value):
-        path = OutOfCoreDictOfLists.__str_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
+        path = self._get_list_path(key)
         with open(path, 'a+') as f:
             f.seek(0, 2)
             if f.tell() > 0:
                 f.write('\n')
             f.write(str(value))
+
+    def _get_new_path(self):
+        _, path = tempfile.mkstemp()
+        return path
+
+    def _get_list_path(self, key):
+        return OutOfCoreDictOfLists.__str_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
