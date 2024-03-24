@@ -6,6 +6,7 @@ Bipartite Graph Algorithms
 import networkx as nx
 from networkx.algorithms.components import connected_components
 from networkx.exception import AmbiguousSolution
+from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = [
     "is_bipartite",
@@ -316,6 +317,6 @@ def degrees(B, nodes, weight=None):
     --------
     color, density
     """
-    bottom = set(nodes)
-    top = set(B) - bottom
+    bottom = OutOfCoreSet(nodes)
+    top = OutOfCoreSet(B) - bottom
     return (B.degree(top, weight), B.degree(bottom, weight))

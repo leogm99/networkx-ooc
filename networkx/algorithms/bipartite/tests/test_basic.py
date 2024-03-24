@@ -2,6 +2,9 @@ import pytest
 
 import networkx as nx
 from networkx.algorithms import bipartite
+from networkx import LazyGraph
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.out_of_core_list import OutOfCoreList
 
 
 class TestBipartiteBasic:
@@ -65,7 +68,7 @@ class TestBipartiteBasic:
         assert bipartite.is_bipartite_node_set(G, [1, 3, 20])
 
     def test_bipartite_density(self):
-        G = nx.path_graph(5)
+        G = self._get_ooc_graph()
         X, Y = bipartite.sets(G)
         density = len(list(G.edges())) / (len(X) * len(Y))
         assert bipartite.density(G, X) == density
@@ -74,18 +77,18 @@ class TestBipartiteBasic:
         assert bipartite.density(nx.Graph(), {}) == 0.0
 
     def test_bipartite_degrees(self):
-        G = nx.path_graph(5)
-        X = {1, 3}
-        Y = {0, 2, 4}
+        G = self._get_ooc_graph()
+        #X = {1, 3}
+        Y = OutOfCoreSet({0, 2, 4})
         u, d = bipartite.degrees(G, Y)
         assert dict(u) == {1: 2, 3: 2}
         assert dict(d) == {0: 1, 2: 2, 4: 1}
 
     def test_bipartite_weighted_degrees(self):
-        G = nx.path_graph(5)
+        G = self._get_ooc_graph()
         G.add_edge(0, 1, weight=0.1, other=0.2)
-        X = {1, 3}
-        Y = {0, 2, 4}
+        #X = {1, 3}
+        Y = OutOfCoreSet({0, 2, 4})
         u, d = bipartite.degrees(G, Y, weight="weight")
         assert dict(u) == {1: 1.1, 3: 2}
         assert dict(d) == {0: 0.1, 2: 2, 4: 1}
@@ -123,3 +126,11 @@ class TestBipartiteBasic:
         Y = [4, 2, 0]
         M = bipartite.biadjacency_matrix(G, X, Y, weight="weight")
         assert M[1, 2] == 2
+
+    @staticmethod
+    def _get_ooc_graph():
+        G = nx.path_graph(5)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG
