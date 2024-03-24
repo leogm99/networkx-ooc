@@ -39,8 +39,13 @@ class OutOfCoreList(MutableSequence):
         self._out_of_core_dict[index] = item
     
     def __delitem__(self, index):
-        if index < 0 or index >= self._next_id:
+        if index < 0:
+            index += self._next_id
+            if index < 0 or index >= self._next_id:
+                raise IndexError("list index out of range")
+        elif index >= self._next_id:
             raise IndexError("list index out of range")
+
         del self._out_of_core_dict[index]
         for i in range(index + 1, self._next_id):
             self._out_of_core_dict[i - 1] = self._out_of_core_dict[i]

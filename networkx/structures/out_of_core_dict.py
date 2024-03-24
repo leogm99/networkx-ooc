@@ -87,6 +87,9 @@ class IOutOfCoreDict(OutOfCoreDict):
         for k in super().__iter__():
             yield self.__from_bytes(k)
     
+    def __delitem__(self, index):
+        super().__delitem__(self.__to_bytes(index))
+    
     # @staticmethod
     # def __to_bytes(_any):
     #     return pickle.dumps(_any)
