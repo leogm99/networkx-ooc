@@ -33,6 +33,11 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
                 print(f"File {path} not found")
         super().__del__()
 
+    def __delitem__(self, index):
+        path = self._get_list_path(index)
+        os.remove(path)
+        super().__delitem__(self.__key_to_bytes(index))
+
     def __eq__(self, other):
         if not isinstance(other, OutOfCoreDictOfLists) and not isinstance(other, dict):
             return False
@@ -55,7 +60,8 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
             f.write(str(value))
 
     def _get_new_path(self):
-        _, path = tempfile.mkstemp()
+        fd, path = tempfile.mkstemp()
+        os.close(fd)
         return path
 
     def _get_list_path(self, key):

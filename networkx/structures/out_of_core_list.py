@@ -25,7 +25,11 @@ class OutOfCoreList(MutableSequence):
         return self._next_id
 
     def __getitem__(self, index):
-        if index < 0 or index >= self._next_id:
+        if index < 0:
+            index += self._next_id
+            if index < 0:
+                raise IndexError("list index out of range")
+        if index >= self._next_id:
             raise IndexError("list index out of range")
         return self._out_of_core_dict[index]
     
