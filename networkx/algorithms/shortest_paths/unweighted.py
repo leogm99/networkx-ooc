@@ -63,7 +63,7 @@ def single_source_shortest_path_length(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = [source]
-    return dict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
+    return IOutOfCoreDict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
 
 
 def _single_shortest_path_length(G, adj, firstlevel, cutoff):
