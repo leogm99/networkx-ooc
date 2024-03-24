@@ -365,7 +365,7 @@ def single_source_shortest_path(G, source, cutoff=None):
     paths = OutOfCoreDictOfLists()
     paths[source] = [source]
     #paths = {source: [source]}  # paths dictionary  (paths to key from source)
-    return dict(_single_shortest_path(G.adj, nextlevel, paths, cutoff, join))
+    return _single_shortest_path(G.adj, nextlevel, paths, cutoff, join)
 
 
 def _single_shortest_path(adj, firstlevel, paths, cutoff, join):
@@ -453,7 +453,7 @@ def single_target_shortest_path(G, target, cutoff=None):
     paths = OutOfCoreDictOfLists()
     paths[target] = [target]
     #paths = {target: [target]}  # paths dictionary  (paths to key from source)
-    return dict(_single_shortest_path(adj, nextlevel, paths, cutoff, join))
+    return _single_shortest_path(adj, nextlevel, paths, cutoff, join)
 
 
 @nx._dispatch
