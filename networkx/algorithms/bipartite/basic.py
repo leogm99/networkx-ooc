@@ -7,6 +7,8 @@ import networkx as nx
 from networkx.algorithms.components import connected_components
 from networkx.exception import AmbiguousSolution
 from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
 
 __all__ = [
     "is_bipartite",
@@ -63,13 +65,13 @@ def color(G):
     else:
         neighbors = G.neighbors
 
-    color = {}
+    color = IOutOfCoreDict()
     for n in G:  # handle disconnected graphs
         if n in color or len(G[n]) == 0:  # skip isolates
             continue
-        queue = [n]
+        queue = OutOfCoreList([n])
         color[n] = 1  # nodes seen with color (1 or 0)
-        while queue:
+        while len(queue) != 0:
             v = queue.pop()
             c = 1 - color[v]  # opposite color of node v
             for w in neighbors(v):
