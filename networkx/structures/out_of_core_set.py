@@ -13,7 +13,7 @@ BITMAP = "bitmap"
 
 class OutOfCoreSet(MutableSet):
     def __init__(self, initial_list = None):
-        self._mode = DUAL
+        self._mode = OUT_OF_CORE_DICT
         self._set = BitmapSet() if self._mode != OUT_OF_CORE_DICT else OutOfCoreDictSet()
         self._int_type = self._mode != OUT_OF_CORE_DICT
         
@@ -45,6 +45,17 @@ class OutOfCoreSet(MutableSet):
     def __iter__(self):
         for k in self._set:
             yield k
+
+    def issubset(self, other):
+        return all(element in other for element in self)
+
+    def update(self, *others):
+        for other in others:
+            self |= other
+
+    def __ior__(self, other):
+        self._set |= other._set
+        return self
 
 class OutOfCoreDictSet(MutableSet):
     def __init__(self, initial_list = None):

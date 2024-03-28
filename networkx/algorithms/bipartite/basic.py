@@ -140,7 +140,7 @@ def is_bipartite_node_set(G, nodes):
     For connected graphs the bipartite sets are unique.  This function handles
     disconnected graphs.
     """
-    S = set(nodes)
+    S = OutOfCoreSet(nodes)
 
     if len(S) < len(nodes):
         # this should maybe just return False?
@@ -214,15 +214,22 @@ def sets(G, top_nodes=None):
     else:
         is_connected = nx.is_connected
     if top_nodes is not None:
-        X = set(top_nodes)
-        Y = set(G) - X
+        X = OutOfCoreSet(top_nodes)
+        Y = OutOfCoreSet(G) - X
     else:
         if not is_connected(G):
             msg = "Disconnected graph: Ambiguous solution for bipartite sets."
             raise nx.AmbiguousSolution(msg)
         c = color(G)
-        X = {n for n, is_top in c.items() if is_top}
-        Y = {n for n, is_top in c.items() if not is_top}
+        X = OutOfCoreSet()
+        Y = OutOfCoreSet()
+        for n, is_top in c.items():
+            if is_top:
+                X.add(n)
+            else:
+                Y.add(n)
+        #X = {n for n, is_top in c.items() if is_top}
+        #Y = {n for n, is_top in c.items() if not is_top}
     return (X, Y)
 
 

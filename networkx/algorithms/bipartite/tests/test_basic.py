@@ -31,20 +31,20 @@ class TestBipartiteBasic:
         assert bipartite.is_bipartite(LazyG)
 
     def test_bipartite_sets(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         X, Y = bipartite.sets(G)
         assert X == {0, 2}
         assert Y == {1, 3}
 
     def test_bipartite_sets_directed(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         D = G.to_directed()
         X, Y = bipartite.sets(D)
         assert X == {0, 2}
         assert Y == {1, 3}
 
     def test_bipartite_sets_given_top_nodes(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         top_nodes = [0, 2]
         X, Y = bipartite.sets(G, top_nodes)
         assert X == {0, 2}
@@ -52,12 +52,12 @@ class TestBipartiteBasic:
 
     def test_bipartite_sets_disconnected(self):
         with pytest.raises(nx.AmbiguousSolution):
-            G = nx.path_graph(4)
+            G = self._get_ooc_path_graph(4)
             G.add_edges_from([(5, 6), (6, 7)])
             X, Y = bipartite.sets(G)
 
     def test_is_bipartite_node_set(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
 
         with pytest.raises(nx.AmbiguousSolution):
             bipartite.is_bipartite_node_set(G, [1, 1, 2, 3])
