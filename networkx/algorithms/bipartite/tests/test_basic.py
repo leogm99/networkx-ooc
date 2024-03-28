@@ -9,22 +9,26 @@ from networkx.structures.out_of_core_list import OutOfCoreList
 
 class TestBipartiteBasic:
     def test_is_bipartite(self):
-        assert bipartite.is_bipartite(nx.path_graph(4))
+        assert bipartite.is_bipartite(self._get_ooc_path_graph(4))
         assert bipartite.is_bipartite(nx.DiGraph([(1, 0)]))
-        assert not bipartite.is_bipartite(nx.complete_graph(3))
+        assert not bipartite.is_bipartite(self._get_ooc_complete_graph(3))
 
     def test_bipartite_color(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         c = bipartite.color(G)
         assert c == {0: 1, 1: 0, 2: 1, 3: 0}
 
     def test_not_bipartite_color(self):
         with pytest.raises(nx.NetworkXError):
-            c = bipartite.color(nx.complete_graph(4))
+            c = bipartite.color(self._get_ooc_complete_graph(4))
 
     def test_bipartite_directed(self):
         G = bipartite.random_graph(10, 10, 0.1, directed=True)
-        assert bipartite.is_bipartite(G)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+
+        assert bipartite.is_bipartite(LazyG)
 
     def test_bipartite_sets(self):
         G = nx.path_graph(4)
@@ -68,7 +72,7 @@ class TestBipartiteBasic:
         assert bipartite.is_bipartite_node_set(G, [1, 3, 20])
 
     def test_bipartite_density(self):
-        G = self._get_ooc_graph()
+        G = self._get_ooc_path_graph(5)
         X, Y = bipartite.sets(G)
         density = len(list(G.edges())) / (len(X) * len(Y))
         assert bipartite.density(G, X) == density
@@ -77,7 +81,7 @@ class TestBipartiteBasic:
         assert bipartite.density(nx.Graph(), {}) == 0.0
 
     def test_bipartite_degrees(self):
-        G = self._get_ooc_graph()
+        G = self._get_ooc_path_graph(5)
         #X = {1, 3}
         Y = OutOfCoreSet({0, 2, 4})
         u, d = bipartite.degrees(G, Y)
@@ -85,7 +89,7 @@ class TestBipartiteBasic:
         assert dict(d) == {0: 1, 2: 2, 4: 1}
 
     def test_bipartite_weighted_degrees(self):
-        G = self._get_ooc_graph()
+        G = self._get_ooc_path_graph(5)
         G.add_edge(0, 1, weight=0.1, other=0.2)
         #X = {1, 3}
         Y = OutOfCoreSet({0, 2, 4})
@@ -128,8 +132,16 @@ class TestBipartiteBasic:
         assert M[1, 2] == 2
 
     @staticmethod
-    def _get_ooc_graph():
-        G = nx.path_graph(5)
+    def _get_ooc_path_graph(nodes: int):
+        G = nx.path_graph(nodes)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG
+
+    @staticmethod
+    def _get_ooc_complete_graph(nodes: int):
+        G = nx.complete_graph(nodes)
         LazyG = LazyGraph()
         for e in G.edges:
             LazyG.add_edge(*e)

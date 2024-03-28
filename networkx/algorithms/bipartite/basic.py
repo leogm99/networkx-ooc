@@ -82,7 +82,9 @@ def color(G):
                     color[w] = c
                     queue.append(w)
     # color isolates with 0
-    color.update(dict.fromkeys(nx.isolates(G), 0))
+    #color.update(dict.fromkeys(nx.isolates(G), 0))
+    for node in nx.isolates(G):
+        color[node] = 0
     return color
 
 
