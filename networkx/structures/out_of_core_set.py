@@ -13,7 +13,7 @@ BITMAP = "bitmap"
 
 class OutOfCoreSet(MutableSet):
     def __init__(self, initial_list = None):
-        self._mode = OUT_OF_CORE_DICT
+        self._mode = DUAL
         self._set = BitmapSet() if self._mode != OUT_OF_CORE_DICT else OutOfCoreDictSet()
         self._int_type = self._mode != OUT_OF_CORE_DICT
         
@@ -82,21 +82,21 @@ class OutOfCoreDictSet(MutableSet):
         for k in self._out_of_core_dict:
             yield self.__from_bytes(k)
     
-    # @staticmethod
-    # def __to_bytes(_any):
-    #     return pickle.dumps(_any)
+    @staticmethod
+    def __to_bytes(_any):
+        return pickle.dumps(_any)
 
-    # @staticmethod
-    # def __from_bytes(any_bytes):
-    #     return pickle.loads(any_bytes)
+    @staticmethod
+    def __from_bytes(any_bytes):
+        return pickle.loads(any_bytes)
     
-    @staticmethod
-    def __to_bytes(i: int):
-        return struct.pack('@l', i)
+    # @staticmethod
+    # def __to_bytes(i: int):
+    #     return struct.pack('@l', i)
 
-    @staticmethod
-    def __from_bytes(b: bytes):
-        return struct.unpack('@l', b)[0]
+    # @staticmethod
+    # def __from_bytes(b: bytes):
+    #     return struct.unpack('@l', b)[0]
 
 class BitmapSet(MutableSet):
     def __init__(self, initial_list = None):
