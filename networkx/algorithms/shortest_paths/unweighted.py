@@ -92,6 +92,7 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
         thislevel = nextlevel
         nextlevel = OutOfCoreList() #[]
         for v in thislevel:
+            if v not in adj: continue
             for w in adj[v]:
                 if w not in seen:
                     seen.add(w)

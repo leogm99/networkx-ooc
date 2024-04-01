@@ -1,5 +1,9 @@
 import networkx as nx
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["degree_centrality", "betweenness_centrality", "closeness_centrality"]
 
 
@@ -69,12 +73,20 @@ def degree_centrality(G, nodes):
         of Social Network Analysis. Sage Publications.
         https://dx.doi.org/10.4135/9781446294413.n28
     """
-    top = set(nodes)
-    bottom = set(G) - top
+    top = OutOfCoreSet(nodes)
+    bottom = OutOfCoreSet(G) - top
+
     s = 1.0 / len(bottom)
-    centrality = {n: d * s for n, d in G.degree(top)}
+    # centrality = {n: d * s for n, d in G.degree(top)}
+    centrality = IntFloatDict()
+    for node, degree in G.degree(top):
+        centrality[node] = degree * s
+
     s = 1.0 / len(top)
-    centrality.update({n: d * s for n, d in G.degree(bottom)})
+    # centrality.update({n: d * s for n, d in G.degree(bottom)})
+    for node, degree in G.degree(bottom):
+        centrality[node] = degree * s
+
     return centrality
 
 
@@ -158,8 +170,8 @@ def betweenness_centrality(G, nodes):
         of Social Network Analysis. Sage Publications.
         https://dx.doi.org/10.4135/9781446294413.n28
     """
-    top = set(nodes)
-    bottom = set(G) - top
+    top = OutOfCoreSet(nodes)
+    bottom = OutOfCoreSet(G) - top
     n = len(top)
     m = len(bottom)
     s, t = divmod(n - 1, m)
@@ -261,14 +273,14 @@ def closeness_centrality(G, nodes, normalized=True):
         of Social Network Analysis. Sage Publications.
         https://dx.doi.org/10.4135/9781446294413.n28
     """
-    closeness = {}
+    closeness = IntFloatDict()
     path_length = nx.single_source_shortest_path_length
-    top = set(nodes)
-    bottom = set(G) - top
+    top = OutOfCoreSet(nodes)
+    bottom = OutOfCoreSet(G) - top
     n = len(top)
     m = len(bottom)
     for node in top:
-        sp = dict(path_length(G, node))
+        sp = path_length(G, node)
         totsp = sum(sp.values())
         if totsp > 0.0 and len(G) > 1:
             closeness[node] = (m + 2 * (n - 1)) / totsp
@@ -278,7 +290,7 @@ def closeness_centrality(G, nodes, normalized=True):
         else:
             closeness[node] = 0.0
     for node in bottom:
-        sp = dict(path_length(G, node))
+        sp = path_length(G, node)
         totsp = sum(sp.values())
         if totsp > 0.0 and len(G) > 1:
             closeness[node] = (n + 2 * (m - 1)) / totsp
