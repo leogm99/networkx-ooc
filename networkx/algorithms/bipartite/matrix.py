@@ -8,6 +8,10 @@ import itertools
 import networkx as nx
 from networkx.convert_matrix import _generate_weighted_edges
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = ["biadjacency_matrix", "from_biadjacency_matrix"]
 
 
@@ -80,29 +84,39 @@ def biadjacency_matrix(
     nlen = len(row_order)
     if nlen == 0:
         raise nx.NetworkXError("row_order is empty list")
-    if len(row_order) != len(set(row_order)):
+    if len(row_order) != len(OutOfCoreSet(row_order)):
         msg = "Ambiguous ordering: `row_order` contained duplicates."
         raise nx.NetworkXError(msg)
     if column_order is None:
-        column_order = list(set(G) - set(row_order))
+        column_order = OutOfCoreList(OutOfCoreSet(G) - OutOfCoreSet(row_order))
     mlen = len(column_order)
-    if len(column_order) != len(set(column_order)):
+    if len(column_order) != len(OutOfCoreSet(column_order)):
         msg = "Ambiguous ordering: `column_order` contained duplicates."
         raise nx.NetworkXError(msg)
 
-    row_index = dict(zip(row_order, itertools.count()))
-    col_index = dict(zip(column_order, itertools.count()))
+    row_index = IOutOfCoreDict(zip(row_order, itertools.count()))
+    col_index = IOutOfCoreDict(zip(column_order, itertools.count()))
 
     if G.number_of_edges() == 0:
-        row, col, data = [], [], []
+        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList()
     else:
-        row, col, data = zip(
-            *(
-                (row_index[u], col_index[v], d.get(weight, 1))
-                for u, v, d in G.edges(row_order, data=True)
-                if u in row_index and v in col_index
-            )
-        )
+        # row, col, data = zip(
+        #     *(
+        #         (row_index[u], col_index[v], d.get(weight, 1))
+        #         for u, v, d in G.edges(row_order, data=True)
+        #         if u in row_index and v in col_index
+        #     )
+        # )
+        row = OutOfCoreList()
+        col = OutOfCoreList()
+        data = OutOfCoreList()
+
+        for u, v, d in G.edges(row_order, data=True):
+            if u in row_index and v in col_index:
+                row.append(row_index[u])
+                col.append(col_index[v])
+                data.append(d.get(weight, 1))
+        
     A = sp.sparse.coo_array((data, (row, col)), shape=(nlen, mlen), dtype=dtype)
     try:
         return A.asformat(format)
