@@ -10,7 +10,6 @@ class OutOfCoreDict(MutableMapping):
         # self._wb.put(key, value)
         self._wb[key] = value
         if len(self._wb) > 4000:
-        # if self._wb.approximate_size() > 32 * 1024:
             self._flush_write_batch()
 
     def _flush_write_batch(self):
@@ -25,7 +24,6 @@ class OutOfCoreDict(MutableMapping):
         value = self._wb.get(key)
         if value is not None:
             return value
-        # self._flush_write_batch()
         data = self._inner.get(key, fill_cache=False)
         if data is None:
             raise KeyError(key)
@@ -36,10 +34,7 @@ class OutOfCoreDict(MutableMapping):
         self._inner = plyvel.DB(
             f"{self._temp.name}",
             create_if_missing=True,
-            paranoid_checks=False,
-            bloom_filter_bits=100,
         )
-        # self._wb = self._inner.write_batch(sync=False)
         self._wb = {}
 
     def __len__(self):
@@ -57,7 +52,7 @@ class OutOfCoreDict(MutableMapping):
 
     def __iter__(self):
         self._flush_write_batch()
-        with self._inner.iterator(include_value=False, fill_cache=True) as it:
+        with self._inner.iterator(include_value=False, fill_cache=False) as it:
             yield from it
 
     def __del__(self):
@@ -73,23 +68,13 @@ class OutOfCoreDict(MutableMapping):
         self._inner.close()
         self._temp.cleanup()
 
-    def prefix_iter(self, prefix, prefix_len=4):
+    def prefix_iter(self, prefix):
         self._flush_write_batch()
-        with self._inner.raw_iterator(fill_cache=True) as it:
-            it.seek(prefix)
-            if not it.valid():
-                raise KeyError(prefix)
-            while it.valid():
-                k = it.key()
-                p = k[:prefix_len]
-                if p != prefix:
-                    break
-                yield k[prefix_len:]
-                it.next()
+        yield from self._inner.prefixed_db(prefix).iterator(fill_cache=False, include_value=False)
 
 
 class OutOfCorePickleDict(OutOfCoreDict):
-    def __init__(self, initial_values = None) -> None:
+    def __init__(self, initial_values=None) -> None:
         super().__init__()
 
         if (initial_values != None):
@@ -100,11 +85,11 @@ class OutOfCorePickleDict(OutOfCoreDict):
 
     def __getitem__(self, key):
         return self.__from_bytes(super().__getitem__(self.__to_bytes(key)))
-    
+
     def __iter__(self):
         for k in super().__iter__():
             yield self.__from_bytes(k)
-    
+
     @staticmethod
     def __to_bytes(_any):
         return pickle.dumps(_any)

@@ -4,6 +4,8 @@ from heapq import heappop, heappush
 from itertools import count
 
 import networkx as nx
+from networkx.structures.primitive_dicts import IntFloatDict, IntDict
+from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import py_random_state
 from networkx.utils.decorators import not_implemented_for
@@ -120,13 +122,15 @@ def betweenness_centrality(
        Sociometry 40: 35–41, 1977
        https://doi.org/10.2307/3033543
     """
-    betweenness = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
+    # betweenness = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
+    betweenness = IntFloatDict()
+    for v in G:
+        betweenness[v] = 0.0
     if k is None:
         nodes = G
     else:
         nodes = seed.sample(list(G.nodes()), k)
-    for i, s in enumerate(nodes):
-        print(i)
+    for s in nodes:
         # single source shortest paths
         if weight is None:  # use BFS
             S, P, sigma, _ = _single_source_shortest_path_basic(G, s)
@@ -249,15 +253,18 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
 
 
 def _single_source_shortest_path_basic(G, s):
-    S = []
+    S = OutOfCoreDeque()
     P = {}
+    # sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
+    sigma = IntFloatDict()
     for v in G:
         P[v] = []
-    sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
-    D = {}
+        sigma[v] = 0.0
+    D = IntDict()
     sigma[s] = 1.0
     D[s] = 0
-    Q = deque([s])
+    Q = OutOfCoreDeque()
+    Q.append(s)
     while Q:  # use BFS to find shortest paths
         v = Q.popleft()
         S.append(v)
@@ -311,7 +318,10 @@ def _single_source_dijkstra_path_basic(G, s, weight):
 
 
 def _accumulate_basic(betweenness, S, P, sigma, s):
-    delta = dict.fromkeys(S, 0)
+    delta = IntFloatDict()
+    for x in S:
+        delta[x] = 0
+    # delta = dict.fromkeys(S, 0)
     while S:
         w = S.pop()
         coeff = (1 + delta[w]) / sigma[w]
