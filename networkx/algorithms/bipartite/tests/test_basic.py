@@ -2,42 +2,49 @@ import pytest
 
 import networkx as nx
 from networkx.algorithms import bipartite
+from networkx import LazyGraph
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.out_of_core_list import OutOfCoreList
 
 
 class TestBipartiteBasic:
     def test_is_bipartite(self):
-        assert bipartite.is_bipartite(nx.path_graph(4))
+        assert bipartite.is_bipartite(self._get_ooc_path_graph(4))
         assert bipartite.is_bipartite(nx.DiGraph([(1, 0)]))
-        assert not bipartite.is_bipartite(nx.complete_graph(3))
+        assert not bipartite.is_bipartite(self._get_ooc_complete_graph(3))
 
     def test_bipartite_color(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         c = bipartite.color(G)
         assert c == {0: 1, 1: 0, 2: 1, 3: 0}
 
     def test_not_bipartite_color(self):
         with pytest.raises(nx.NetworkXError):
-            c = bipartite.color(nx.complete_graph(4))
+            c = bipartite.color(self._get_ooc_complete_graph(4))
 
     def test_bipartite_directed(self):
         G = bipartite.random_graph(10, 10, 0.1, directed=True)
-        assert bipartite.is_bipartite(G)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+
+        assert bipartite.is_bipartite(LazyG)
 
     def test_bipartite_sets(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         X, Y = bipartite.sets(G)
         assert X == {0, 2}
         assert Y == {1, 3}
 
     def test_bipartite_sets_directed(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         D = G.to_directed()
         X, Y = bipartite.sets(D)
         assert X == {0, 2}
         assert Y == {1, 3}
 
     def test_bipartite_sets_given_top_nodes(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
         top_nodes = [0, 2]
         X, Y = bipartite.sets(G, top_nodes)
         assert X == {0, 2}
@@ -45,12 +52,12 @@ class TestBipartiteBasic:
 
     def test_bipartite_sets_disconnected(self):
         with pytest.raises(nx.AmbiguousSolution):
-            G = nx.path_graph(4)
+            G = self._get_ooc_path_graph(4)
             G.add_edges_from([(5, 6), (6, 7)])
             X, Y = bipartite.sets(G)
 
     def test_is_bipartite_node_set(self):
-        G = nx.path_graph(4)
+        G = self._get_ooc_path_graph(4)
 
         with pytest.raises(nx.AmbiguousSolution):
             bipartite.is_bipartite_node_set(G, [1, 1, 2, 3])
@@ -65,7 +72,7 @@ class TestBipartiteBasic:
         assert bipartite.is_bipartite_node_set(G, [1, 3, 20])
 
     def test_bipartite_density(self):
-        G = nx.path_graph(5)
+        G = self._get_ooc_path_graph(5)
         X, Y = bipartite.sets(G)
         density = len(list(G.edges())) / (len(X) * len(Y))
         assert bipartite.density(G, X) == density
@@ -74,18 +81,18 @@ class TestBipartiteBasic:
         assert bipartite.density(nx.Graph(), {}) == 0.0
 
     def test_bipartite_degrees(self):
-        G = nx.path_graph(5)
-        X = {1, 3}
-        Y = {0, 2, 4}
+        G = self._get_ooc_path_graph(5)
+        #X = {1, 3}
+        Y = OutOfCoreSet({0, 2, 4})
         u, d = bipartite.degrees(G, Y)
         assert dict(u) == {1: 2, 3: 2}
         assert dict(d) == {0: 1, 2: 2, 4: 1}
 
     def test_bipartite_weighted_degrees(self):
-        G = nx.path_graph(5)
+        G = self._get_ooc_path_graph(5)
         G.add_edge(0, 1, weight=0.1, other=0.2)
-        X = {1, 3}
-        Y = {0, 2, 4}
+        #X = {1, 3}
+        Y = OutOfCoreSet({0, 2, 4})
         u, d = bipartite.degrees(G, Y, weight="weight")
         assert dict(u) == {1: 1.1, 3: 2}
         assert dict(d) == {0: 0.1, 2: 2, 4: 1}
@@ -123,3 +130,19 @@ class TestBipartiteBasic:
         Y = [4, 2, 0]
         M = bipartite.biadjacency_matrix(G, X, Y, weight="weight")
         assert M[1, 2] == 2
+
+    @staticmethod
+    def _get_ooc_path_graph(nodes: int):
+        G = nx.path_graph(nodes)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG
+
+    @staticmethod
+    def _get_ooc_complete_graph(nodes: int):
+        G = nx.complete_graph(nodes)
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG

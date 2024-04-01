@@ -1,4 +1,5 @@
 import pickle
+import struct
 import tempfile
 from collections.abc import MutableMapping
 
@@ -7,18 +8,24 @@ import plyvel
 
 class OutOfCoreDict(MutableMapping):
     def __setitem__(self, key, value):
-        self._wb.put(key, value)
-        if self._wb.approximate_size() > 32 * 1024:
+        # self._wb.put(key, value)
+        self._wb[key] = value
+        if len(self._wb) > 4000:
             self._flush_write_batch()
 
     def _flush_write_batch(self):
-        self._wb.write()
+        if not self._wb:
+            return
+        with self._inner.write_batch(sync=False) as wb:
+            for k, v in self._wb.items():
+                wb.put(k, v)
         self._wb.clear()
-        self._wb = self._inner.write_batch(sync=False)
 
     def __getitem__(self, key):
-        self._flush_write_batch()
-        data = self._inner.get(key)
+        value = self._wb.get(key)
+        if value is not None:
+            return value
+        data = self._inner.get(key, fill_cache=False)
         if data is None:
             raise KeyError(key)
         return data
@@ -28,10 +35,8 @@ class OutOfCoreDict(MutableMapping):
         self._inner = plyvel.DB(
             f"{self._temp.name}",
             create_if_missing=True,
-            write_buffer_size=24*1024*1024,
-            compression='snappy'
         )
-        self._wb = self._inner.write_batch(sync=False)
+        self._wb = {}
 
     def __len__(self):
         self._flush_write_batch()
@@ -48,8 +53,8 @@ class OutOfCoreDict(MutableMapping):
 
     def __iter__(self):
         self._flush_write_batch()
-        for k, _ in self.__inner_iter_items():
-            yield k
+        with self._inner.iterator(include_value=False, fill_cache=False) as it:
+            yield from it
 
     def __del__(self):
         self.__dealloc()
@@ -66,10 +71,10 @@ class OutOfCoreDict(MutableMapping):
 
     def prefix_iter(self, prefix):
         self._flush_write_batch()
-        yield from self._inner.prefixed_db(prefix)
+        yield from self._inner.prefixed_db(prefix).iterator(fill_cache=False, include_value=False)
 
 
-class OutOfCorePickleDict(OutOfCoreDict):
+class IOutOfCoreDict(OutOfCoreDict):
     def __init__(self, initial_values = None) -> None:
         super().__init__()
 
@@ -85,11 +90,23 @@ class OutOfCorePickleDict(OutOfCoreDict):
     def __iter__(self):
         for k in super().__iter__():
             yield self.__from_bytes(k)
-    
-    @staticmethod
-    def __to_bytes(_any):
-        return pickle.dumps(_any)
+
+
+    def __delitem__(self, index):
+        super().__delitem__(self.__to_bytes(index))
+
+    # @staticmethod
+    # def __to_bytes(_any):
+    #     return pickle.dumps(_any)
+
+    # @staticmethod
+    # def __from_bytes(any_bytes):
+    #     return pickle.loads(any_bytes)
 
     @staticmethod
-    def __from_bytes(any_bytes):
-        return pickle.loads(any_bytes)
+    def __to_bytes(i: int):
+        return struct.pack('@l', i)
+
+    @staticmethod
+    def __from_bytes(b: bytes):
+        return struct.unpack('@l', b)[0]

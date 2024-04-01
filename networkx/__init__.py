@@ -47,3 +47,6 @@ from networkx.linalg import *
 
 from networkx import drawing
 from networkx.drawing import *
+
+from networkx import structures
+from networkx.structures.primitive_dicts import *

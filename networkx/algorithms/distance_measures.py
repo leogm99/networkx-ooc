@@ -3,7 +3,7 @@
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_dict import OutOfCorePickleDict
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
 
 __all__ = [
     "eccentricity",
@@ -297,7 +297,7 @@ def eccentricity(G, v=None, sp=None, weight=None):
     #    else:                      # assume v is a container of nodes
     #        nodes=v
     order = G.order()
-    e = OutOfCorePickleDict()
+    e = IOutOfCoreDict()
     for n in G.nbunch_iter(v):
         if sp is None:
             length = nx.shortest_path_length(G, source=n, weight=weight)

@@ -29,15 +29,16 @@ class PrimitiveDict(OutOfCoreDict):
         return self.__deserialize_value(super().__getitem__(self.__serialize_key(key)))
 
     def __iter__(self):
-        for k in super().__iter__():
-            yield self.__deserialize_key(k)
+        yield from map(self.__deserialize_key, super().__iter__())
 
     def __delitem__(self, key) -> None:
         super().__delitem__(self.__serialize_key(key))
 
+    def __contains__(self, key):
+        return super().__contains__(key)
+
     def prefix_iter(self, prefix):
-        for k in super().prefix_iter(self.__serialize_key(prefix)):
-            yield self.__deserialize_key(k)
+        yield from map(self.__deserialize_key, super().prefix_iter(self.__serialize_key(prefix)))
 
     def __serialize_key(self, key):
         return struct.pack(self._key_format, key)

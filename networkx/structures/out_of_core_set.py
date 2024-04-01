@@ -3,6 +3,7 @@ from pyroaring import BitMap
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 
 import pickle
+import struct
 
 __all__ = ["OutOfCoreSet", "OutOfCoreDictSet", "BitmapSet"]
 
@@ -45,6 +46,17 @@ class OutOfCoreSet(MutableSet):
         for k in self._set:
             yield k
 
+    def issubset(self, other):
+        return all(element in other for element in self)
+
+    def update(self, *others):
+        for other in others:
+            self |= other
+
+    def __ior__(self, other):
+        self._set |= other._set
+        return self
+
 class OutOfCoreDictSet(MutableSet):
     def __init__(self, initial_list = None):
         self._out_of_core_dict = OutOfCoreDict()
@@ -77,6 +89,14 @@ class OutOfCoreDictSet(MutableSet):
     @staticmethod
     def __from_bytes(any_bytes):
         return pickle.loads(any_bytes)
+    
+    # @staticmethod
+    # def __to_bytes(i: int):
+    #     return struct.pack('@l', i)
+
+    # @staticmethod
+    # def __from_bytes(b: bytes):
+    #     return struct.unpack('@l', b)[0]
 
 class BitmapSet(MutableSet):
     def __init__(self, initial_list = None):

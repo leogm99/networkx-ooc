@@ -82,4 +82,4 @@ class LazyGraph(Graph):
                 if len(attr) != 0:
                     self.add_edge(u, v, **attr)
                 else:
-                    self.add_edge(int(u), int(v))
+                    self.add_edge(u, v)

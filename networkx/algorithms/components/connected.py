@@ -2,6 +2,9 @@
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
 
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 from ...utils import arbitrary_element
 
 __all__ = [
@@ -60,7 +63,7 @@ def connected_components(G):
     For undirected graphs only.
 
     """
-    seen = set()
+    seen = OutOfCoreSet()
     for v in G:
         if v not in seen:
             c = _plain_bfs(G, v)
@@ -193,11 +196,11 @@ def _plain_bfs(G, source):
     """A fast BFS node generator"""
     adj = G._adj
     n = len(adj)
-    seen = {source}
-    nextlevel = [source]
+    seen = OutOfCoreSet({source})
+    nextlevel = OutOfCoreList([source])
     while nextlevel:
         thislevel = nextlevel
-        nextlevel = []
+        nextlevel = OutOfCoreList()
         for v in thislevel:
             for w in adj[v]:
                 if w not in seen:

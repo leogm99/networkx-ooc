@@ -2,6 +2,7 @@ import pytest
 
 import networkx as nx
 
+nx.Graph = nx.LazyGraph
 
 def weighted_G():
     G = nx.Graph()
