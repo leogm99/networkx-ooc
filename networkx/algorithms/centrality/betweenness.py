@@ -4,6 +4,8 @@ from heapq import heappop, heappush
 from itertools import count
 
 import networkx as nx
+from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+from networkx.structures.out_of_core_dict import OutOfCoreDict
 from networkx.structures.primitive_dicts import IntFloatDict, IntDict
 from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.shortest_paths.weighted import _weight_function
@@ -254,7 +256,7 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
 
 def _single_source_shortest_path_basic(G, s):
     S = OutOfCoreDeque()
-    P = {}
+    P = OutOfCoreDictOfLists()
     # sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
     sigma = IntFloatDict()
     for v in G:
@@ -277,7 +279,7 @@ def _single_source_shortest_path_basic(G, s):
                 D[w] = Dv + 1
             if D[w] == Dv + 1:  # this is a shortest path, count paths
                 sigma[w] += sigmav
-                P[w].append(v)  # predecessors
+                P.append(w, v)  # predecessors
     return S, P, sigma, D
 
 

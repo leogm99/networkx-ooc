@@ -6,6 +6,9 @@ Bipartite Graph Algorithms
 import networkx as nx
 from networkx.algorithms.components import connected_components
 from networkx.exception import AmbiguousSolution
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
 
 __all__ = [
     "is_bipartite",
@@ -62,13 +65,13 @@ def color(G):
     else:
         neighbors = G.neighbors
 
-    color = {}
+    color = IOutOfCoreDict()
     for n in G:  # handle disconnected graphs
         if n in color or len(G[n]) == 0:  # skip isolates
             continue
-        queue = [n]
+        queue = OutOfCoreList([n])
         color[n] = 1  # nodes seen with color (1 or 0)
-        while queue:
+        while len(queue) != 0:
             v = queue.pop()
             c = 1 - color[v]  # opposite color of node v
             for w in neighbors(v):
@@ -79,7 +82,9 @@ def color(G):
                     color[w] = c
                     queue.append(w)
     # color isolates with 0
-    color.update(dict.fromkeys(nx.isolates(G), 0))
+    #color.update(dict.fromkeys(nx.isolates(G), 0))
+    for node in nx.isolates(G):
+        color[node] = 0
     return color
 
 
@@ -135,7 +140,7 @@ def is_bipartite_node_set(G, nodes):
     For connected graphs the bipartite sets are unique.  This function handles
     disconnected graphs.
     """
-    S = set(nodes)
+    S = OutOfCoreSet(nodes)
 
     if len(S) < len(nodes):
         # this should maybe just return False?
@@ -209,15 +214,22 @@ def sets(G, top_nodes=None):
     else:
         is_connected = nx.is_connected
     if top_nodes is not None:
-        X = set(top_nodes)
-        Y = set(G) - X
+        X = OutOfCoreSet(top_nodes)
+        Y = OutOfCoreSet(G) - X
     else:
         if not is_connected(G):
             msg = "Disconnected graph: Ambiguous solution for bipartite sets."
             raise nx.AmbiguousSolution(msg)
         c = color(G)
-        X = {n for n, is_top in c.items() if is_top}
-        Y = {n for n, is_top in c.items() if not is_top}
+        X = OutOfCoreSet()
+        Y = OutOfCoreSet()
+        for n, is_top in c.items():
+            if is_top:
+                X.add(n)
+            else:
+                Y.add(n)
+        #X = {n for n, is_top in c.items() if is_top}
+        #Y = {n for n, is_top in c.items() if not is_top}
     return (X, Y)
 
 
@@ -316,6 +328,6 @@ def degrees(B, nodes, weight=None):
     --------
     color, density
     """
-    bottom = set(nodes)
-    top = set(B) - bottom
+    bottom = OutOfCoreSet(nodes)
+    top = OutOfCoreSet(B) - bottom
     return (B.degree(top, weight), B.degree(bottom, weight))

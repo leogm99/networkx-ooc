@@ -6,6 +6,9 @@ import itertools
 
 import networkx as nx
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = [
     "clustering",
     "average_clustering",
@@ -119,12 +122,17 @@ def latapy_clustering(G, nodes=None, mode="dot"):
 
     if nodes is None:
         nodes = G
-    ccs = {}
+    #ccs = {}
+    ccs = IntFloatDict()
     for v in nodes:
         cc = 0.0
-        nbrs2 = {u for nbr in G[v] for u in G[nbr]} - {v}
+        common_neighbors = OutOfCoreSet()
+        for neighbor in G[v]:
+            for u in G[neighbor]:
+                common_neighbors.add(u)
+        nbrs2 = common_neighbors - {v}
         for u in nbrs2:
-            cc += cc_func(set(G[u]), set(G[v]))
+            cc += cc_func(OutOfCoreSet(G[u]), OutOfCoreSet(G[v]))
         if cc > 0.0:  # len(nbrs2)>0
             cc /= len(nbrs2)
         ccs[v] = cc
@@ -265,7 +273,7 @@ def _four_cycles(G):
     cycles = 0
     for v in G:
         for u, w in itertools.combinations(G[v], 2):
-            cycles += len((set(G[u]) & set(G[w])) - {v})
+            cycles += len((OutOfCoreSet(G[u]) & OutOfCoreSet(G[w])) - {v})
     return cycles / 4
 
 
@@ -273,8 +281,8 @@ def _threepaths(G):
     paths = 0
     for v in G:
         for u in G[v]:
-            for w in set(G[u]) - {v}:
-                paths += len(set(G[w]) - {v, u})
+            for w in OutOfCoreSet(G[u]) - {v}:
+                paths += len(OutOfCoreSet(G[w]) - {v, u})
     # Divide by two because we count each three path twice
     # one for each possible starting point
     return paths / 2
