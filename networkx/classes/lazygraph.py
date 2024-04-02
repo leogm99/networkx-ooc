@@ -55,17 +55,12 @@ class LazyGraph(Graph):
 
     def add_nodes_from(self, nodes_for_adding, **attr):
         for n in nodes_for_adding:
-            try:
-                u, dd = n
-            except TypeError:
-                u = n
-                dd = None
             if n is None:
                 raise ValueError("Node cannot be None")
-            if dd is not None:
-                self.add_node(u, **dd)
+            if attr is not None:
+                self.add_node(n, **attr)
             else:
-                self.add_node(u)
+                self.add_node(n)
 
     def add_edges_from(self, ebunch_to_add, **attr):
         for i, x in enumerate(ebunch_to_add):

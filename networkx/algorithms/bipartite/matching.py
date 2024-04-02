@@ -40,6 +40,9 @@ import collections
 import itertools
 
 import networkx as nx
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.bipartite import sets as bipartite_sets
 from networkx.algorithms.bipartite.matrix import biadjacency_matrix
 
@@ -50,6 +53,7 @@ __all__ = [
     "to_vertex_cover",
     "minimum_weight_full_matching",
 ]
+
 
 INFINITY = float("inf")
 
@@ -135,10 +139,10 @@ def hopcroft_karp_matching(G, top_nodes=None):
             v = queue.popleft()
             if distances[v] < distances[None]:
                 for u in G[v]:
-                    if distances[rightmatches[u]] is INFINITY:
+                    if distances[rightmatches[u]] == INFINITY:
                         distances[rightmatches[u]] = distances[v] + 1
                         queue.append(rightmatches[u])
-        return distances[None] is not INFINITY
+        return distances[None] != INFINITY
 
     def depth_first_search(v):
         if v is not None:
@@ -154,10 +158,16 @@ def hopcroft_karp_matching(G, top_nodes=None):
 
     # Initialize the "global" variables that maintain state during the search.
     left, right = bipartite_sets(G, top_nodes)
-    leftmatches = {v: None for v in left}
-    rightmatches = {v: None for v in right}
-    distances = {}
-    queue = collections.deque()
+    # leftmatches = {v: None for v in left}
+    leftmatches = IntDict()
+    for v in left:
+       leftmatches[v] = None
+    # rightmatches = {v: None for v in right}
+    rightmatches = IntDict()
+    for v in right:
+       rightmatches[v] = None
+    distances = IntFloatDict()
+    queue = OutOfCoreDeque()
 
     # Implementation note: this counter is incremented as pairs are matched but
     # it is currently not used elsewhere in the computation.
@@ -169,8 +179,17 @@ def hopcroft_karp_matching(G, top_nodes=None):
                     num_matched_pairs += 1
 
     # Strip the entries matched to `None`.
-    leftmatches = {k: v for k, v in leftmatches.items() if v is not None}
-    rightmatches = {k: v for k, v in rightmatches.items() if v is not None}
+    _leftmatches = IntDict()
+    _rightmatches = IntDict()
+    for k, v in leftmatches.items():
+        if v is not None:
+            _leftmatches[k] = v
+    for k, v in rightmatches.items():
+        if v is not None:
+            _rightmatches[k] = v
+
+    # leftmatches = {k: v for k, v in leftmatches.items() if v is not None}
+    # rightmatches = {k: v for k, v in rightmatches.items() if v is not None}
 
     # At this point, the left matches and the right matches are inverses of one
     # another. In other words,
@@ -178,7 +197,11 @@ def hopcroft_karp_matching(G, top_nodes=None):
     #     leftmatches == {v, k for k, v in rightmatches.items()}
     #
     # Finally, we combine both the left matches and right matches.
-    return dict(itertools.chain(leftmatches.items(), rightmatches.items()))
+    matching = IntDict()
+    for k, v in itertools.chain(_leftmatches.items(), _rightmatches.items()):
+        matching[k] = v
+    return matching
+
 
 
 @nx._dispatch
@@ -404,11 +427,21 @@ def _connected_by_alternating_paths(G, matching, targets):
     # one version of each undirected edge (for example, include edge (1, 2) but
     # not edge (2, 1)). Using frozensets as an intermediary step we do not
     # require nodes to be orderable.
-    edge_sets = {frozenset((u, v)) for u, v in matching.items()}
-    matched_edges = {tuple(edge) for edge in edge_sets}
-    unmatched_edges = {
-        (u, v) for (u, v) in G.edges() if frozenset((u, v)) not in edge_sets
-    }
+    edge_sets = OutOfCoreSet()
+    for u, v in matching.items():
+        edge_sets.add(frozenset((u, v)))
+    # edge_sets = {frozenset((u, v)) for u, v in matching.items()}
+    matched_edges = OutOfCoreSet()
+    for edge in edge_sets:
+        matched_edges.add(tuple(edge))
+    # matched_edges = {tuple(edge) for edge in edge_sets}
+    unmatched_edges = OutOfCoreSet()
+    for u, v in G.edges():
+        if frozenset((u, v)) not in edge_sets:
+            unmatched_edges.add((u, v))
+    #unmatched_edges = {
+    #    (u, v) for (u, v) in G.edges() if frozenset((u, v)) not in edge_sets
+    #}
 
     return {
         v
@@ -485,7 +518,7 @@ def to_vertex_cover(G, matching, top_nodes=None):
     # <https://en.wikipedia.org/wiki/K%C3%B6nig%27s_theorem_%28graph_theory%29#Proof>.
     L, R = bipartite_sets(G, top_nodes)
     # Let U be the set of unmatched vertices in the left vertex set.
-    unmatched_vertices = set(G) - set(matching)
+    unmatched_vertices = OutOfCoreSet(G) - OutOfCoreSet(matching)
     U = unmatched_vertices & L
     # Let Z be the set of vertices that are either in U or are connected to U
     # by alternating paths.
