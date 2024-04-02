@@ -4,6 +4,9 @@ import networkx as nx
 from networkx.utils import not_implemented_for
 
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntFloatDict
 
 __all__ = [
     "eccentricity",
@@ -89,15 +92,19 @@ def _extrema_bounding(G, compute="diameter", weight=None):
        https://www.sciencedirect.com/science/article/pii/S0304397515001644
     """
     # init variables
-    degrees = dict(G.degree())  # start with the highest degree node
+    degrees = IOutOfCoreDict(G.degree())  # start with the highest degree node
     minlowernode = max(degrees, key=degrees.get)
     N = len(degrees)  # number of nodes
     # alternate between smallest lower and largest upper bound
     high = False
     # status variables
-    ecc_lower = dict.fromkeys(G, 0)
-    ecc_upper = dict.fromkeys(G, N)
-    candidates = set(G)
+    ecc_lower = IntFloatDict()
+    for i in G:
+        ecc_lower[i] = 0 
+    ecc_upper = IntFloatDict()
+    for i in G:
+        ecc_upper[i] = N
+    candidates = OutOfCoreSet(G)
 
     # (re)set bound extremes
     minlower = N
@@ -146,38 +153,35 @@ def _extrema_bounding(G, compute="diameter", weight=None):
 
         # update candidate set
         if compute == "diameter":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_upper[i] <= maxlower and 2 * ecc_lower[i] >= maxupper
-            }
+            ruled_out = OutOfCoreSet()
+            for i in candidates:
+                if ecc_upper[i] <= maxlower and 2 * ecc_lower[i] >= maxupper:
+                    ruled_out.add(i)
         elif compute == "radius":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_lower[i] >= minupper and ecc_upper[i] + 1 <= 2 * minlower
-            }
+            ruled_out = OutOfCoreSet()
+            for i in candidates:
+                if ecc_lower[i] >= minupper and ecc_upper[i] + 1 <= 2 * minlower:
+                    ruled_out.add(i)
         elif compute == "periphery":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_upper[i] < maxlower
-                and (maxlower == maxupper or ecc_lower[i] > maxupper)
-            }
+            ruled_out = OutOfCoreSet()
+            for i in candidates:
+                if ecc_upper[i] < maxlower and (maxlower == maxupper or ecc_lower[i] > maxupper):
+                    ruled_out.add(i)
         elif compute == "center":
-            ruled_out = {
-                i
-                for i in candidates
-                if ecc_lower[i] > minupper
-                and (minlower == minupper or ecc_upper[i] + 1 < 2 * minlower)
-            }
+            ruled_out = OutOfCoreSet()
+            for i in candidates:
+                if ecc_lower[i] > minupper and (minlower == minupper or ecc_upper[i] + 1 < 2 * minlower):
+                    ruled_out.add(i)
         elif compute == "eccentricities":
-            ruled_out = set()
+            ruled_out = OutOfCoreSet()
         else:
             msg = "compute must be one of 'diameter', 'radius', 'periphery', 'center', 'eccentricities'"
             raise ValueError(msg)
 
-        ruled_out.update(i for i in candidates if ecc_lower[i] == ecc_upper[i])
+        for i in candidates:
+            if ecc_lower[i] == ecc_upper[i]:
+                ruled_out.add(i)
+
         candidates -= ruled_out
 
         #        for i in ruled_out:
@@ -227,10 +231,16 @@ def _extrema_bounding(G, compute="diameter", weight=None):
     if compute == "radius":
         return minupper
     if compute == "periphery":
-        p = [v for v in G if ecc_lower[v] == maxlower]
+        p = OutOfCoreList()
+        for v in G:
+            if ecc_lower[v] == maxlower:
+                p.append(v)
         return p
     if compute == "center":
-        c = [v for v in G if ecc_upper[v] == minupper]
+        c = OutOfCoreList()
+        for v in G:
+            if ecc_upper[v] == minupper:
+                c.append(v)
         return c
     if compute == "eccentricities":
         return ecc_lower
@@ -297,7 +307,7 @@ def eccentricity(G, v=None, sp=None, weight=None):
     #    else:                      # assume v is a container of nodes
     #        nodes=v
     order = G.order()
-    e = IOutOfCoreDict()
+    e = IntFloatDict()
     for n in G.nbunch_iter(v):
         if sp is None:
             length = nx.shortest_path_length(G, source=n, weight=weight)
@@ -437,7 +447,10 @@ def periphery(G, e=None, usebounds=False, weight=None):
     if e is None:
         e = eccentricity(G, weight=weight)
     diameter = max(e.values())
-    p = [v for v in e if e[v] == diameter]
+    p = OutOfCoreList()
+    for v in e:
+        if e[v] == diameter:
+            p.append(v)     
     return p
 
 
@@ -549,7 +562,10 @@ def center(G, e=None, usebounds=False, weight=None):
     if e is None:
         e = eccentricity(G, weight=weight)
     radius = min(e.values())
-    p = [v for v in e if e[v] == radius]
+    p = OutOfCoreList()
+    for v in e:
+        if e[v] == radius:
+            p.append(v) 
     return p
 
 
@@ -614,7 +630,7 @@ def barycenter(G, weight=None, attr=None, sp=None):
         sp = sp.items()
         if weight is not None:
             raise ValueError("Cannot use both sp, weight arguments together")
-    smallest, barycenter_vertices, n = float("inf"), [], len(G)
+    smallest, barycenter_vertices, n = float("inf"), OutOfCoreList(), len(G)
     for v, dists in sp:
         if len(dists) < n:
             raise nx.NetworkXNoPath(
@@ -626,7 +642,7 @@ def barycenter(G, weight=None, attr=None, sp=None):
             G.nodes[v][attr] = barycentricity
         if barycentricity < smallest:
             smallest = barycentricity
-            barycenter_vertices = [v]
+            barycenter_vertices = OutOfCoreList([v])
         elif barycentricity == smallest:
             barycenter_vertices.append(v)
     return barycenter_vertices
