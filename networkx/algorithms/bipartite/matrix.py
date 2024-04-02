@@ -84,11 +84,12 @@ def biadjacency_matrix(
     nlen = len(row_order)
     if nlen == 0:
         raise nx.NetworkXError("row_order is empty list")
-    if len(row_order) != len(OutOfCoreSet(row_order)):
+    row_order_set = OutOfCoreSet(row_order)
+    if len(row_order) != len(row_order_set):
         msg = "Ambiguous ordering: `row_order` contained duplicates."
         raise nx.NetworkXError(msg)
     if column_order is None:
-        column_order = OutOfCoreList(OutOfCoreSet(G) - OutOfCoreSet(row_order))
+        column_order = OutOfCoreList(OutOfCoreSet(G) - row_order_set)
     mlen = len(column_order)
     if len(column_order) != len(OutOfCoreSet(column_order)):
         msg = "Ambiguous ordering: `column_order` contained duplicates."
