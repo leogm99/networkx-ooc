@@ -4,6 +4,9 @@ import math
 import networkx as nx
 from networkx.utils import not_implemented_for
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["katz_centrality", "katz_centrality_numpy"]
 
 
@@ -152,15 +155,20 @@ def katz_centrality(
 
     if nstart is None:
         # choose starting vector with entries of 0
-        x = {n: 0 for n in G}
+        x = IntFloatDict()
+        for n in G:
+            x[n] = 0
     else:
         x = nstart
 
     try:
-        b = dict.fromkeys(G, float(beta))
+        fBeta = float(beta)
+        b = IntFloatDict()
+        for v in G:
+            b[v] = fBeta
     except (TypeError, ValueError, AttributeError) as err:
         b = beta
-        if set(beta) != set(G):
+        if set(beta) != OutOfCoreSet(G):
             raise nx.NetworkXError(
                 "beta dictionary " "must have a value for every node"
             ) from err
@@ -168,7 +176,10 @@ def katz_centrality(
     # make up to max_iter iterations
     for _ in range(max_iter):
         xlast = x
-        x = dict.fromkeys(xlast, 0)
+        x = IntFloatDict()
+        for n in xlast:
+            x[n] = 0
+
         # do the multiplication y^T = Alpha * x^T A + Beta
         for n in x:
             for nbr in G[n]:
