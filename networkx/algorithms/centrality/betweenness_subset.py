@@ -10,6 +10,9 @@ from networkx.algorithms.centrality.betweenness import (
     _single_source_shortest_path_basic as shortest_path,
 )
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = [
     "betweenness_centrality_subset",
     "edge_betweenness_centrality_subset",
@@ -102,7 +105,9 @@ def betweenness_centrality_subset(G, sources, targets, normalized=False, weight=
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    b = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
+    b = IntFloatDict()
+    for n in G:
+        b[n] = 0.0
     for s in sources:
         # single source shortest paths
         if weight is None:  # use BFS
@@ -202,8 +207,10 @@ def edge_betweenness_centrality_subset(
 
 
 def _accumulate_subset(betweenness, S, P, sigma, s, targets):
-    delta = dict.fromkeys(S, 0.0)
-    target_set = set(targets) - {s}
+    delta = IntFloatDict()
+    for n in S:
+        delta[n] = 0.0
+    target_set = OutOfCoreSet(targets) - {s}
     while S:
         w = S.pop()
         if w in target_set:
