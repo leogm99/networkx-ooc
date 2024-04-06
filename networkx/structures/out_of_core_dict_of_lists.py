@@ -3,12 +3,14 @@ import struct
 import tempfile
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.primitive_dicts import PrimitiveType
 
 __all__ = ["OutOfCoreDictOfLists"]
 
 class OutOfCoreDictOfLists(OutOfCoreDict):
-    def __init__(self):
+    def __init__(self, value_primitive_type = PrimitiveType.INTEGER):
         super().__init__()
+        self._value_primitive_type = value_primitive_type
 
     def __setitem__(self, key, value):
         if super().__contains__(key):
@@ -18,7 +20,7 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(path, value))
 
     def __getitem__(self, key):
-        return self.__list_from_bytes(super().__getitem__(self.__key_to_bytes(key)))
+        return self.__list_from_bytes(super().__getitem__(self.__key_to_bytes(key)), self._value_primitive_type)
     
     def __iter__(self):
         for k in super().__iter__():
@@ -59,6 +61,18 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
                 f.write('\n')
             f.write(str(value))
 
+    #TODO Mejorar
+    def update(self, key, list_idx, value):
+        l = self.__getitem__(key)
+        l[list_idx] = value
+        self.__setitem__(key, l)
+
+    #TODO mejorar
+    def sum_value(self, key, list_idx, value):
+        l = self.__getitem__(key)
+        l[list_idx] += value
+        self.__setitem__(key, l)
+
     def _get_new_path(self):
         fd, path = tempfile.mkstemp()
         os.close(fd)
@@ -85,12 +99,15 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         return OutOfCoreDictOfLists.__str_to_bytes(path)
 
     @staticmethod
-    def __list_from_bytes(b):
+    def __list_from_bytes(b, type):
         path = OutOfCoreDictOfLists.__str_from_bytes(b)
-        l = OutOfCoreList()
+        l = OutOfCoreList(value_primitive_type=type)
         with open(path, 'r') as f:
             for line in f:
-                l.append(int(line.strip()))
+                if (type == PrimitiveType.INTEGER):
+                    l.append(int(line.strip()))
+                elif ( type == PrimitiveType.FLOAT):
+                    l.append(float(line.strip()))
         return l
     
     @staticmethod

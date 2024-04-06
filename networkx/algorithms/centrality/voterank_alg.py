@@ -1,6 +1,10 @@
 """Algorithm to select influential nodes in a graph using VoteRank."""
 import networkx as nx
 
+from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.primitive_dicts import PrimitiveType
+
 __all__ = ["voterank"]
 
 
@@ -52,8 +56,8 @@ def voterank(G, number_of_nodes=None):
         Identifying a set of influential spreaders in complex networks.
         Sci. Rep. 6, 27823; doi: 10.1038/srep27823.
     """
-    influential_nodes = []
-    vote_rank = {}
+    influential_nodes = OutOfCoreList()
+    vote_rank = OutOfCoreDictOfLists(PrimitiveType.FLOAT)
     if len(G) == 0:
         return influential_nodes
     if number_of_nodes is None or number_of_nodes > len(G):
@@ -71,15 +75,19 @@ def voterank(G, number_of_nodes=None):
     for _ in range(number_of_nodes):
         # step 1b - reset rank
         for n in G.nodes():
-            vote_rank[n][0] = 0
+            # vote_rank[n][0] = 0
+            vote_rank.update(n, 0, 0)
         # step 2 - vote
         for n, nbr in G.edges():
             # In directed graphs nodes only vote for their in-neighbors
-            vote_rank[n][0] += vote_rank[nbr][1]
+            # vote_rank[n][0] += vote_rank[nbr][1]
+            vote_rank.sum_value(n, 0, vote_rank[nbr][1])
             if not G.is_directed():
-                vote_rank[nbr][0] += vote_rank[n][1]
+                # vote_rank[nbr][0] += vote_rank[n][1]
+                vote_rank.sum_value(nbr, 0, vote_rank[n][1])
         for n in influential_nodes:
-            vote_rank[n][0] = 0
+            # vote_rank[n][0] = 0
+            vote_rank.update(n, 0, 0)
         # step 3 - select top node
         n = max(G.nodes, key=lambda x: vote_rank[x][0])
         if vote_rank[n][0] == 0:
@@ -89,6 +97,9 @@ def voterank(G, number_of_nodes=None):
         vote_rank[n] = [0, 0]
         # step 4 - update voterank properties
         for _, nbr in G.edges(n):
-            vote_rank[nbr][1] -= 1 / avgDegree
-            vote_rank[nbr][1] = max(vote_rank[nbr][1], 0)
+            # vote_rank[nbr][1] -= 1 / avgDegree
+            vote_rank.sum_value(nbr, 1, (-1)/avgDegree)
+            # vote_rank[nbr][1] = max(vote_rank[nbr][1], 0)
+            vote_rank.update(nbr, 1, max(vote_rank[nbr][1], 0))
+
     return influential_nodes

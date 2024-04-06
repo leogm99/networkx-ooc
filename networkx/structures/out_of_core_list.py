@@ -1,5 +1,6 @@
 from typing import MutableSequence
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
 __all__ = ["OutOfCoreList"]
 
@@ -13,8 +14,15 @@ Esta implementacion de Lista out of core deberia usarse unicamente para algoritm
 append, len e iter. Operaciones como insert o delete son muy costosas debido al uso de pickle y deberian evitarse.
 '''
 class OutOfCoreList(MutableSequence):
-    def __init__(self, initial_list = None):
-        self._out_of_core_dict = IOutOfCoreDict()
+    def __init__(self, initial_list = None, value_primitive_type = PrimitiveType.INTEGER):
+        self._out_of_core_dict = None
+        if value_primitive_type == PrimitiveType.INTEGER:
+            self._out_of_core_dict = IOutOfCoreDict()
+        elif value_primitive_type == PrimitiveType.FLOAT:
+            self._out_of_core_dict = IntFloatDict()
+        else:
+            raise NotImplementedError("This functionality is not implemented yet.")
+
         self._next_id = 0
 
         if (initial_list != None):
