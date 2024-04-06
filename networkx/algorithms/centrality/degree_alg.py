@@ -1,5 +1,6 @@
 """Degree centrality measures."""
 import networkx as nx
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.primitive_dicts import IntDict, IntFloatDict
 from networkx.utils.decorators import not_implemented_for
 
@@ -99,10 +100,15 @@ def in_degree_centrality(G):
     are possible.
     """
     if len(G) <= 1:
-        return {n: 1 for n in G}
+        centrality = IntDict()
+        for n in G:
+            centrality[n] = 1
+        return centrality
 
     s = 1.0 / (len(G) - 1.0)
-    centrality = {n: d * s for n, d in G.in_degree()}
+    centrality = IntFloatDict()
+    for n, d in G.in_degree():
+        centrality[n] = d * s
     return centrality
 
 
@@ -149,8 +155,13 @@ def out_degree_centrality(G):
     are possible.
     """
     if len(G) <= 1:
-        return {n: 1 for n in G}
+        centrality = IntDict()
+        for n in G:
+            centrality[n] = 1
+        return centrality
 
     s = 1.0 / (len(G) - 1.0)
-    centrality = {n: d * s for n, d in G.out_degree()}
+    centrality = IntFloatDict()
+    for n, d in G.out_degree():
+        centrality[n] = d * s
     return centrality
