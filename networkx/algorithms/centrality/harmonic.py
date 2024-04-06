@@ -3,6 +3,10 @@ from functools import partial
 
 import networkx as nx
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["harmonic_centrality"]
 
 
@@ -64,14 +68,27 @@ def harmonic_centrality(G, nbunch=None, distance=None, sources=None):
            Internet Mathematics 10.3-4 (2014): 222-262.
     """
 
-    nbunch = set(G.nbunch_iter(nbunch)) if nbunch is not None else set(G.nodes)
-    sources = set(G.nbunch_iter(sources)) if sources is not None else G.nodes
+    if nbunch is not None:
+        nbunch_ooc = OutOfCoreSet(G.nbunch_iter(nbunch))
+    else:
+        nbunch_ooc = OutOfCoreSet()
+        for v in G.nodes:
+            nbunch_ooc.add(v)
+
+    if sources is not None:
+        sources_ooc = OutOfCoreSet(G.nbunch_iter(sources))
+    else:
+        sources_ooc = OutOfCoreSet()
+        for v in G.nodes:
+            sources_ooc.add(v)
 
     spl = partial(nx.shortest_path_length, G, weight=distance)
-    centrality = {u: 0 for u in nbunch}
-    for v in sources:
+    centrality = IntFloatDict()
+    for u in nbunch_ooc:
+        centrality[u] = 0
+    for v in sources_ooc:
         dist = spl(v)
-        for u in nbunch.intersection(dist):
+        for u in nbunch_ooc.intersection(dist):
             d = dist[u]
             if d == 0:  # handle u == v and edges with 0 weight
                 continue

@@ -56,6 +56,15 @@ class OutOfCoreSet(MutableSet):
     def __ior__(self, other):
         self._set |= other._set
         return self
+    
+    def intersection(self, other):
+        intersection_set = OutOfCoreSet()
+
+        for element in self:
+            if element in other:
+                intersection_set.add(element)
+
+        return intersection_set
 
 class OutOfCoreDictSet(MutableSet):
     def __init__(self, initial_list = None):

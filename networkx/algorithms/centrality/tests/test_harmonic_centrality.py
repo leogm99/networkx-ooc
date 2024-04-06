@@ -6,20 +6,22 @@ import pytest
 import networkx as nx
 from networkx.algorithms.centrality import harmonic_centrality
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 class TestClosenessCentrality:
     @classmethod
     def setup_class(cls):
-        cls.P3 = nx.path_graph(3)
-        cls.P4 = nx.path_graph(4)
-        cls.K5 = nx.complete_graph(5)
+        cls.P3 = TestClosenessCentrality._get_ooc_graph(nx.path_graph(3))
+        cls.P4 = TestClosenessCentrality._get_ooc_graph(nx.path_graph(4))
+        cls.K5 = TestClosenessCentrality._get_ooc_graph(nx.complete_graph(5))
 
-        cls.C4 = nx.cycle_graph(4)
+        cls.C4 = TestClosenessCentrality._get_ooc_graph(nx.cycle_graph(4))
         cls.C4_directed = nx.cycle_graph(4, create_using=nx.DiGraph)
 
-        cls.C5 = nx.cycle_graph(5)
+        cls.C5 = TestClosenessCentrality._get_ooc_graph(nx.cycle_graph(5))
 
-        cls.T = nx.balanced_tree(r=2, h=2)
+        cls.T = TestClosenessCentrality._get_ooc_graph(nx.balanced_tree(r=2, h=2))
 
         cls.Gb = nx.DiGraph()
         cls.Gb.add_edges_from([(0, 1), (0, 2), (0, 4), (2, 1), (2, 3), (4, 3)])
@@ -70,16 +72,16 @@ class TestClosenessCentrality:
         XG = nx.DiGraph()
         XG.add_weighted_edges_from(
             [
-                ("a", "b", 10),
-                ("d", "c", 5),
-                ("a", "c", 1),
-                ("e", "f", 2),
-                ("f", "c", 1),
-                ("a", "f", 3),
+                (1, 2, 10),
+                (4, 3, 5),
+                (1, 3, 1),
+                (5, 6, 2),
+                (6, 3, 1),
+                (1, 6, 3),
             ]
         )
         c = harmonic_centrality(XG, distance="weight")
-        d = {"a": 0, "b": 0.1, "c": 2.533, "d": 0, "e": 0, "f": 0.83333}
+        d = {1: 0, 2: 0.1, 3: 2.533, 4: 0, 5: 0, 6: 0.83333}
         for n in sorted(XG):
             assert c[n] == pytest.approx(d[n], abs=1e-3)
 
@@ -113,3 +115,10 @@ class TestClosenessCentrality:
         d = {2: 1.5, 3: 0.8333333}
         for n in [2, 3]:
             assert c[n] == pytest.approx(d[n], abs=1e-3)
+
+    @staticmethod
+    def _get_ooc_graph(G):
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG
