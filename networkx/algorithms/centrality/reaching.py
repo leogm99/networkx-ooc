@@ -3,6 +3,9 @@
 import networkx as nx
 from networkx.utils import pairwise
 
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.primitive_dicts import PrimitiveType
+
 __all__ = ["global_reaching_centrality", "local_reaching_centrality"]
 
 
@@ -110,10 +113,13 @@ def global_reaching_centrality(G, weight=None, normalized=True):
 
     centrality = local_reaching_centrality
     # TODO This can be trivially parallelized.
-    lrc = [
-        centrality(G, node, paths=paths, weight=weight, normalized=normalized)
-        for node, paths in shortest_paths.items()
-    ]
+    # lrc = [
+    #     centrality(G, node, paths=paths, weight=weight, normalized=normalized)
+    #     for node, paths in shortest_paths.items()
+    # ]
+    lrc = OutOfCoreList(value_primitive_type=PrimitiveType.FLOAT)
+    for node, paths in shortest_paths.items():
+        lrc.append(centrality(G, node, paths=paths, weight=weight, normalized=normalized))
 
     max_lrc = max(lrc)
     return sum(max_lrc - c for c in lrc) / (len(G) - 1)
@@ -201,6 +207,9 @@ def local_reaching_centrality(G, v, paths=None, weight=None, normalized=True):
     else:
         norm = 1
     # TODO This can be trivially parallelized.
-    avgw = (_average_weight(G, path, weight=weight) for path in paths.values())
-    sum_avg_weight = sum(avgw) / norm
+    # avgw = (_average_weight(G, path, weight=weight) for path in paths.values())
+    avgw = 0
+    for path in paths.values():
+        avgw += _average_weight(G, path, weight=weight)
+    sum_avg_weight = avgw / norm
     return sum_avg_weight / (len(G) - 1)
