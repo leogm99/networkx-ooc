@@ -66,6 +66,14 @@ class OutOfCoreSet(MutableSet):
 
         return intersection_set
 
+    def union(self, other):
+        union_set = OutOfCoreSet()
+        for i in self:
+            union_set.add(i)
+        for i in other:
+            union_set.add(i)
+        return union_set
+
 class OutOfCoreDictSet(MutableSet):
     def __init__(self, initial_list = None):
         self._out_of_core_dict = OutOfCoreDict()
