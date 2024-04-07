@@ -9,6 +9,8 @@ from networkx.algorithms.approximation import (
     maximum_independent_set,
 )
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 def is_independent_set(G, nodes):
     """Returns True if and only if `nodes` is a clique in `G`.
@@ -100,12 +102,17 @@ def test_large_clique_size():
     G.add_edge(1, 12)
     G.add_node(13)
 
+    LazyG = LazyGraph()
+    for e in G.edges:
+        LazyG.add_edge(*e)
+
     assert large_clique_size(G) == 9
     G.remove_node(5)
     assert large_clique_size(G) == 8
     G.remove_edge(2, 3)
     assert large_clique_size(G) == 7
 
+    assert large_clique_size(LazyG) == 9
 
 def test_independent_set():
     # smoke test
