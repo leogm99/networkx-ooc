@@ -53,6 +53,10 @@ class OutOfCoreSet(MutableSet):
         for other in others:
             self |= other
 
+    def update_with_list(self, other_list):
+        for item in other_list:
+            self.add(item)
+
     def __ior__(self, other):
         self._set |= other._set
         return self

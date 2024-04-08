@@ -5,6 +5,10 @@ from operator import itemgetter
 
 import networkx as nx
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = [
     "local_node_connectivity",
     "node_connectivity",
@@ -96,11 +100,11 @@ def local_node_connectivity(G, source, target, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
 
-    exclude = set()
+    exclude = OutOfCoreSet()
     for i in range(min(possible, cutoff)):
         try:
             path = _bidirectional_shortest_path(G, source, target, exclude)
-            exclude.update(set(path))
+            exclude.update_with_list(path)
             K += 1
         except nx.NetworkXNoPath:
             break
@@ -205,7 +209,11 @@ def node_connectivity(G, s=None, t=None):
     K = minimum_degree
     # compute local node connectivity with all non-neighbors nodes
     # and store the minimum
-    for w in set(G) - set(neighbors(v)) - {v}:
+    ngbrs = OutOfCoreSet(neighbors(v))
+    nodes = _remove_cut(G, ngbrs)
+    nodes.remove(v)
+    # for w in set(G) - set(neighbors(v)) - {v}:
+    for w in nodes:
         K = min(K, local_node_connectivity(G, v, w, cutoff=K))
     # Same for non adjacent pairs of neighbors of v
     for x, y in iter_func(neighbors(v), 2):
@@ -213,6 +221,12 @@ def node_connectivity(G, s=None, t=None):
             K = min(K, local_node_connectivity(G, x, y, cutoff=K))
     return K
 
+def _remove_cut(G, cut):
+    s = OutOfCoreSet()
+    for n in G.nodes():
+        if n not in cut:
+            s.add(n)
+    return s
 
 @nx._dispatch(name="approximate_all_pairs_node_connectivity")
 def all_pairs_node_connectivity(G, nbunch=None, cutoff=None):
@@ -342,16 +356,20 @@ def _bidirectional_shortest_path(G, source, target, exclude):
     pred, succ, w = results
 
     # build path from pred+w+succ
-    path = []
+    path = OutOfCoreList()
     # from source to w
     while w is not None:
         path.append(w)
+        p = pred[w]
+        if w == p: break
         w = pred[w]
     path.reverse()
     # from w to target
     w = succ[path[-1]]
     while w is not None:
         path.append(w)
+        s = succ[w]
+        if s == w: break
         w = succ[w]
 
     return path
@@ -370,12 +388,14 @@ def _bidirectional_pred_succ(G, source, target, exclude):
         Gsucc = G.neighbors
 
     # predecessor and successors in search
-    pred = {source: None}
-    succ = {target: None}
+    pred = IOutOfCoreDict()
+    pred[source] = source
+    succ = IOutOfCoreDict()
+    succ[target] = target
 
     # initialize fringes, start with forward
-    forward_fringe = [source]
-    reverse_fringe = [target]
+    forward_fringe = OutOfCoreList([source])
+    reverse_fringe = OutOfCoreList([target])
 
     level = 0
 
@@ -386,7 +406,7 @@ def _bidirectional_pred_succ(G, source, target, exclude):
         level += 1
         if level % 2 != 0:
             this_level = forward_fringe
-            forward_fringe = []
+            forward_fringe = OutOfCoreList()
             for v in this_level:
                 for w in Gsucc(v):
                     if w in exclude:
@@ -398,7 +418,7 @@ def _bidirectional_pred_succ(G, source, target, exclude):
                         return pred, succ, w  # found path
         else:
             this_level = reverse_fringe
-            reverse_fringe = []
+            reverse_fringe = OutOfCoreList()
             for v in this_level:
                 for w in Gpred(v):
                     if w in exclude:
