@@ -13,7 +13,6 @@ from networkx.utils import arbitrary_element, pairwise
 
 from networkx.structures.out_of_core_list import OutOfCoreList
 
-nx.Graph = nx.LazyGraph
 
 class TestIsSimplePath:
     """Unit tests for the
@@ -86,16 +85,32 @@ class TestIsSimplePath:
         G = LazyGraph(nx.MultiDiGraph([(0, 1), (0, 1), (1, 0), (1, 0)]))
         assert nx.is_simple_path(G, OutOfCoreList([0, 1]))
 
+@staticmethod
+def _get_ooc_path_graph(n):
+    G = nx.path_graph(n)
+    lazyG = LazyGraph()
+    for e in G.edges:
+        lazyG.add_edge(*e)
+    return lazyG
+
+@staticmethod
+def _get_ooc_complete_graph(n):
+    G = nx.complete_graph(n)
+    lazyG = LazyGraph()
+    for e in G.edges:
+        lazyG.add_edge(*e)
+    return lazyG
+
 
 # Tests for all_simple_paths
 def test_all_simple_paths():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_paths(G, 0, 3)
     assert {tuple(p) for p in paths} == {(0, 1, 2, 3)}
 
 
 def test_all_simple_paths_with_two_targets_emits_two_paths():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_paths(G, 0, [3, 4])
     assert {tuple(p) for p in paths} == {(0, 1, 2, 3), (0, 1, 2, 4)}
@@ -109,7 +124,7 @@ def test_digraph_all_simple_paths_with_two_targets_emits_two_paths():
 
 
 def test_all_simple_paths_with_two_targets_cutoff():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_paths(G, 0, [3, 4], cutoff=3)
     assert {tuple(p) for p in paths} == {(0, 1, 2, 3), (0, 1, 2, 4)}
@@ -123,7 +138,7 @@ def test_digraph_all_simple_paths_with_two_targets_cutoff():
 
 
 def test_all_simple_paths_with_two_targets_in_line_emits_two_paths():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_paths(G, 0, [2, 3])
     assert {tuple(p) for p in paths} == {(0, 1, 2), (0, 1, 2, 3)}
 
@@ -143,13 +158,13 @@ def test_all_simple_paths_with_two_targets_inside_cycle_emits_two_paths():
 
 
 def test_all_simple_paths_source_target():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_paths(G, 1, 1)
     assert list(paths) == []
 
 
 def test_all_simple_paths_cutoff():
-    G = nx.complete_graph(4)
+    G = _get_ooc_complete_graph(4)
     paths = nx.all_simple_paths(G, 0, 1, cutoff=1)
     assert {tuple(p) for p in paths} == {(0, 1)}
     paths = nx.all_simple_paths(G, 0, 1, cutoff=2)
@@ -209,7 +224,7 @@ def test_all_simple_paths_directed():
 
 
 def test_all_simple_paths_empty():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_paths(G, 0, 3, cutoff=2)
     assert list(paths) == []
 
@@ -217,7 +232,7 @@ def test_all_simple_paths_empty():
 def test_all_simple_paths_corner_cases():
     assert list(nx.all_simple_paths(nx.empty_graph(2), 0, 0)) == []
     assert list(nx.all_simple_paths(nx.empty_graph(2), 0, 1)) == []
-    assert list(nx.all_simple_paths(nx.path_graph(9), 0, 8, 0)) == []
+    assert list(nx.all_simple_paths(_get_ooc_path_graph(9), 0, 8, 0)) == []
 
 
 def hamiltonian_path(G, source):
@@ -233,7 +248,7 @@ def hamiltonian_path(G, source):
 def test_hamiltonian_path():
     from itertools import permutations
 
-    G = nx.complete_graph(4)
+    G = _get_ooc_complete_graph(4)
     paths = [list(p) for p in hamiltonian_path(G, 0)]
     exact = [[0] + list(p) for p in permutations([1, 2, 3], 3)]
     assert sorted(paths) == sorted(exact)
@@ -263,13 +278,13 @@ def test_target_missing():
 
 # Tests for all_simple_edge_paths
 def test_all_simple_edge_paths():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 3)
     assert {tuple(p) for p in paths} == {((0, 1), (1, 2), (2, 3))}
 
 
 def test_all_simple_edge_paths_with_two_targets_emits_two_paths():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_edge_paths(G, 0, [3, 4])
     assert {tuple(p) for p in paths} == {
@@ -289,7 +304,7 @@ def test_digraph_all_simple_edge_paths_with_two_targets_emits_two_paths():
 
 
 def test_all_simple_edge_paths_with_two_targets_cutoff():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_edge_paths(G, 0, [3, 4], cutoff=3)
     assert {tuple(p) for p in paths} == {
@@ -309,7 +324,7 @@ def test_digraph_all_simple_edge_paths_with_two_targets_cutoff():
 
 
 def test_all_simple_edge_paths_with_two_targets_in_line_emits_two_paths():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, [2, 3])
     assert {tuple(p) for p in paths} == {((0, 1), (1, 2)), ((0, 1), (1, 2), (2, 3))}
 
@@ -329,13 +344,13 @@ def test_all_simple_edge_paths_with_two_targets_inside_cycle_emits_two_paths():
 
 
 def test_all_simple_edge_paths_source_target():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_edge_paths(G, 1, 1)
     assert list(paths) == []
 
 
 def test_all_simple_edge_paths_cutoff():
-    G = nx.complete_graph(4)
+    G = _get_ooc_complete_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 1, cutoff=1)
     assert {tuple(p) for p in paths} == {((0, 1),)}
     paths = nx.all_simple_edge_paths(G, 0, 1, cutoff=2)
@@ -399,7 +414,7 @@ def test_all_simple_edge_paths_directed():
 
 
 def test_all_simple_edge_paths_empty():
-    G = nx.path_graph(4)
+    G = _get_ooc_path_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 3, cutoff=2)
     assert list(paths) == []
 
@@ -423,17 +438,17 @@ def hamiltonian_edge_path(G, source):
 def test_hamiltonian__edge_path():
     from itertools import permutations
 
-    G = nx.complete_graph(4)
+    G = _get_ooc_complete_graph(4)
     paths = hamiltonian_edge_path(G, 0)
     exact = [list(pairwise([0] + list(p))) for p in permutations([1, 2, 3], 3)]
     assert sorted(exact) == sorted(paths)
 
 
 def test_edge_cutoff_zero():
-    G = nx.complete_graph(4)
+    G = _get_ooc_complete_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 3, cutoff=0)
     assert [list(p) for p in paths] == []
-    paths = nx.all_simple_edge_paths(nx.MultiGraph(G), 0, 3, cutoff=0)
+    paths = nx.all_simple_edge_paths(nx.MultiGraph(nx.complete_graph(4)), 0, 3, cutoff=0)
     assert [list(p) for p in paths] == []
 
 

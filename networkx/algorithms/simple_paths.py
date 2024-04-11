@@ -4,6 +4,7 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import not_implemented_for, pairwise
+from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = [
@@ -246,10 +247,10 @@ def all_simple_paths(G, source, target, cutoff=None):
     if source not in G:
         raise nx.NodeNotFound(f"source node {source} not in graph")
     if target in G:
-        targets = {target}
+        targets = OutOfCoreSet({target})
     else:
         try:
-            targets = set(target)
+            targets = OutOfCoreSet(target)
         except TypeError as err:
             raise nx.NodeNotFound(f"target node {target} not in graph") from err
     if source in targets:
@@ -269,57 +270,57 @@ def _empty_generator():
 
 
 def _all_simple_paths_graph(G, source, targets, cutoff):
-    visited = {source: True}
+    visited = OutOfCoreList([source])
     stack = [iter(G[source])]
     while stack:
         children = stack[-1]
         child = next(children, None)
         if child is None:
             stack.pop()
-            visited.popitem()
+            visited.pop()
         elif len(visited) < cutoff:
             if child in visited:
                 continue
             if child in targets:
-                yield list(visited) + [child]
-            visited[child] = True
-            if targets - set(visited.keys()):  # expand stack until find all targets
+                yield visited + [child]
+            visited.append(child)
+            if targets - OutOfCoreSet(visited):  # expand stack until find all targets
                 stack.append(iter(G[child]))
             else:
-                visited.popitem()  # maybe other ways to child
+                visited.pop()  # maybe other ways to child
         else:  # len(visited) == cutoff:
-            for target in (targets & (set(children) | {child})) - set(visited.keys()):
-                yield list(visited) + [target]
+            for target in (targets & (OutOfCoreSet(children) | {child})) - OutOfCoreSet(visited):
+                yield visited + [target]
             stack.pop()
-            visited.popitem()
+            visited.pop()
 
 
 def _all_simple_paths_multigraph(G, source, targets, cutoff):
-    visited = {source: True}
+    visited = OutOfCoreList([source])
     stack = [(v for u, v in G.edges(source))]
     while stack:
         children = stack[-1]
         child = next(children, None)
         if child is None:
             stack.pop()
-            visited.popitem()
+            visited.pop()
         elif len(visited) < cutoff:
             if child in visited:
                 continue
             if child in targets:
-                yield list(visited) + [child]
-            visited[child] = True
-            if targets - set(visited.keys()):
+                yield visited + [child]
+            visited.append(child)
+            if targets - OutOfCoreSet(visited):
                 stack.append((v for u, v in G.edges(child)))
             else:
-                visited.popitem()
+                visited.pop()
         else:  # len(visited) == cutoff:
-            for target in targets - set(visited.keys()):
-                count = ([child] + list(children)).count(target)
+            for target in targets - OutOfCoreSet(visited):
+                count = (OutOfCoreList(children) + [child]).count(target)
                 for i in range(count):
-                    yield list(visited) + [target]
+                    yield visited + [target]
             stack.pop()
-            visited.popitem()
+            visited.pop()
 
 
 @nx._dispatch
@@ -397,10 +398,10 @@ def all_simple_edge_paths(G, source, target, cutoff=None):
     if source not in G:
         raise nx.NodeNotFound("source node %s not in graph" % source)
     if target in G:
-        targets = {target}
+        targets = OutOfCoreSet({target})
     else:
         try:
-            targets = set(target)
+            targets = OutOfCoreSet(target)
         except TypeError:
             raise nx.NodeNotFound("target node %s not in graph" % target)
     if source in targets:

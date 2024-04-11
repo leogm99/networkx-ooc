@@ -33,6 +33,7 @@ class OutOfCoreList(MutableSequence):
         return self._next_id
 
     def __getitem__(self, index):
+        if (isinstance(index, slice)): return self.__slice__getitem__(index)
         if index < 0:
             index += self._next_id
             if index < 0:
@@ -40,6 +41,15 @@ class OutOfCoreList(MutableSequence):
         if index >= self._next_id:
             raise IndexError("list index out of range")
         return self._out_of_core_dict[index]
+    
+    def __slice__getitem__(self, index):
+        start, stop, step = index.indices(len(self))
+        if step != 1:
+            raise ValueError("Slice step other than 1 is not supported")
+        l = OutOfCoreList()
+        for i in range(start, stop, step):
+            l.append(self._out_of_core_dict[i])
+        return l
     
     def __setitem__(self, index, item):
         if index < 0 or index >= self._next_id:
