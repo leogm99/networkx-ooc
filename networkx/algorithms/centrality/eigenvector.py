@@ -4,6 +4,9 @@ import math
 import networkx as nx
 from networkx.utils import not_implemented_for
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["eigenvector_centrality", "eigenvector_centrality_numpy"]
 
 
@@ -164,13 +167,17 @@ def eigenvector_centrality(G, max_iter=100, tol=1.0e-6, nstart=None, weight=None
         )
     # If no initial vector is provided, start with the all-ones vector.
     if nstart is None:
-        nstart = {v: 1 for v in G}
+        nstart = IOutOfCoreDict()
+        for v in G:
+            nstart[v] = 1
     if all(v == 0 for v in nstart.values()):
         raise nx.NetworkXError("initial vector cannot have all zero values")
     # Normalize the initial vector so that each entry is in [0, 1]. This is
     # guaranteed to never have a divide-by-zero error by the previous line.
     nstart_sum = sum(nstart.values())
-    x = {k: v / nstart_sum for k, v in nstart.items()}
+    x = IntFloatDict()
+    for k, v in nstart.items():
+        x[k] = v / nstart_sum 
     nnodes = G.number_of_nodes()
     # make up to max_iter iterations
     for _ in range(max_iter):
@@ -186,7 +193,8 @@ def eigenvector_centrality(G, max_iter=100, tol=1.0e-6, nstart=None, weight=None
         # theorem. However, in case it is due to numerical error, we
         # assume the norm to be one instead.
         norm = math.hypot(*x.values()) or 1
-        x = {k: v / norm for k, v in x.items()}
+        for k, v in x.items():
+            x[k] = v / norm
         # Check for convergence (in the L_1 norm).
         if sum(abs(x[n] - xlast[n]) for n in x) < nnodes * tol:
             return x

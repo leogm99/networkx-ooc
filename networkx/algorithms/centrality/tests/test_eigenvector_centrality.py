@@ -2,6 +2,8 @@ import math
 
 import pytest
 
+from networkx.classes.lazygraph import LazyGraph
+
 np = pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
@@ -10,9 +12,16 @@ import networkx as nx
 
 
 class TestEigenvectorCentrality:
+    @staticmethod
+    def _get_ooc_g(G):
+        LazyG = LazyGraph()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG
+
     def test_K5(self):
         """Eigenvector centrality: K5"""
-        G = nx.complete_graph(5)
+        G = self._get_ooc_g(nx.complete_graph(5))
         b = nx.eigenvector_centrality(G)
         v = math.sqrt(1 / 5.0)
         b_answer = dict.fromkeys(G, v)
@@ -29,7 +38,7 @@ class TestEigenvectorCentrality:
 
     def test_P3(self):
         """Eigenvector centrality: P3"""
-        G = nx.path_graph(3)
+        G = self._get_ooc_g(nx.path_graph(3))
         b_answer = {0: 0.5, 1: 0.7071, 2: 0.5}
         b = nx.eigenvector_centrality_numpy(G)
         for n in sorted(G):
@@ -40,7 +49,7 @@ class TestEigenvectorCentrality:
 
     def test_P3_unweighted(self):
         """Eigenvector centrality: P3"""
-        G = nx.path_graph(3)
+        G = self._get_ooc_g(nx.path_graph(3))
         b_answer = {0: 0.5, 1: 0.7071, 2: 0.5}
         b = nx.eigenvector_centrality_numpy(G, weight=None)
         for n in sorted(G):
@@ -48,7 +57,7 @@ class TestEigenvectorCentrality:
 
     def test_maxiter(self):
         with pytest.raises(nx.PowerIterationFailedConvergence):
-            G = nx.path_graph(3)
+            G = self._get_ooc_g(nx.path_graph(3))
             nx.eigenvector_centrality(G, max_iter=0)
 
 
@@ -161,14 +170,14 @@ class TestEigenvectorCentralityExceptions:
 
     def test_empty(self):
         with pytest.raises(nx.NetworkXException):
-            nx.eigenvector_centrality(nx.Graph())
+            nx.eigenvector_centrality(LazyGraph())
 
     def test_empty_numpy(self):
         with pytest.raises(nx.NetworkXException):
-            nx.eigenvector_centrality_numpy(nx.Graph())
+            nx.eigenvector_centrality_numpy(LazyGraph())
 
     def test_zero_nstart(self):
-        G = nx.Graph([(1, 2), (1, 3), (2, 3)])
+        G = LazyGraph([(1, 2), (1, 3), (2, 3)])
         with pytest.raises(
             nx.NetworkXException, match="initial vector cannot have all zero values"
         ):

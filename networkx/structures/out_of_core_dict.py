@@ -73,6 +73,12 @@ class OutOfCoreDict(MutableMapping):
         self._flush_write_batch()
         yield from self._inner.prefixed_db(prefix).iterator(fill_cache=False, include_value=False)
 
+    def copy(self, c=None):
+        if c is None:
+            c = OutOfCoreDict()
+        for i in self:
+            c[i] = self.__getitem__(i)
+        return c
 
 class IOutOfCoreDict(OutOfCoreDict):
     def __init__(self, initial_values = None) -> None:
@@ -94,6 +100,9 @@ class IOutOfCoreDict(OutOfCoreDict):
 
     def __delitem__(self, index):
         super().__delitem__(self.__to_bytes(index))
+
+    def copy(self, c=None):
+        return super().copy(IOutOfCoreDict())
 
     # @staticmethod
     # def __to_bytes(_any):

@@ -57,7 +57,12 @@ class IntDict(PrimitiveDict):
     def __init__(self):
         super().__init__(PrimitiveType.INTEGER, PrimitiveType.INTEGER)
 
+    def copy(self, c=None):
+        return super().copy(IntDict())
 
 class IntFloatDict(PrimitiveDict):
     def __init__(self):
         super().__init__(PrimitiveType.INTEGER, PrimitiveType.FLOAT)
+
+    def copy(self, c=None):
+        return super().copy(IntFloatDict())
