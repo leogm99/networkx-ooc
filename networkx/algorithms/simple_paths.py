@@ -284,12 +284,12 @@ def _all_simple_paths_graph(G, source, targets, cutoff):
             if child in targets:
                 yield visited + [child]
             visited.append(child)
-            if targets - OutOfCoreSet(visited):  # expand stack until find all targets
+            if targets - visited:  # expand stack until find all targets
                 stack.append(iter(G[child]))
             else:
                 visited.pop()  # maybe other ways to child
         else:  # len(visited) == cutoff:
-            for target in (targets & (OutOfCoreSet(children) | {child})) - OutOfCoreSet(visited):
+            for target in (targets & (OutOfCoreSet(children) | {child})) - visited:
                 yield visited + [target]
             stack.pop()
             visited.pop()
@@ -310,12 +310,12 @@ def _all_simple_paths_multigraph(G, source, targets, cutoff):
             if child in targets:
                 yield visited + [child]
             visited.append(child)
-            if targets - OutOfCoreSet(visited):
+            if targets - visited:
                 stack.append((v for u, v in G.edges(child)))
             else:
                 visited.pop()
         else:  # len(visited) == cutoff:
-            for target in targets - OutOfCoreSet(visited):
+            for target in targets - visited:
                 count = (OutOfCoreList(children) + [child]).count(target)
                 for i in range(count):
                     yield visited + [target]
