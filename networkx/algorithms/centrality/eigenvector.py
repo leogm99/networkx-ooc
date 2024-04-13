@@ -5,6 +5,7 @@ import networkx as nx
 from networkx.utils import not_implemented_for
 
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.primitive_dicts import IntFloatDict
 
 __all__ = ["eigenvector_centrality", "eigenvector_centrality_numpy"]
@@ -340,10 +341,13 @@ def eigenvector_centrality_numpy(G, weight=None, max_iter=50, tol=0):
         raise nx.NetworkXPointlessConcept(
             "cannot compute centrality for the null graph"
         )
-    M = nx.to_scipy_sparse_array(G, nodelist=list(G), weight=weight, dtype=float)
+    M = nx.to_scipy_sparse_array(G, nodelist=OutOfCoreList(G), weight=weight, dtype=float)
     _, eigenvector = sp.sparse.linalg.eigs(
         M.T, k=1, which="LR", maxiter=max_iter, tol=tol
     )
     largest = eigenvector.flatten().real
     norm = np.sign(largest.sum()) * sp.linalg.norm(largest)
-    return dict(zip(G, largest / norm))
+    r = IntFloatDict()
+    for k, v in zip(G, largest / norm):
+        r[k] = v
+    return r
