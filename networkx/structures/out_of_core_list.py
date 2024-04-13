@@ -24,6 +24,7 @@ class OutOfCoreList(MutableSequence):
             raise NotImplementedError("This functionality is not implemented yet.")
 
         self._next_id = 0
+        self._value_primitive_type = value_primitive_type
 
         if (initial_list != None):
             for item in initial_list:
@@ -92,7 +93,7 @@ class OutOfCoreList(MutableSequence):
         if not isinstance(other, OutOfCoreList) and not isinstance(other, list):
             raise TypeError("Unsupported operand type(s) for +: 'OutOfCoreList' and '{}'".format(type(other).__name__))
 
-        result = OutOfCoreList()
+        result = OutOfCoreList(value_primitive_type=self._value_primitive_type)
         result.extend(self)
         result.extend(other)
         return result

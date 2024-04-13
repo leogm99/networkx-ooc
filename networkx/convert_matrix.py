@@ -34,6 +34,7 @@ from networkx.utils import not_implemented_for
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import PrimitiveType
 
 __all__ = [
     "from_pandas_adjacency",
@@ -579,7 +580,7 @@ def to_scipy_sparse_array(G, nodelist=None, dtype=None, weight="weight", format=
     # )
     # coefficients = OutOfCoreList()
     try:
-        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList()
+        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList(value_primitive_type=PrimitiveType.FLOAT)
         for u, v, wt in G.edges(data=weight, default=1):
             row.append(index[u])
             col.append(index[v])
