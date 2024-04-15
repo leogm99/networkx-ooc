@@ -108,7 +108,7 @@ def fast_gnp_random_graph(n, p, seed=None, directed=False):
 
 
 @py_random_state(2)
-def gnp_random_graph(n, p, seed=None, directed=False):
+def gnp_random_graph(n, p, seed=None, directed=False, create_using=nx.Graph):
     """Returns a $G_{n,p}$ random graph, also known as an Erdős-Rényi graph
     or a binomial graph.
 
@@ -125,6 +125,8 @@ def gnp_random_graph(n, p, seed=None, directed=False):
         See :ref:`Randomness<randomness>`.
     directed : bool, optional (default=False)
         If True, this function returns a directed graph.
+    create_using : NetworkX graph constructor, optional (default=nx.Graph)
+       Graph type to create. If graph instance, then cleared before populated.
 
     See Also
     --------
@@ -152,17 +154,17 @@ def gnp_random_graph(n, p, seed=None, directed=False):
         edges = itertools.permutations(range(n), 2)
         G = nx.DiGraph()
     else:
+        # TODO: better error handling
+        assert create_using != nx.DiGraph
         edges = itertools.combinations(range(n), 2)
-        G = nx.Graph()
+        G = create_using()
     G.add_nodes_from(range(n))
     if p <= 0:
         return G
     if p >= 1:
         return complete_graph(n, create_using=G)
 
-    for e in edges:
-        if seed.random() < p:
-            G.add_edge(*e)
+    G.add_edges_from(ebunch_to_add=filter(lambda _: seed.random() < p, edges))
     return G
 
 
