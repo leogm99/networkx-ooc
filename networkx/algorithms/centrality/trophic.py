@@ -2,6 +2,8 @@
 import networkx as nx
 from networkx.utils import not_implemented_for
 
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["trophic_levels", "trophic_differences", "trophic_incoherence_parameter"]
 
 
@@ -66,7 +68,7 @@ def trophic_levels(G, weight="weight"):
         raise nx.NetworkXError(msg) from err
     y = n.sum(axis=1) + 1
 
-    levels = {}
+    levels = IntFloatDict()
 
     # all nodes with in-degree zero have trophic level == 1
     zero_node_ids = (node_id for node_id, degree in G.in_degree if degree == 0)
