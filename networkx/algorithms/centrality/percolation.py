@@ -8,6 +8,8 @@ from networkx.algorithms.centrality.betweenness import (
     _single_source_shortest_path_basic as shortest_path,
 )
 
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["percolation_centrality"]
 
 
@@ -80,12 +82,17 @@ def percolation_centrality(G, attribute="percolation", states=None, weight=None)
        Journal of Mathematical Sociology 25(2):163-177, 2001.
        https://doi.org/10.1080/0022250X.2001.9990249
     """
-    percolation = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
+    percolation = IntFloatDict()
+    for v in G:
+        percolation[v] = 0.0
 
     nodes = G
 
     if states is None:
-        states = nx.get_node_attributes(nodes, attribute)
+        states = IntFloatDict()
+        for n, d in G.nodes.items():
+            if attribute in d:
+                states[n] = d[attribute]
 
     # sum of all percolation states
     p_sigma_x_t = 0.0
@@ -112,7 +119,9 @@ def percolation_centrality(G, attribute="percolation", states=None, weight=None)
 
 
 def _accumulate_percolation(percolation, S, P, sigma, s, states, p_sigma_x_t):
-    delta = dict.fromkeys(S, 0)
+    delta = IntFloatDict()
+    for v in S:
+        delta[v] = 0
     while S:
         w = S.pop()
         coeff = (1 + delta[w]) / sigma[w]
