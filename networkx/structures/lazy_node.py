@@ -31,11 +31,8 @@ class LazyNode(MutableMapping):
     def __getitem__(self, key):
         data = self._store[self._node]
         if data == b"":
-            data = {}
-            self._store[self._node][LazyNode.__serialize_node(key)] = LazyNode.__serialize_attr(data)
-        else:
-            LazyNode.__deserialize_attr(data)
-        return data
+            raise KeyError(key)
+        return LazyNode.__deserialize_attr(data)[key]
 
     def __len__(self):
         data = self._store[self._node]

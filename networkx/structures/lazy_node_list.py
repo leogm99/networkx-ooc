@@ -28,17 +28,24 @@ class LazyNodeList(MutableMapping):
         self._inner = OutOfCoreDict()
 
     def __setitem__(self, key, **attr):
-        if len(attr) == 0:
-            self._inner[LazyNodeList.__serialize_node(key)] = b""
-        else:
-            try:
-                dd = LazyNodeList.__deserialize_node_attr(self._inner[LazyNodeList.__serialize_node(key)])
-            except KeyError:
-                dd = {}
-            dd.update(attr)
-            self._inner[
-                LazyNodeList.__serialize_node(key)
-            ] = LazyNodeList.__serialize_node_attr(dd)
+        try:
+            dd = self._inner[LazyNodeList.__serialize_node(key)]
+            if len(attr) == 0:
+                return
+            if dd != b'':
+                dd = LazyNodeList.__deserialize_node_attr(dd)
+                dd.update(**attr)
+                dd = LazyNodeList.__serialize_node_attr(attr)
+            else:
+                dd = LazyNodeList.__serialize_node_attr(attr)
+        except KeyError:
+            if len(attr) == 0:
+                dd = b''
+            else:
+                dd = LazyNodeList.__serialize_node_attr(attr)
+        self._inner[
+            LazyNodeList.__serialize_node(key)
+        ] = dd
 
     def add_node(self, key, **attr):
         self.__setitem__(key, **attr)
@@ -53,6 +60,8 @@ class LazyNodeList(MutableMapping):
 
     @staticmethod
     def __serialize_node_attr(attr):
+        if attr == b'':
+            return b''
         return pickle.dumps(attr)
 
     @staticmethod
