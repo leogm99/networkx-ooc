@@ -6,12 +6,21 @@ import pytest
 
 import networkx as nx
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 class TestDegreeCentrality:
+    @staticmethod
+    def _get_ooc_graph(G):
+        Lazy = LazyGraph()
+        for e in G.edges:
+            Lazy.add_edge(*e)
+        return Lazy
+
     def setup_method(self):
-        self.K = nx.krackhardt_kite_graph()
-        self.P3 = nx.path_graph(3)
-        self.K5 = nx.complete_graph(5)
+        self.K = self._get_ooc_graph(nx.krackhardt_kite_graph())
+        self.P3 = self._get_ooc_graph(nx.path_graph(3))
+        self.K5 = self._get_ooc_graph(nx.complete_graph(5))
 
         F = nx.Graph()  # Florentine families
         F.add_edge("Acciaiuoli", "Medici")
