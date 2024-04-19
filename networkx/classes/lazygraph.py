@@ -83,3 +83,10 @@ class LazyGraph(Graph):
                     self.add_edge(u, v, **attr)
                 else:
                     self.add_edge(u, v)
+
+    @classmethod
+    def from_graph_edges(cls, G):
+        LazyG = cls()
+        for e in G.edges:
+            LazyG.add_edge(*e)
+        return LazyG
