@@ -3,6 +3,8 @@ from operator import itemgetter
 
 import networkx as nx
 
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = ["load_centrality", "edge_load_centrality"]
 
 
@@ -67,7 +69,9 @@ def newman_betweenness_centrality(G, v=None, cutoff=None, normalized=True, weigh
                 return betweenness  # no normalization b=0 for all nodes
             betweenness *= 1.0 / ((order - 1) * (order - 2))
     else:
-        betweenness = {}.fromkeys(G, 0.0)
+        betweenness = IntFloatDict()
+        for n in G:
+            betweenness[n] = 0.0
         for source in betweenness:
             ubetween = _node_betweenness(G, source, cutoff, False, weight)
             for vk in ubetween:
@@ -109,7 +113,9 @@ def _node_betweenness(G, source, cutoff=False, normalized=True, weight=None):
     onodes[:] = [vert for (l, vert) in onodes if l > 0]
 
     # initialize betweenness
-    between = {}.fromkeys(length, 1.0)
+    between = IntFloatDict()
+    for n in length:
+        between[n] = 1.0
 
     while onodes:
         v = onodes.pop()
