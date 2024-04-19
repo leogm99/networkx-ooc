@@ -336,7 +336,9 @@ def _accumulate_basic(betweenness, S, P, sigma, s):
 
 def _accumulate_endpoints(betweenness, S, P, sigma, s):
     betweenness[s] += len(S) - 1
-    delta = dict.fromkeys(S, 0)
+    delta = IntFloatDict()
+    for n in S:
+        delta[n] = 0
     while S:
         w = S.pop()
         coeff = (1 + delta[w]) / sigma[w]
