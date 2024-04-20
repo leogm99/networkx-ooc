@@ -33,14 +33,14 @@ class TestUnweightedPath:
             cls.lazyCycleGraph.add_edge(*e)
 
     def test_bidirectional_shortest_path(self):
-        assert nx.bidirectional_shortest_path(self.cycle, 0, 3) == [0, 1, 2, 3]
-        assert nx.bidirectional_shortest_path(self.cycle, 0, 4) == [0, 6, 5, 4]
+        assert nx.bidirectional_shortest_path(self.lazyCycleGraph, 0, 3) == [0, 1, 2, 3]
+        assert nx.bidirectional_shortest_path(self.lazyCycleGraph, 0, 4) == [0, 6, 5, 4]
         validate_grid_path(
             4, 4, 1, 12, nx.bidirectional_shortest_path(self.grid, 1, 12)
         )
         assert nx.bidirectional_shortest_path(self.directed_cycle, 0, 3) == [0, 1, 2, 3]
         # test source = target
-        assert nx.bidirectional_shortest_path(self.cycle, 3, 3) == [3]
+        assert nx.bidirectional_shortest_path(self.lazyCycleGraph, 3, 3) == [3]
 
     @pytest.mark.parametrize(
         ("src", "tgt"),
@@ -56,7 +56,7 @@ class TestUnweightedPath:
             nx.NodeNotFound,
             match=f"Either source {src} or target {tgt} is not in G",
         ):
-            nx.bidirectional_shortest_path(self.cycle, src, tgt)
+            nx.bidirectional_shortest_path(self.lazyCycleGraph, src, tgt)
 
     def test_shortest_path_length(self):
         assert nx.shortest_path_length(self.lazyCycleGraph, 0, 3) == 3

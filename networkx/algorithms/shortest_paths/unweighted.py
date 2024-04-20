@@ -249,16 +249,21 @@ def bidirectional_shortest_path(G, source, target):
     pred, succ, w = results
 
     # build path from pred+w+succ
-    path = []
+    path = OutOfCoreList()
     # from source to w
     while w is not None:
         path.append(w)
+        p = pred[w]
+        if w == p: break
         w = pred[w]
     path.reverse()
     # from w to target
     w = succ[path[-1]]
     while w is not None:
-        path.append(w)
+        if w not in path:
+            path.append(w)
+        s = succ[w]
+        if s == w: break
         w = succ[w]
 
     return path
@@ -284,17 +289,19 @@ def _bidirectional_pred_succ(G, source, target):
         Gsucc = G.adj
 
     # predecessor and successors in search
-    pred = {source: None}
-    succ = {target: None}
+    pred = IOutOfCoreDict()
+    pred[source] = source
+    succ = IOutOfCoreDict()
+    succ[target] = target
 
     # initialize fringes, start with forward
-    forward_fringe = [source]
-    reverse_fringe = [target]
+    forward_fringe = OutOfCoreList([source])
+    reverse_fringe = OutOfCoreList([target])
 
     while forward_fringe and reverse_fringe:
         if len(forward_fringe) <= len(reverse_fringe):
             this_level = forward_fringe
-            forward_fringe = []
+            forward_fringe = OutOfCoreList()
             for v in this_level:
                 for w in Gsucc[v]:
                     if w not in pred:
@@ -304,7 +311,7 @@ def _bidirectional_pred_succ(G, source, target):
                         return pred, succ, w
         else:
             this_level = reverse_fringe
-            reverse_fringe = []
+            reverse_fringe = OutOfCoreList()
             for v in this_level:
                 for w in Gpred[v]:
                     if w not in succ:
