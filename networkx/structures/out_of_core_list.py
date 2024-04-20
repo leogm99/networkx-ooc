@@ -46,7 +46,10 @@ class OutOfCoreList(MutableSequence):
     def __slice__getitem__(self, index):
         start, stop, step = index.indices(len(self))
         if step != 1:
-            raise ValueError("Slice step other than 1 is not supported")
+            if step == -1:
+                return self.__reversed__()
+            else:
+                raise ValueError("Slice step other than 1 is not supported")
         l = OutOfCoreList()
         for i in range(start, stop, step):
             l.append(self._out_of_core_dict[i])
@@ -107,3 +110,33 @@ class OutOfCoreList(MutableSequence):
             if item1 != item2:
                 return False
         return True
+
+    def __lt__(self, other):
+        if not isinstance(other, OutOfCoreList) and not isinstance(other, list):
+            raise TypeError("Unsupported operand type(s) for <: 'OutOfCoreList' and '{}'".format(type(other).__name__))
+
+        min_len = min(len(self), len(other))
+        for i in range(min_len):
+            if self[i] < other[i]:
+                return True
+            elif self[i] > other[i]:
+                return False
+        return len(self) < len(other)
+
+    def __gt__(self, other):
+        if not isinstance(other, OutOfCoreList) and not isinstance(other, list):
+            raise TypeError("Unsupported operand type(s) for >: 'OutOfCoreList' and '{}'".format(type(other).__name__))
+
+        min_len = min(len(self), len(other))
+        for i in range(min_len):
+            if self[i] > other[i]:
+                return True
+            elif self[i] < other[i]:
+                return False
+        return len(self) > len(other)
+
+    def __reversed__(self):
+        l = OutOfCoreList()
+        for i in range(len(self) - 1, -1, -1):
+            l.append(self[i])
+        return l
