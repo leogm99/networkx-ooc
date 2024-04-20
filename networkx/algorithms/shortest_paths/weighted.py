@@ -9,6 +9,11 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.generic import _build_paths_from_predecessors
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.primitive_dicts import IntFloatDict
+
 __all__ = [
     "dijkstra_path",
     "dijkstra_path_length",
@@ -750,9 +755,11 @@ def multi_source_dijkstra(G, sources, target=None, cutoff=None, weight="weight")
         if s not in G:
             raise nx.NodeNotFound(f"Node {s} not found in graph")
     if target in sources:
-        return (0, [target])
+        return (0, OutOfCoreList([target]))
     weight = _weight_function(G, weight)
-    paths = {source: [source] for source in sources}  # dictionary of paths
+    paths = OutOfCoreDictOfLists() # dictionary of paths
+    for source in sources:
+        paths[source] = [source]
     dist = _dijkstra_multisource(
         G, sources, weight, paths=paths, cutoff=cutoff, target=target
     )
@@ -835,8 +842,8 @@ def _dijkstra_multisource(
 
     push = heappush
     pop = heappop
-    dist = {}  # dictionary of final distances
-    seen = {}
+    dist = IntFloatDict()  # dictionary of final distances
+    seen = IntFloatDict()
     # fringe is heapq with 3-tuples (distance,c,node)
     # use the count c to avoid comparing nodes (may not be able to)
     c = count()
@@ -864,7 +871,7 @@ def _dijkstra_multisource(
                 if vu_dist < u_dist:
                     raise ValueError("Contradictory paths found:", "negative weights?")
                 elif pred is not None and vu_dist == u_dist:
-                    pred[u].append(v)
+                    pred.append(u, v)
             elif u not in seen or vu_dist < seen[u]:
                 seen[u] = vu_dist
                 push(fringe, (vu_dist, next(c), u))
@@ -874,7 +881,7 @@ def _dijkstra_multisource(
                     pred[u] = [v]
             elif vu_dist == seen[u]:
                 if pred is not None:
-                    pred[u].append(v)
+                    pred.append(u, v)
 
     # The optional predecessor and path dictionaries can be accessed
     # by the caller via the pred and paths objects passed as arguments.
@@ -950,7 +957,8 @@ def dijkstra_predecessor_and_distance(G, source, cutoff=None, weight="weight"):
     if source not in G:
         raise nx.NodeNotFound(f"Node {source} is not found in the graph")
     weight = _weight_function(G, weight)
-    pred = {source: []}  # dictionary of predecessors
+    pred = OutOfCoreDictOfLists() # dictionary of predecessors
+    pred[source] = []
     return (pred, _dijkstra(G, source, weight, pred=pred, cutoff=cutoff))
 
 
