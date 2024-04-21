@@ -6,6 +6,7 @@ from itertools import count
 import networkx as nx
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 from networkx.structures.out_of_core_dict import OutOfCoreDict
+from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.primitive_dicts import IntFloatDict, IntDict
 from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.shortest_paths.weighted import _weight_function
@@ -286,16 +287,19 @@ def _single_source_shortest_path_basic(G, s):
 def _single_source_dijkstra_path_basic(G, s, weight):
     weight = _weight_function(G, weight)
     # modified from Eppstein
-    S = []
-    P = {}
+    S = OutOfCoreList()
+    P = OutOfCoreDictOfLists()
     for v in G:
         P[v] = []
-    sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
-    D = {}
+    sigma = IntFloatDict()
+    for v in G:
+        sigma[v] = 0.0
+    D = IntDict()
     sigma[s] = 1.0
     push = heappush
     pop = heappop
-    seen = {s: 0}
+    seen = IntDict()
+    seen[s] = 0
     c = count()
     Q = []  # use Q as heap with (distance,node id) tuples
     push(Q, (0, next(c), s, s))
@@ -315,7 +319,8 @@ def _single_source_dijkstra_path_basic(G, s, weight):
                 P[w] = [v]
             elif vw_dist == seen[w]:  # handle equal paths
                 sigma[w] += sigma[v]
-                P[w].append(v)
+                # P[w].append(v)
+                P.append(w, v)
     return S, P, sigma, D
 
 
