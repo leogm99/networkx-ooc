@@ -4,6 +4,8 @@ import pytest
 
 import networkx as nx
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 class TestBridges:
     """Unit tests for the bridge-finding function."""
@@ -27,14 +29,16 @@ class TestBridges:
             (5, 10),
             (6, 8),
         ]
-        G = nx.Graph(edges)
+        G = LazyGraph()
+        for e in edges:
+            G.add_edge(*e)
         source = 1
         bridges = list(nx.bridges(G, source))
         assert bridges == [(5, 6)]
 
     def test_barbell_graph(self):
         # The (3, 0) barbell graph has two triangles joined by a single edge.
-        G = nx.barbell_graph(3, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(3, 0))
         source = 0
         bridges = list(nx.bridges(G, source))
         assert bridges == [(2, 3)]
@@ -75,12 +79,14 @@ class TestHasBridges:
             (5, 10),
             (6, 8),
         ]
-        G = nx.Graph(edges)
+        G = LazyGraph()
+        for e in edges:
+            G.add_edge(*e)
         assert nx.has_bridges(G)  # Default root
         assert nx.has_bridges(G, root=1)  # arbitrary root in G
 
     def test_has_bridges_raises_root_not_in_G(self):
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_nodes_from([1, 2, 3])
         with pytest.raises(nx.NodeNotFound):
             nx.has_bridges(G, root=6)
@@ -102,7 +108,7 @@ class TestHasBridges:
         assert not nx.has_bridges(G)
 
     def test_bridges_multiple_components(self):
-        G = nx.Graph()
+        G = LazyGraph()
         nx.add_path(G, [0, 1, 2])  # One connected component
         nx.add_path(G, [4, 5, 6])  # Another connected component
         assert list(nx.bridges(G, root=4)) == [(4, 5), (5, 6)]
@@ -113,9 +119,9 @@ class TestLocalBridges:
 
     @classmethod
     def setup_class(cls):
-        cls.BB = nx.barbell_graph(4, 0)
-        cls.square = nx.cycle_graph(4)
-        cls.tri = nx.cycle_graph(3)
+        cls.BB = LazyGraph.from_graph_edges(nx.barbell_graph(4, 0))
+        cls.square = LazyGraph.from_graph_edges(nx.cycle_graph(4))
+        cls.tri =  LazyGraph.from_graph_edges(nx.cycle_graph(3))
 
     def test_nospan(self):
         expected = {(3, 4), (4, 3)}
@@ -133,7 +139,7 @@ class TestLocalBridges:
 
     def test_weight(self):
         inf = float("inf")
-        G = self.square.copy()
+        G = nx.cycle_graph(4)
 
         G.edges[1, 2]["weight"] = 2
         expected = {(u, v, 5 - wt) for u, v, wt in G.edges(data="weight", default=1)}
