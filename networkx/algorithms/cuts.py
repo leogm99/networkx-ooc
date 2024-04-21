@@ -6,6 +6,8 @@ from itertools import chain
 
 import networkx as nx
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = [
     "boundary_expansion",
     "conductance",
@@ -123,8 +125,10 @@ def volume(G, S, weight=None):
            <https://www.cs.purdue.edu/homes/dgleich/publications/Gleich%202005%20-%20hierarchical%20directed%20spectral.pdf>
 
     """
-    degree = G.out_degree if G.is_directed() else G.degree
-    return sum(d for v, d in degree(S, weight=weight))
+    if G.is_directed():
+        return sum(d for v, d in G.out_degree(S, weight=weight))
+
+    return sum(d for v, d in G.degree(S, weight=weight))
 
 
 @nx._dispatch(edge_attrs="weight")
@@ -173,7 +177,7 @@ def normalized_cut_size(G, S, T=None, weight=None):
 
     """
     if T is None:
-        T = set(G) - set(S)
+        T = OutOfCoreSet(G) - OutOfCoreSet(S)
     num_cut_edges = cut_size(G, S, T=T, weight=weight)
     volume_S = volume(G, S, weight=weight)
     volume_T = volume(G, T, weight=weight)
@@ -221,7 +225,7 @@ def conductance(G, S, T=None, weight=None):
 
     """
     if T is None:
-        T = set(G) - set(S)
+        T = OutOfCoreSet(G) - OutOfCoreSet(S)
     num_cut_edges = cut_size(G, S, T, weight=weight)
     volume_S = volume(G, S, weight=weight)
     volume_T = volume(G, T, weight=weight)
@@ -270,7 +274,7 @@ def edge_expansion(G, S, T=None, weight=None):
 
     """
     if T is None:
-        T = set(G) - set(S)
+        T = OutOfCoreSet(G) - OutOfCoreSet(S)
     num_cut_edges = cut_size(G, S, T=T, weight=weight)
     return num_cut_edges / min(len(S), len(T))
 
@@ -357,7 +361,7 @@ def node_expansion(G, S):
            <https://doi.org/10.1561/0400000010>
 
     """
-    neighborhood = set(chain.from_iterable(G.neighbors(v) for v in S))
+    neighborhood = OutOfCoreSet(chain.from_iterable(G.neighbors(v) for v in S))
     return len(neighborhood) / len(S)
 
 

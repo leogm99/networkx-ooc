@@ -12,6 +12,8 @@ from itertools import chain
 
 import networkx as nx
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = ["edge_boundary", "node_boundary"]
 
 
@@ -82,7 +84,10 @@ def edge_boundary(G, nbunch1, nbunch2=None, data=False, keys=False, default=None
     the interest of speed and generality, that is not required here.
 
     """
-    nset1 = {n for n in nbunch1 if n in G}
+    nset1 = OutOfCoreSet()
+    for n in nbunch1:
+        if n in G:
+            nset1.add(n)
     # Here we create an iterator over edges incident to nodes in the set
     # `nset1`. The `Graph.edges()` method does not provide a guarantee
     # on the orientation of the edges, so our algorithm below must
@@ -98,7 +103,7 @@ def edge_boundary(G, nbunch1, nbunch2=None, data=False, keys=False, default=None
     # an additional set and using the `in` operator.
     if nbunch2 is None:
         return (e for e in edges if (e[0] in nset1) ^ (e[1] in nset1))
-    nset2 = set(nbunch2)
+    nset2 = OutOfCoreSet(nbunch2)
     return (
         e
         for e in edges
@@ -158,10 +163,13 @@ def node_boundary(G, nbunch1, nbunch2=None):
     the interest of speed and generality, that is not required here.
 
     """
-    nset1 = {n for n in nbunch1 if n in G}
-    bdy = set(chain.from_iterable(G[v] for v in nset1)) - nset1
+    nset1 = OutOfCoreSet()
+    for n in nbunch1:
+        if n in G:
+            nset1.add(n)
+    bdy = OutOfCoreSet(chain.from_iterable(G[v] for v in nset1)) - nset1
     # If `nbunch2` is not specified, it is assumed to be the set
     # complement of `nbunch1`.
     if nbunch2 is not None:
-        bdy &= set(nbunch2)
+        bdy &= OutOfCoreSet(nbunch2)
     return bdy

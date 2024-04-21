@@ -3,13 +3,15 @@
 
 import networkx as nx
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 class TestCutSize:
     """Unit tests for the :func:`~networkx.cut_size` function."""
 
     def test_symmetric(self):
         """Tests that the cut size is symmetric."""
-        G = nx.barbell_graph(3, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(3, 0))
         S = {0, 1, 4}
         T = {2, 3, 5}
         assert nx.cut_size(G, S, T) == 4
@@ -17,7 +19,7 @@ class TestCutSize:
 
     def test_single_edge(self):
         """Tests for a cut of a single edge."""
-        G = nx.barbell_graph(3, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(3, 0))
         S = {0, 1, 2}
         T = {3, 4, 5}
         assert nx.cut_size(G, S, T) == 1
@@ -49,7 +51,7 @@ class TestVolume:
     """Unit tests for the :func:`~networkx.volume` function."""
 
     def test_graph(self):
-        G = nx.cycle_graph(4)
+        G = LazyGraph.from_graph_edges(nx.cycle_graph(4))
         assert nx.volume(G, {0, 1}) == 4
 
     def test_digraph(self):
@@ -67,7 +69,7 @@ class TestVolume:
         assert nx.volume(G, {0, 1}) == 4
 
     def test_barbell(self):
-        G = nx.barbell_graph(3, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(3, 0))
         assert nx.volume(G, {0, 1, 2}) == 7
         assert nx.volume(G, {3, 4, 5}) == 7
 
@@ -76,7 +78,7 @@ class TestNormalizedCutSize:
     """Unit tests for the :func:`~networkx.normalized_cut_size` function."""
 
     def test_graph(self):
-        G = nx.path_graph(4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(4))
         S = {1, 2}
         T = set(G) - S
         size = nx.normalized_cut_size(G, S, T)
@@ -102,7 +104,7 @@ class TestConductance:
     """Unit tests for the :func:`~networkx.conductance` function."""
 
     def test_graph(self):
-        G = nx.barbell_graph(5, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(5, 0))
         # Consider the singleton sets containing the "bridge" nodes.
         # There is only one cut edge, and each set has volume five.
         S = {4}
@@ -121,7 +123,7 @@ class TestEdgeExpansion:
     """Unit tests for the :func:`~networkx.edge_expansion` function."""
 
     def test_graph(self):
-        G = nx.barbell_graph(5, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(5, 0))
         S = set(range(5))
         T = set(G) - S
         expansion = nx.edge_expansion(G, S, T)
@@ -135,7 +137,7 @@ class TestNodeExpansion:
     """Unit tests for the :func:`~networkx.node_expansion` function."""
 
     def test_graph(self):
-        G = nx.path_graph(8)
+        G = LazyGraph.from_graph_edges(nx.path_graph(8))
         S = {3, 4, 5}
         expansion = nx.node_expansion(G, S)
         # The neighborhood of S has cardinality five, and S has
@@ -148,7 +150,7 @@ class TestBoundaryExpansion:
     """Unit tests for the :func:`~networkx.boundary_expansion` function."""
 
     def test_graph(self):
-        G = nx.complete_graph(10)
+        G = LazyGraph.from_graph_edges(nx.complete_graph(10))
         S = set(range(4))
         expansion = nx.boundary_expansion(G, S)
         # The node boundary of S has cardinality six, and S has
@@ -161,7 +163,7 @@ class TestMixingExpansion:
     """Unit tests for the :func:`~networkx.mixing_expansion` function."""
 
     def test_graph(self):
-        G = nx.barbell_graph(5, 0)
+        G = LazyGraph.from_graph_edges(nx.barbell_graph(5, 0))
         S = set(range(5))
         T = set(G) - S
         expansion = nx.mixing_expansion(G, S, T)
