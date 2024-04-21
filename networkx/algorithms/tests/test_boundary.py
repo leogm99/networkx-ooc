@@ -8,13 +8,15 @@ import networkx as nx
 from networkx import convert_node_labels_to_integers as cnlti
 from networkx.utils import edges_equal
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 class TestNodeBoundary:
     """Unit tests for the :func:`~networkx.node_boundary` function."""
 
     def test_null_graph(self):
         """Tests that the null graph has empty node boundaries."""
-        null = nx.null_graph()
+        null = LazyGraph.from_graph_edges(nx.null_graph())
         assert nx.node_boundary(null, []) == set()
         assert nx.node_boundary(null, [], []) == set()
         assert nx.node_boundary(null, [1, 2, 3]) == set()
@@ -22,7 +24,7 @@ class TestNodeBoundary:
         assert nx.node_boundary(null, [1, 2, 3], [3, 4, 5]) == set()
 
     def test_path_graph(self):
-        P10 = cnlti(nx.path_graph(10), first_label=1)
+        P10 = LazyGraph.from_graph_edges(cnlti(nx.path_graph(10), first_label=1))
         assert nx.node_boundary(P10, []) == set()
         assert nx.node_boundary(P10, [], []) == set()
         assert nx.node_boundary(P10, [1, 2, 3]) == {4}
@@ -32,7 +34,7 @@ class TestNodeBoundary:
         assert nx.node_boundary(P10, [4, 5, 6], [9, 10]) == set()
 
     def test_complete_graph(self):
-        K10 = cnlti(nx.complete_graph(10), first_label=1)
+        K10 = LazyGraph.from_graph_edges(cnlti(nx.complete_graph(10), first_label=1))
         assert nx.node_boundary(K10, []) == set()
         assert nx.node_boundary(K10, [], []) == set()
         assert nx.node_boundary(K10, [1, 2, 3]) == {4, 5, 6, 7, 8, 9, 10}
@@ -52,7 +54,7 @@ class TestNodeBoundary:
         def cheeger(G, k):
             return min(len(nx.node_boundary(G, nn)) / k for nn in combinations(G, k))
 
-        P = nx.petersen_graph()
+        P = LazyGraph.from_graph_edges(nx.petersen_graph())
         assert cheeger(P, 1) == pytest.approx(3.00, abs=1e-2)
         assert cheeger(P, 2) == pytest.approx(2.00, abs=1e-2)
         assert cheeger(P, 3) == pytest.approx(1.67, abs=1e-2)
@@ -89,7 +91,7 @@ class TestEdgeBoundary:
     """Unit tests for the :func:`~networkx.edge_boundary` function."""
 
     def test_null_graph(self):
-        null = nx.null_graph()
+        null = LazyGraph.from_graph_edges(nx.null_graph())
         assert list(nx.edge_boundary(null, [])) == []
         assert list(nx.edge_boundary(null, [], [])) == []
         assert list(nx.edge_boundary(null, [1, 2, 3])) == []
@@ -97,7 +99,7 @@ class TestEdgeBoundary:
         assert list(nx.edge_boundary(null, [1, 2, 3], [3, 4, 5])) == []
 
     def test_path_graph(self):
-        P10 = cnlti(nx.path_graph(10), first_label=1)
+        P10 = LazyGraph.from_graph_edges(cnlti(nx.path_graph(10), first_label=1))
         assert list(nx.edge_boundary(P10, [])) == []
         assert list(nx.edge_boundary(P10, [], [])) == []
         assert list(nx.edge_boundary(P10, [1, 2, 3])) == [(3, 4)]
@@ -108,8 +110,8 @@ class TestEdgeBoundary:
         assert list(nx.edge_boundary(P10, [1, 2, 3], [3, 4, 5])) == [(2, 3), (3, 4)]
 
     def test_complete_graph(self):
-        K10 = cnlti(nx.complete_graph(10), first_label=1)
-
+        K10 = LazyGraph.from_graph_edges(cnlti(nx.complete_graph(10), first_label=1)
+)
         def ilen(iterable):
             return sum(1 for i in iterable)
 
