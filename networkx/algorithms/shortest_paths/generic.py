@@ -8,6 +8,9 @@ import warnings
 
 import networkx as nx
 
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = [
     "shortest_path",
     "all_shortest_paths",
@@ -157,7 +160,7 @@ def shortest_path(G, source=None, target=None, weight=None, method="dijkstra"):
                 paths = nx.single_source_bellman_ford_path(G, target, weight=weight)
             # Now flip the paths so they go from a source to the target.
             for target in paths:
-                paths[target] = list(reversed(paths[target]))
+                paths[target] = OutOfCoreList(reversed(paths[target]))
     else:
         if target is None:
             # Find paths to all nodes accessible from the source.
@@ -695,13 +698,17 @@ def _build_paths_from_predecessors(sources, target, pred):
     if target not in pred:
         raise nx.NetworkXNoPath(f"Target {target} cannot be reached from given sources")
 
-    seen = {target}
+    seen = OutOfCoreSet({target})
     stack = [[target, 0]]
     top = 0
     while top >= 0:
         node, i = stack[top]
         if node in sources:
-            yield [p for p, n in reversed(stack[: top + 1])]
+            # yield [p for p, n in reversed(stack[: top + 1])]
+            r = OutOfCoreList()
+            for p, n in reversed(stack[: top + 1]):
+                r.append(p)
+            yield r
         if len(pred[node]) > i:
             stack[top][1] = i + 1
             next = pred[node][i]

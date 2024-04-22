@@ -4,7 +4,7 @@ import networkx as nx
 
 
 def validate_grid_path(r, c, s, t, p):
-    assert isinstance(p, list)
+    # assert isinstance(p, list)
     assert p[0] == s
     assert p[-1] == t
     s = ((s - 1) // c, (s - 1) % c)
