@@ -2,6 +2,9 @@
 """
 import networkx as nx
 
+from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.out_of_core_list import OutOfCoreList
+
 __all__ = [
     "floyd_warshall",
     "floyd_warshall_predecessor_and_distance",
@@ -203,11 +206,11 @@ def reconstruct_path(source, target, predecessors):
         return []
     prev = predecessors[source]
     curr = prev[target]
-    path = [target, curr]
+    path = OutOfCoreList([target, curr])
     while curr != source:
         curr = prev[curr]
         path.append(curr)
-    return list(reversed(path))
+    return OutOfCoreList(reversed(path))
 
 
 @nx._dispatch(edge_attrs="weight")

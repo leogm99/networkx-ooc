@@ -94,28 +94,28 @@ class TestFloyd:
             XG = nx.DiGraph()
             XG.add_weighted_edges_from(
                 [
-                    ("s", "u", 10),
-                    ("s", "x", 5),
-                    ("u", "v", 1),
-                    ("u", "x", 2),
-                    ("v", "y", 1),
-                    ("x", "u", 3),
-                    ("x", "v", 5),
-                    ("x", "y", 2),
-                    ("y", "s", 7),
-                    ("y", "v", 6),
+                    (1, 2, 10),
+                    (1, 3, 5),
+                    (2, 4, 1),
+                    (2, 3, 2),
+                    (4, 5, 1),
+                    (3, 2, 3),
+                    (3, 4, 5),
+                    (3, 5, 2),
+                    (5, 1, 7),
+                    (5, 4, 6),
                 ]
             )
             predecessors, _ = nx.floyd_warshall_predecessor_and_distance(XG)
 
-            path = nx.reconstruct_path("s", "v", predecessors)
-            assert path == ["s", "x", "u", "v"]
+            path = nx.reconstruct_path(1, 4, predecessors)
+            assert path == [1, 3, 2, 4]
 
-            path = nx.reconstruct_path("s", "s", predecessors)
+            path = nx.reconstruct_path(1, 1, predecessors)
             assert path == []
 
             # this part raises the keyError
-            nx.reconstruct_path("1", "2", predecessors)
+            nx.reconstruct_path("10", "20", predecessors)
 
     def test_cycle(self):
         path, dist = nx.floyd_warshall_predecessor_and_distance(nx.cycle_graph(7))
