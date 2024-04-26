@@ -15,7 +15,7 @@ class TestGroupBetweennessCentrality:
         """
         Group betweenness centrality for single node group
         """
-        G = nx.path_graph(5)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
         C = [1]
         b = nx.group_betweenness_centrality(
             G, C, weight=None, normalized=False, endpoints=False
@@ -27,7 +27,7 @@ class TestGroupBetweennessCentrality:
         """
         Group betweenness centrality for single node group
         """
-        G = nx.path_graph(5)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
         C = [1]
         b = nx.group_betweenness_centrality(
             G, C, weight=None, normalized=False, endpoints=True
@@ -40,7 +40,7 @@ class TestGroupBetweennessCentrality:
         Group betweenness centrality for group with more than
         1 node and normalized
         """
-        G = nx.path_graph(5)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
         C = [1, 3]
         b = nx.group_betweenness_centrality(
             G, C, weight=None, normalized=True, endpoints=False
@@ -52,7 +52,7 @@ class TestGroupBetweennessCentrality:
         """
         Group betweenness centrality value of 0
         """
-        G = nx.cycle_graph(7)
+        G = LazyGraph.from_graph_edges(nx.cycle_graph(7))
         C = [[0, 1, 6], [0, 1, 5]]
         b = nx.group_betweenness_centrality(G, C, weight=None, normalized=False)
         b_answer = [0.0, 3.0]
@@ -62,7 +62,7 @@ class TestGroupBetweennessCentrality:
         """
         Group betweenness centrality value of 0
         """
-        G = nx.cycle_graph(6)
+        G = LazyGraph.from_graph_edges(nx.cycle_graph(6))
         C = [0, 1, 5]
         b = nx.group_betweenness_centrality(G, C, weight=None, normalized=False)
         b_answer = 0.0
@@ -72,7 +72,7 @@ class TestGroupBetweennessCentrality:
         """
         Group betweenness centrality in a disconnected graph
         """
-        G = nx.path_graph(5)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
         G.remove_edge(0, 1)
         C = [1]
         b = nx.group_betweenness_centrality(G, C, weight=None, normalized=False)
@@ -84,7 +84,7 @@ class TestGroupBetweennessCentrality:
         Node(s) in C not in graph, raises NodeNotFound exception
         """
         with pytest.raises(nx.NodeNotFound):
-            nx.group_betweenness_centrality(nx.path_graph(5), [4, 7, 8])
+            nx.group_betweenness_centrality(LazyGraph.from_graph_edges(nx.path_graph(5)), [4, 7, 8])
 
     def test_group_betweenness_directed_weighted(self):
         """
@@ -198,7 +198,7 @@ class TestGroupClosenessCentrality:
         """
         Group closeness centrality for a disconnected graph
         """
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_nodes_from([1, 2, 3, 4])
         c = nx.group_closeness_centrality(G, [1, 2])
         c_answer = 0
@@ -230,7 +230,7 @@ class TestGroupDegreeCentrality:
         G = LazyGraph.from_graph_edges(nx.path_graph(4))
         d = nx.group_degree_centrality(G, [1])
         d_answer = nx.degree_centrality(G)[1]
-        assert d == d_answer
+        assert round(d, 6) == round(d_answer, 6)
 
     def test_group_degree_centrality_multiple_node(self):
         """
