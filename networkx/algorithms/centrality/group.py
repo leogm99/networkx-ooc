@@ -9,6 +9,8 @@ from networkx.algorithms.centrality.betweenness import (
 )
 from networkx.utils.decorators import not_implemented_for
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = [
     "group_betweenness_centrality",
     "group_closeness_centrality",
@@ -623,8 +625,8 @@ def group_closeness_centrality(G, S, weight=None):
     if G.is_directed():
         G = G.reverse()  # reverse view
     closeness = 0  # initialize to 0
-    V = set(G)  # set of nodes in G
-    S = set(S)  # set of nodes in group S
+    V = OutOfCoreSet(G)  # set of nodes in G
+    S = OutOfCoreSet(S)  # set of nodes in group S
     V_S = V - S  # set of nodes in V but not S
     shortest_path_lengths = nx.multi_source_dijkstra_path_length(G, S, weight=weight)
     # accumulation
@@ -686,7 +688,13 @@ def group_degree_centrality(G, S):
        Journal of Mathematical Sociology. 23(3): 181-201. 1999.
        http://www.analytictech.com/borgatti/group_centrality.htm
     """
-    centrality = len(set().union(*[set(G.neighbors(i)) for i in S]) - set(S))
+    # centrality = len(set().union(*[set(G.neighbors(i)) for i in S]) - set(S))
+    S = OutOfCoreSet(S)
+    neighbors = OutOfCoreSet()
+    for i in S:
+        for j in G.neighbors(i):
+            neighbors.add(j)
+    centrality = len(neighbors - S)
     centrality /= len(G.nodes()) - len(S)
     return centrality
 

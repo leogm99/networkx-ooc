@@ -7,6 +7,8 @@ import pytest
 
 import networkx as nx
 
+from networkx.classes.lazygraph import LazyGraph
+
 
 class TestGroupBetweennessCentrality:
     def test_group_betweenness_single_node(self):
@@ -187,16 +189,16 @@ class TestGroupClosenessCentrality:
         """
         Group closeness centrality for a single node group
         """
-        G = nx.path_graph(5)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
         c = nx.group_closeness_centrality(G, [1])
         c_answer = nx.closeness_centrality(G, 1)
-        assert c == c_answer
+        assert round(c, 6) == round(c_answer, 6)
 
     def test_group_closeness_disconnected(self):
         """
         Group closeness centrality for a disconnected graph
         """
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_nodes_from([1, 2, 3, 4])
         c = nx.group_closeness_centrality(G, [1, 2])
         c_answer = 0
@@ -207,7 +209,7 @@ class TestGroupClosenessCentrality:
         Group closeness centrality for a group with more than
         1 node
         """
-        G = nx.path_graph(4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(4))
         c = nx.group_closeness_centrality(G, [1, 2])
         c_answer = 1
         assert c == c_answer
@@ -217,7 +219,7 @@ class TestGroupClosenessCentrality:
         Node(s) in S not in graph, raises NodeNotFound exception
         """
         with pytest.raises(nx.NodeNotFound):
-            nx.group_closeness_centrality(nx.path_graph(5), [6, 7, 8])
+            nx.group_closeness_centrality(LazyGraph.from_graph_edges(nx.path_graph(5)), [6, 7, 8])
 
 
 class TestGroupDegreeCentrality:
@@ -225,7 +227,7 @@ class TestGroupDegreeCentrality:
         """
         Group degree centrality for a single node group
         """
-        G = nx.path_graph(4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(4))
         d = nx.group_degree_centrality(G, [1])
         d_answer = nx.degree_centrality(G)[1]
         assert d == d_answer
@@ -235,7 +237,7 @@ class TestGroupDegreeCentrality:
         Group degree centrality for group with more than
         1 node
         """
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_nodes_from([1, 2, 3, 4, 5, 6, 7, 8])
         G.add_edges_from(
             [(1, 2), (1, 3), (1, 6), (1, 7), (1, 8), (2, 3), (2, 4), (2, 5)]
@@ -275,4 +277,4 @@ class TestGroupDegreeCentrality:
         Node(s) in S not in graph, raises NetworkXError
         """
         with pytest.raises(nx.NetworkXError):
-            nx.group_degree_centrality(nx.path_graph(5), [6, 7, 8])
+            nx.group_degree_centrality(LazyGraph.from_graph_edges(nx.path_graph(5)), [6, 7, 8])
