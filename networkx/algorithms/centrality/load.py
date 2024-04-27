@@ -3,7 +3,8 @@ from operator import itemgetter
 
 import networkx as nx
 
-from networkx.structures.primitive_dicts import IntFloatDict
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, PrimitiveType
 
 __all__ = ["load_centrality", "edge_load_centrality"]
 
@@ -166,7 +167,7 @@ def edge_load_centrality(G, cutoff=False):
     which use that edge. Where more than one path is shortest
     the count is divided equally among paths.
     """
-    betweenness = {}
+    betweenness = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
     for u, v in G.edges():
         betweenness[(u, v)] = 0.0
         betweenness[(v, u)] = 0.0
@@ -183,9 +184,11 @@ def _edge_betweenness(G, source, nodes=None, cutoff=False):
     # get the predecessor data
     (pred, length) = nx.predecessor(G, source, cutoff=cutoff, return_seen=True)
     # order the nodes by path length
-    onodes = [n for n, d in sorted(length.items(), key=itemgetter(1))]
+    onodes = OutOfCoreList()
+    for n, d in sorted(length.items(), key=itemgetter(1)):
+        onodes.append(n)
     # initialize betweenness, doesn't account for any edge weights
-    between = {}
+    between = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
     for u, v in G.edges(nodes):
         between[(u, v)] = 1.0
         between[(v, u)] = 1.0

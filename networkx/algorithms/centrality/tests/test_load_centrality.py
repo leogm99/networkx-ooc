@@ -27,8 +27,8 @@ class TestLoadCentrality:
         cls.K5 = LazyGraph.from_graph_edges(nx.complete_graph(5))
         cls.P2 = LazyGraph.from_graph_edges(nx.path_graph(2))
 
-        cls.C4 = nx.cycle_graph(4)
-        cls.T = nx.balanced_tree(r=2, h=2)
+        cls.C4 = LazyGraph.from_graph_edges(nx.cycle_graph(4))
+        cls.T = LazyGraph.from_graph_edges(nx.balanced_tree(r=2, h=2))
         cls.Gb = LazyGraph.from_graph_edges(nx.Graph())
         cls.Gb.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (4, 5), (3, 5)])
         # cls.F = nx.florentine_families_graph()
