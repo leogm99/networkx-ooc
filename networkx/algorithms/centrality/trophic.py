@@ -2,7 +2,8 @@
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, PrimitiveType
+from networkx.structures.edges_dict import EdgesDict
+from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
 __all__ = ["trophic_levels", "trophic_differences", "trophic_incoherence_parameter"]
 

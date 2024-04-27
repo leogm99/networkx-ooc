@@ -3,8 +3,9 @@ from operator import itemgetter
 
 import networkx as nx
 
+from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, PrimitiveType
+from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
 __all__ = ["load_centrality", "edge_load_centrality"]
 

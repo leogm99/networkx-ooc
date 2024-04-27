@@ -10,8 +10,9 @@ from networkx.algorithms.centrality.betweenness import (
     _single_source_shortest_path_basic as shortest_path,
 )
 
+from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, PrimitiveType
+from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
 __all__ = [
     "betweenness_centrality_subset",

@@ -11,3 +11,4 @@ from .multigraph import MultiGraph
 from networkx.structures.out_of_core_set import OutOfCoreSet, OutOfCoreDictSet, BitmapSet
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+from networkx.structures.edges_dict import EdgesDict

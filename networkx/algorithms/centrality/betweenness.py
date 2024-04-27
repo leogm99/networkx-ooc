@@ -4,10 +4,11 @@ from heapq import heappop, heappush
 from itertools import count
 
 import networkx as nx
+from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, IntDict, PrimitiveType
+from networkx.structures.primitive_dicts import IntFloatDict, IntDict, PrimitiveType
 from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import py_random_state
