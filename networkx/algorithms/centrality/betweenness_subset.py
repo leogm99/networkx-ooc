@@ -11,7 +11,7 @@ from networkx.algorithms.centrality.betweenness import (
 )
 
 from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict
+from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, PrimitiveType
 
 __all__ = [
     "betweenness_centrality_subset",
@@ -189,8 +189,9 @@ def edge_betweenness_centrality_subset(
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    b = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-    b.update(dict.fromkeys(G.edges(), 0.0))  # b[e] for e in G.edges()
+    b = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    for e in G.edges():
+        b[e] = 0.0
     for s in sources:
         # single source shortest paths
         if weight is None:  # use BFS
@@ -198,8 +199,6 @@ def edge_betweenness_centrality_subset(
         else:  # use Dijkstra's algorithm
             S, P, sigma, _ = dijkstra(G, s, weight)
         b = _accumulate_edges_subset(b, S, P, sigma, s, targets)
-    for n in G:  # remove nodes to only return edges
-        del b[n]
     b = _rescale_e(b, len(G), normalized=normalized, directed=G.is_directed())
     if G.is_multigraph():
         b = _add_edge_keys(G, b, weight=weight)
@@ -226,8 +225,10 @@ def _accumulate_subset(betweenness, S, P, sigma, s, targets):
 
 def _accumulate_edges_subset(betweenness, S, P, sigma, s, targets):
     """edge_betweenness_centrality_subset helper."""
-    delta = dict.fromkeys(S, 0)
-    target_set = set(targets)
+    delta = IntFloatDict()
+    for n in S:
+        delta[n] = 0.0
+    target_set = OutOfCoreSet(targets)
     while S:
         w = S.pop()
         for v in P[w]:
@@ -240,8 +241,6 @@ def _accumulate_edges_subset(betweenness, S, P, sigma, s, targets):
             else:
                 betweenness[(v, w)] += c
             delta[v] += c
-        if w != s:
-            betweenness[w] += delta[w]
     return betweenness
 
 

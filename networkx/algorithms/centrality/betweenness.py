@@ -7,7 +7,7 @@ import networkx as nx
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntFloatDict, IntDict
+from networkx.structures.primitive_dicts import EdgesDict, IntFloatDict, IntDict, PrimitiveType
 from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import py_random_state
@@ -226,13 +226,13 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    betweenness = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-    # b[e]=0 for e in G.edges()
-    betweenness.update(dict.fromkeys(G.edges(), 0.0))
+    betweenness = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    for e in G.edges():
+        betweenness[e] = 0.0
     if k is None:
         nodes = G
     else:
-        nodes = seed.sample(list(G.nodes()), k)
+        nodes = seed.sample(OutOfCoreList(G.nodes()), k)
     for s in nodes:
         # single source shortest paths
         if weight is None:  # use BFS
@@ -242,8 +242,6 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
         # accumulation
         betweenness = _accumulate_edges(betweenness, S, P, sigma, s)
     # rescaling
-    for n in G:  # remove nodes to only return edges
-        del betweenness[n]
     betweenness = _rescale_e(
         betweenness, len(G), normalized=normalized, directed=G.is_directed()
     )
@@ -355,7 +353,9 @@ def _accumulate_endpoints(betweenness, S, P, sigma, s):
 
 
 def _accumulate_edges(betweenness, S, P, sigma, s):
-    delta = dict.fromkeys(S, 0)
+    delta = IntFloatDict()
+    for x in S:
+        delta[x] = 0
     while S:
         w = S.pop()
         coeff = (1 + delta[w]) / sigma[w]
@@ -366,8 +366,6 @@ def _accumulate_edges(betweenness, S, P, sigma, s):
             else:
                 betweenness[(v, w)] += c
             delta[v] += c
-        if w != s:
-            betweenness[w] += delta[w]
     return betweenness
 
 

@@ -189,7 +189,7 @@ class TestSubsetBetweennessCentrality:
 class TestEdgeSubsetBetweennessCentrality:
     def test_K5(self):
         """Edge betweenness subset centrality: K5"""
-        G = nx.complete_graph(5)
+        G = LazyGraph.from_graph_edges(nx.complete_graph(5))
         b = nx.edge_betweenness_centrality_subset(
             G, sources=[0], targets=[1, 3], weight=None
         )
@@ -212,7 +212,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_P5(self):
         """Edge betweenness subset centrality: P5"""
-        G = nx.Graph()
+        G = LazyGraph()
         nx.add_path(G, range(5))
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(1, 2)] = b_answer[(2, 3)] = 0.5
@@ -224,7 +224,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_P5_multiple_target(self):
         """Edge betweenness subset centrality: P5 multiple target"""
-        G = nx.Graph()
+        G = LazyGraph()
         nx.add_path(G, range(5))
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(1, 2)] = b_answer[(2, 3)] = 1
@@ -237,7 +237,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_box(self):
         """Edge betweenness subset centrality: box"""
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3)])
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(0, 2)] = 0.25
@@ -250,7 +250,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_box_and_path(self):
         """Edge betweenness subset centrality: box and path"""
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 5)])
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(0, 2)] = 0.5
@@ -264,7 +264,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_box_and_path2(self):
         """Edge betweenness subset centrality: box and path multiple target"""
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_edges_from([(0, 1), (1, 2), (2, 3), (1, 20), (20, 3), (3, 4)])
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = 1.0
@@ -279,7 +279,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_diamond_multi_path(self):
         """Edge betweenness subset centrality: Diamond Multi Path"""
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_edges_from(
             [
                 (1, 2),
