@@ -592,7 +592,7 @@ def single_source_all_shortest_paths(G, source, weight=None, method="dijkstra"):
         raise ValueError(f"method not supported: {method}")
     for n in G:
         try:
-            yield n, list(_build_paths_from_predecessors({source}, n, pred))
+            yield n, _build_paths_from_predecessors({source}, n, pred)
         except nx.NetworkXNoPath:
             pass
 
