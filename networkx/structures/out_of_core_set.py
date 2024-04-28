@@ -22,7 +22,7 @@ class OutOfCoreSet(MutableSet):
                 self.add(node)
 
     def add(self, node):
-        if self._mode == DUAL and self._int_type and not isinstance(node, int):
+        if self._mode == DUAL and self._int_type and (not isinstance(node, int) or node < 0):
             self._set_out_of_core_dict_set()
         self._set.add(node)
 
@@ -90,7 +90,7 @@ class OutOfCoreDictSet(MutableSet):
         self._out_of_core_dict[self.__to_bytes(node)] = ''.encode()
 
     def discard(self, node):
-        if (node in self._out_of_core_dict):
+        if (self.__to_bytes(node) in self._out_of_core_dict):
             del self._out_of_core_dict[self.__to_bytes(node)]
 
     def __len__(self):
