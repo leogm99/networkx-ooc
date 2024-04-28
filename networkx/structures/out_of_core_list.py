@@ -1,4 +1,5 @@
 from typing import MutableSequence
+from networkx.structures.edges_dict import BiTupleDict, EdgesDict
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
@@ -20,6 +21,8 @@ class OutOfCoreList(MutableSequence):
             self._out_of_core_dict = IOutOfCoreDict()
         elif value_primitive_type == PrimitiveType.FLOAT:
             self._out_of_core_dict = IntFloatDict()
+        elif value_primitive_type == PrimitiveType.TUPLE:
+            self._out_of_core_dict = BiTupleDict(PrimitiveType.INTEGER, PrimitiveType.TUPLE)
         else:
             raise NotImplementedError("This functionality is not implemented yet.")
 
@@ -50,7 +53,7 @@ class OutOfCoreList(MutableSequence):
                 return self.__reversed__()
             else:
                 raise ValueError("Slice step other than 1 is not supported")
-        l = OutOfCoreList()
+        l = OutOfCoreList(value_primitive_type=self._value_primitive_type)
         for i in range(start, stop, step):
             l.append(self._out_of_core_dict[i])
         return l
@@ -136,7 +139,7 @@ class OutOfCoreList(MutableSequence):
         return len(self) > len(other)
 
     def __reversed__(self):
-        l = OutOfCoreList()
+        l = OutOfCoreList(value_primitive_type=self._value_primitive_type)
         for i in range(len(self) - 1, -1, -1):
             l.append(self[i])
         return l

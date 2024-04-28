@@ -10,6 +10,7 @@ import networkx as nx
 
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import PrimitiveType
 
 __all__ = [
     "shortest_path",
@@ -699,7 +700,9 @@ def _build_paths_from_predecessors(sources, target, pred):
         raise nx.NetworkXNoPath(f"Target {target} cannot be reached from given sources")
 
     seen = OutOfCoreSet({target})
-    stack = [[target, 0]]
+    # stack = [(target, 0)]
+    stack = OutOfCoreList(value_primitive_type=PrimitiveType.TUPLE)
+    stack.append((target, 0))
     top = 0
     while top >= 0:
         node, i = stack[top]
@@ -710,7 +713,7 @@ def _build_paths_from_predecessors(sources, target, pred):
                 r.append(p)
             yield r
         if len(pred[node]) > i:
-            stack[top][1] = i + 1
+            stack[top] = (stack[top][0], i + 1)
             next = pred[node][i]
             if next in seen:
                 continue
@@ -718,9 +721,9 @@ def _build_paths_from_predecessors(sources, target, pred):
                 seen.add(next)
             top += 1
             if top == len(stack):
-                stack.append([next, 0])
+                stack.append((next, 0))
             else:
-                stack[top][:] = [next, 0]
+                stack[top] = (next, 0)
         else:
             seen.discard(node)
             top -= 1

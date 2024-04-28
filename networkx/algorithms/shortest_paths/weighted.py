@@ -9,10 +9,13 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.generic import _build_paths_from_predecessors
 
+from networkx.structures.edges_dict import EdgesDict
+from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntFloatDict
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
 
 __all__ = [
     "dijkstra_path",
@@ -1253,8 +1256,10 @@ def bellman_ford_predecessor_and_distance(
     if any(weight(u, v, d) < 0 for u, v, d in nx.selfloop_edges(G, data=True)):
         raise nx.NetworkXUnbounded("Negative cycle detected.")
 
-    dist = {source: 0}
-    pred = {source: []}
+    dist = IntFloatDict()
+    dist[source] = 0
+    pred = OutOfCoreDictOfLists()
+    pred[source] = []
 
     if len(G) == 1:
         return pred, dist
@@ -1335,10 +1340,14 @@ def _bellman_ford(
         undirected graph is a negative cycle
     """
     if pred is None:
-        pred = {v: [] for v in source}
+        pred = OutOfCoreDictOfLists()
+        for v in source:
+            pred[v] = []
 
     if dist is None:
-        dist = {v: 0 for v in source}
+        dist = IOutOfCoreDict()
+        for v in source:
+            dist[v] = 0
 
     negative_cycle_found = _inner_bellman_ford(
         G,
@@ -1352,8 +1361,8 @@ def _bellman_ford(
         raise nx.NetworkXUnbounded("Negative cycle detected.")
 
     if paths is not None:
-        sources = set(source)
-        dsts = [target] if target is not None else pred
+        sources = OutOfCoreSet(source)
+        dsts = OutOfCoreList([target]) if target is not None else pred
         for dst in dsts:
             gen = _build_paths_from_predecessors(sources, dst, pred)
             paths[dst] = next(gen)
@@ -1416,23 +1425,36 @@ def _inner_bellman_ford(
             raise nx.NodeNotFound(f"Source {s} not in G")
 
     if pred is None:
-        pred = {v: [] for v in sources}
+        pred = OutOfCoreDictOfLists()
+        for v in sources:
+            pred[v] = []
 
     if dist is None:
-        dist = {v: 0 for v in sources}
+        dist = IntDict()
+        for v in sources:
+            dist[v] = 0
 
     # Heuristic Storage setup. Note: use None because nodes cannot be None
     nonexistent_edge = (None, None)
-    pred_edge = {v: None for v in sources}
-    recent_update = {v: nonexistent_edge for v in sources}
+    recent_update = EdgesDict(PrimitiveType.INTEGER, PrimitiveType.EDGE)
+    for v in sources:
+        recent_update[v] = nonexistent_edge
+
+    # pred_edge = {v: None for v in sources}
+    pred_edge = IntDict()
+    for v in sources:
+        pred_edge[v] = v
 
     G_succ = G._adj  # For speed-up (and works for both directed and undirected graphs)
     inf = float("inf")
     n = len(G)
 
-    count = {}
-    q = deque(sources)
-    in_q = set(sources)
+    count = IntDict()
+    q = OutOfCoreDeque()
+    in_q = OutOfCoreSet()
+    for s in sources:
+        q.append(s)
+        in_q.add(s)
     while q:
         u = q.popleft()
         in_q.remove(u)
@@ -1453,7 +1475,8 @@ def _inner_bellman_ford(
                     if heuristic:
                         if v in recent_update[u]:
                             # Negative cycle found!
-                            pred[v].append(u)
+                            # pred[v].append(u)
+                            pred.append(v, u)
                             return v
 
                         # Transfer the recent update info from u to v if the
@@ -1479,7 +1502,8 @@ def _inner_bellman_ford(
                     pred_edge[v] = u
 
                 elif dist.get(v) is not None and dist_v == dist.get(v):
-                    pred[v].append(u)
+                    # pred[v].append(u)
+                    pred.append(v, u)
 
     # successfully found shortest_path. No negative cycles found.
     return None
@@ -1817,7 +1841,8 @@ def single_source_bellman_ford(G, source, target=None, weight="weight"):
 
     weight = _weight_function(G, weight)
 
-    paths = {source: [source]}  # dictionary of paths
+    paths = OutOfCoreDictOfLists() # dictionary of paths
+    paths[source] = [source]
     dist = _bellman_ford(G, [source], weight, paths=paths, target=target)
     if target is None:
         return (dist, paths)
@@ -1880,7 +1905,7 @@ def all_pairs_bellman_ford_path_length(G, weight="weight"):
     """
     length = single_source_bellman_ford_path_length
     for n in G:
-        yield (n, dict(length(G, n, weight=weight)))
+        yield (n, length(G, n, weight=weight))
 
 
 @nx._dispatch(edge_attrs="weight")
@@ -2239,22 +2264,23 @@ def find_negative_cycle(G, source, weight="weight"):
         If no negative cycle is found.
     """
     weight = _weight_function(G, weight)
-    pred = {source: []}
+    pred = OutOfCoreDictOfLists()
+    pred[source] = []
 
     v = _inner_bellman_ford(G, [source], weight, pred=pred)
     if v is None:
         raise nx.NetworkXError("No negative cycles detected.")
 
     # negative cycle detected... find it
-    neg_cycle = []
+    neg_cycle = OutOfCoreList()
     stack = [(v, list(pred[v]))]
-    seen = {v}
+    seen = OutOfCoreSet({v})
     while stack:
         node, preds = stack[-1]
         if v in preds:
             # found the cycle
             neg_cycle.extend([node, v])
-            neg_cycle = list(reversed(neg_cycle))
+            neg_cycle = OutOfCoreList(reversed(neg_cycle))
             return neg_cycle
 
         if preds:
@@ -2269,7 +2295,7 @@ def find_negative_cycle(G, source, weight="weight"):
                 neg_cycle.pop()
             else:
                 if v in G[v] and weight(G, v, v) < 0:
-                    return [v, v]
+                    return OutOfCoreList([v, v])
                 # should not reach here
                 raise nx.NetworkXError("Negative cycle is detected but not found")
     # should not get here...
@@ -2488,8 +2514,12 @@ def johnson(G, weight="weight"):
     all_pairs_bellman_ford_path_length
 
     """
-    dist = {v: 0 for v in G}
-    pred = {v: [] for v in G}
+    dist = IntDict()
+    for v in G:
+        dist[v] = 0
+    pred = OutOfCoreDictOfLists()
+    for v in G:
+        pred[v] = []
     weight = _weight_function(G, weight)
 
     # Calculate distance of shortest paths
@@ -2501,7 +2531,8 @@ def johnson(G, weight="weight"):
         return weight(u, v, d) + dist_bellman[u] - dist_bellman[v]
 
     def dist_path(v):
-        paths = {v: [v]}
+        paths = OutOfCoreDictOfLists()
+        paths[v] = [v]
         _dijkstra(G, v, new_weight, paths=paths)
         return paths
 
