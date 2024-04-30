@@ -2046,14 +2046,18 @@ def goldberg_radzik(G, source, weight="weight"):
         raise nx.NetworkXUnbounded("Negative cycle detected.")
 
     if len(G) == 1:
-        return {source: None}, {source: 0}
+        return {source: source}, {source: 0}
 
     G_succ = G._adj  # For speed-up (and works for both directed and undirected graphs)
 
     inf = float("inf")
-    d = {u: inf for u in G}
+    d = IntFloatDict()
+    for u in G:
+        d[u] = inf
     d[source] = 0
-    pred = {source: None}
+    # pred = {source: None}
+    pred = IntDict()
+    pred[source] = source
 
     def topo_sort(relabeled):
         """Topologically sort nodes relabeled in the previous round and detect
@@ -2061,14 +2065,14 @@ def goldberg_radzik(G, source, weight="weight"):
         """
         # List of nodes to scan in this round. Denoted by A in Goldberg and
         # Radzik's paper.
-        to_scan = []
+        to_scan = OutOfCoreList()
         # In the DFS in the loop below, neg_count records for each node the
         # number of edges of negative reduced costs on the path from a DFS root
         # to the node in the DFS forest. The reduced cost of an edge (u, v) is
         # defined as d[u] + weight[u][v] - d[v].
         #
         # neg_count also doubles as the DFS visit marker array.
-        neg_count = {}
+        neg_count = IntFloatDict()
         for u in relabeled:
             # Skip visited nodes.
             if u in neg_count:
@@ -2081,7 +2085,7 @@ def goldberg_radzik(G, source, weight="weight"):
             # nonpositive reduced costs into to_scan in (reverse) topological
             # order.
             stack = [(u, iter(G_succ[u].items()))]
-            in_stack = {u}
+            in_stack = OutOfCoreSet([u])
             neg_count[u] = 0
             while stack:
                 u, it = stack[-1]
@@ -2113,7 +2117,7 @@ def goldberg_radzik(G, source, weight="weight"):
 
     def relax(to_scan):
         """Relax out-edges of relabeled nodes."""
-        relabeled = set()
+        relabeled = OutOfCoreSet()
         # Scan nodes in to_scan in topological order and relax incident
         # out-edges. Add the relabled nodes to labeled.
         for u in to_scan:
@@ -2128,14 +2132,16 @@ def goldberg_radzik(G, source, weight="weight"):
 
     # Set of nodes relabled in the last round of scan operations. Denoted by B
     # in Goldberg and Radzik's paper.
-    relabeled = {source}
+    relabeled = OutOfCoreSet([source])
 
     while relabeled:
         to_scan = topo_sort(relabeled)
         relabeled = relax(to_scan)
 
-    d = {u: d[u] for u in pred}
-    return pred, d
+    _d = IntFloatDict()
+    for u in pred:
+        _d[u] = d[u]
+    return pred, _d
 
 
 @nx._dispatch(edge_attrs="weight")
