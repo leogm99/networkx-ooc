@@ -2279,7 +2279,7 @@ def find_negative_cycle(G, source, weight="weight"):
 
     # negative cycle detected... find it
     neg_cycle = OutOfCoreList()
-    stack = [(v, list(pred[v]))]
+    stack = [(v, pred[v])]
     seen = OutOfCoreSet({v})
     while stack:
         node, preds = stack[-1]
