@@ -2540,7 +2540,7 @@ def johnson(G, weight="weight"):
     weight = _weight_function(G, weight)
 
     # Calculate distance of shortest paths
-    dist_bellman = _bellman_ford(G, list(G), weight, pred=pred, dist=dist)
+    dist_bellman = _bellman_ford(G, G.nodes, weight, pred=pred, dist=dist)
 
     # Update the weight function to take into account the Bellman--Ford
     # relaxation distances.
@@ -2553,4 +2553,6 @@ def johnson(G, weight="weight"):
         _dijkstra(G, v, new_weight, paths=paths)
         return paths
 
-    return {v: dist_path(v) for v in G}
+    for v in G:
+        yield v, dist_path(v)
+    # return {v: dist_path(v) for v in G}
