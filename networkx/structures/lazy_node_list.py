@@ -8,7 +8,7 @@ from typing import Hashable
 
 
 class LazyNodeList(MutableMapping):
-    def __delitem__(self, key):
+    def __delitem__(self, key, ):
         self._inner.__delitem__(LazyNodeList.__serialize_node(key))
 
     def __getitem__(self, key):
@@ -24,28 +24,44 @@ class LazyNodeList(MutableMapping):
         for k in self._inner:
             yield LazyNodeList.__deserialize_node(k)
 
-    def __init__(self):
+    def __init__(self, enable_attrs: bool = False):
         self._inner = OutOfCoreDict()
+        self._enable_attrs = enable_attrs
 
     def __setitem__(self, key, **attr):
-        try:
-            dd = self._inner[LazyNodeList.__serialize_node(key)]
+        if len(attr) != 0:
+            self._enable_attrs = True
+        if self._enable_attrs:
+            try:
+                dd = self._inner[LazyNodeList.__serialize_node(key)]
+                if len(attr) == 0:
+                    return
+                if dd != b'':
+                    dd = LazyNodeList.__deserialize_node_attr(dd)
+                    dd.update(**attr)
+                    dd = LazyNodeList.__serialize_node_attr(attr)
+                else:
+                    dd = LazyNodeList.__serialize_node_attr(attr)
+            except KeyError:
+                if len(attr) == 0:
+                    dd = b''
+                else:
+                    dd = LazyNodeList.__serialize_node_attr(attr)
+            self._inner[
+                LazyNodeList.__serialize_node(key)
+            ] = dd
+        else:
             if len(attr) == 0:
-                return
-            if dd != b'':
-                dd = LazyNodeList.__deserialize_node_attr(dd)
-                dd.update(**attr)
-                dd = LazyNodeList.__serialize_node_attr(attr)
+                self._inner[LazyNodeList.__serialize_node(key)] = b""
             else:
-                dd = LazyNodeList.__serialize_node_attr(attr)
-        except KeyError:
-            if len(attr) == 0:
-                dd = b''
-            else:
-                dd = LazyNodeList.__serialize_node_attr(attr)
-        self._inner[
-            LazyNodeList.__serialize_node(key)
-        ] = dd
+                try:
+                    dd = LazyNodeList.__deserialize_node_attr(self._inner[LazyNodeList.__serialize_node(key)])
+                except KeyError:
+                    dd = {}
+                dd.update(attr)
+                self._inner[
+                    LazyNodeList.__serialize_node(key)
+                ] = LazyNodeList.__serialize_node_attr(dd)
 
     def add_node(self, key, **attr):
         self.__setitem__(key, **attr)
