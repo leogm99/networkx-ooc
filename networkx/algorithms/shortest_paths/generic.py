@@ -701,7 +701,7 @@ def _build_paths_from_predecessors(sources, target, pred):
 
     seen = OutOfCoreSet({target})
     # stack = [(target, 0)]
-    stack = OutOfCoreList(value_primitive_type=PrimitiveType.TUPLE)
+    stack = OutOfCoreList(value_primitive_type=PrimitiveType.EDGE)
     stack.append((target, 0))
     top = 0
     while top >= 0:

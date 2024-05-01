@@ -12,7 +12,6 @@ class PrimitiveType(str, enum.Enum):
     DOUBLE = "!d"
     ULONG = "!L"
     EDGE = "@ll" # two elements tuple
-    TUPLE = EDGE
 
 
 class PrimitiveDict(OutOfCoreDict):
@@ -76,9 +75,3 @@ class IntFloatDict(PrimitiveDict):
 
     def copy(self, c=None):
         return super().copy(IntFloatDict())
-
-# class EdgesDict(PrimitiveDict):
-#     def __init__(self, key_primitive_type: PrimitiveType = PrimitiveType.EDGE, value_primitive_type: PrimitiveType = PrimitiveType.INTEGER):
-#         if key_primitive_type != PrimitiveType.EDGE and value_primitive_type != PrimitiveType.EDGE:
-#             raise ValueError("Key or value type must be EDGE")
-#         super().__init__(key_primitive_type, value_primitive_type)
