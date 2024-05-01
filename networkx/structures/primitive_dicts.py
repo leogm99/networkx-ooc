@@ -43,15 +43,23 @@ class PrimitiveDict(OutOfCoreDict):
         yield from map(self.__deserialize_key, super().prefix_iter(self.__serialize_key(prefix)))
 
     def __serialize_key(self, key):
+        if key is None:
+            return bytes()
         return struct.pack(self._key_format, key)
 
     def __serialize_value(self, value):
+        if value is None:
+            return bytes()
         return struct.pack(self._value_format, value)
 
     def __deserialize_key(self, key):
+        if key == bytes():
+            return None
         return struct.unpack(self._key_format, key)[0]
 
     def __deserialize_value(self, value):
+        if value == bytes():
+            return None
         return struct.unpack(self._value_format, value)[0]
 
 

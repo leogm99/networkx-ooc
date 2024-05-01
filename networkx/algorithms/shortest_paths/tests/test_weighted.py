@@ -505,7 +505,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         assert nx.single_source_bellman_ford_path_length(G, 0) == {0: 0}
         assert nx.single_source_bellman_ford(G, 0) == ({0: 0}, {0: [0]})
         assert nx.bellman_ford_predecessor_and_distance(G, 0) == ({0: []}, {0: 0})
-        assert nx.goldberg_radzik(G, 0) == ({0: 0}, {0: 0})
+        assert nx.goldberg_radzik(G, 0) == ({0: None}, {0: 0})
 
     def test_absent_source_bellman_ford(self):
         # the check is in _bellman_ford; this provides regression testing
@@ -652,7 +652,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
             {0: 0, 1: 1, 2: -2, 3: -1, 4: 0},
         )
         assert nx.goldberg_radzik(G, 0) == (
-            {0: 0, 1: 0, 2: 1, 3: 2, 4: 3},
+            {0: None, 1: 0, 2: 1, 3: 2, 4: 3},
             {0: 0, 1: 1, 2: -2, 3: -1, 4: 0},
         )
 
@@ -685,7 +685,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
             {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1},
         )
         assert nx.goldberg_radzik(G, 0) == (
-            {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+            {0: None, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
             {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1},
         )
 
@@ -724,7 +724,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
             {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1},
         )
         assert nx.goldberg_radzik(G, 0, weight="load") == (
-            {0: 0, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
+            {0: None, 1: 0, 2: 0, 3: 0, 4: 0, 5: 0},
             {0: 0, 1: 1, 2: 1, 3: 1, 4: 1, 5: 1},
         )
 
@@ -804,7 +804,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
             {0: 0, 1: 1, 2: 2, 3: 3},
         )
         assert nx.goldberg_radzik(G, 0) == (
-            {0: 0, 1: 0, 2: 1, 3: 2},
+            {0: None, 1: 0, 2: 1, 3: 2},
             {0: 0, 1: 1, 2: 2, 3: 3},
         )
         assert nx.single_source_bellman_ford_path(G, 3) == {
@@ -828,7 +828,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
             {0: 3, 1: 2, 2: 1, 3: 0},
         )
         assert nx.goldberg_radzik(G, 3) == (
-            {0: 1, 1: 2, 2: 3, 3: 3},
+            {0: 1, 1: 2, 2: 3, 3: None},
             {0: 3, 1: 2, 2: 1, 3: 0},
         )
 
@@ -850,7 +850,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         assert dist == {0: 0, 1: 1, 2: 2, 3: 1}
 
         pred, dist = nx.goldberg_radzik(G, 0)
-        assert pred[0] is 0
+        assert pred[0] is None
         assert pred[1] == 0
         assert pred[2] in [1, 3]
         assert pred[3] == 0

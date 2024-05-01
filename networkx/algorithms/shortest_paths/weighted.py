@@ -2046,7 +2046,7 @@ def goldberg_radzik(G, source, weight="weight"):
         raise nx.NetworkXUnbounded("Negative cycle detected.")
 
     if len(G) == 1:
-        return {source: source}, {source: 0}
+        return {source: None}, {source: 0}
 
     G_succ = G._adj  # For speed-up (and works for both directed and undirected graphs)
 
@@ -2055,9 +2055,8 @@ def goldberg_radzik(G, source, weight="weight"):
     for u in G:
         d[u] = inf
     d[source] = 0
-    # pred = {source: None}
     pred = IntDict()
-    pred[source] = source
+    pred[source] = None
 
     def topo_sort(relabeled):
         """Topologically sort nodes relabeled in the previous round and detect

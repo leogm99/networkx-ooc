@@ -8,6 +8,7 @@ import networkx as nx
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntDict
 
 __all__ = [
     "local_node_connectivity",
@@ -360,16 +361,12 @@ def _bidirectional_shortest_path(G, source, target, exclude):
     # from source to w
     while w is not None:
         path.append(w)
-        p = pred[w]
-        if w == p: break
         w = pred[w]
     path.reverse()
     # from w to target
     w = succ[path[-1]]
     while w is not None:
         path.append(w)
-        s = succ[w]
-        if s == w: break
         w = succ[w]
 
     return path
@@ -388,10 +385,10 @@ def _bidirectional_pred_succ(G, source, target, exclude):
         Gsucc = G.neighbors
 
     # predecessor and successors in search
-    pred = IOutOfCoreDict()
-    pred[source] = source
-    succ = IOutOfCoreDict()
-    succ[target] = target
+    pred = IntDict()
+    pred[source] = None
+    succ = IntDict()
+    succ[target] = None
 
     # initialize fringes, start with forward
     forward_fringe = OutOfCoreList([source])
