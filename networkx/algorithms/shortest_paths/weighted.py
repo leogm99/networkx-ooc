@@ -2397,10 +2397,22 @@ def bidirectional_dijkstra(G, source, target, weight="weight"):
     push = heappush
     pop = heappop
     # Init:  [Forward, Backward]
-    dists = [{}, {}]  # dictionary of final distances
-    paths = [{source: [source]}, {target: [target]}]  # dictionary of paths
+    
+    dists = [IntDict(), IntDict()]  # two dictionary of final distances
+
+    sourceDictOfLists = OutOfCoreDictOfLists()
+    sourceDictOfLists[source] = [source]
+    targetDictOfLists = OutOfCoreDictOfLists()
+    targetDictOfLists[target] = [target]
+    paths = [sourceDictOfLists, targetDictOfLists]  # two dictionary of paths
+    
+    sourceDict = IntDict()
+    sourceDict[source] = 0
+    targetDict = IntDict()
+    targetDict[target] = 0
+    seen = [sourceDict, targetDict]  # two dict of distances to seen nodes
+
     fringe = [[], []]  # heap of (distance, node) for choosing node to expand
-    seen = [{source: 0}, {target: 0}]  # dict of distances to seen nodes
     c = count()
     # initialize fringe heap
     push(fringe[0], (0, next(c), source))
