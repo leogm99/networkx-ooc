@@ -12,6 +12,7 @@ class PrimitiveType(str, enum.Enum):
     DOUBLE = "!d"
     ULONG = "!L"
     EDGE = "@ll" # two elements tuple
+    FEDGE = "@ff" # two float elements tuple
 
 
 class PrimitiveDict(OutOfCoreDict):

@@ -6,6 +6,10 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 
+from networkx.structures.edges_dict import EdgesDict
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.primitive_dicts import IntDict, PrimitiveType
+
 __all__ = ["astar_path", "astar_path_length"]
 
 
@@ -108,16 +112,16 @@ def astar_path(G, source, target, heuristic=None, weight="weight"):
     # Maps enqueued nodes to distance of discovered paths and the
     # computed heuristics to target. We avoid computing the heuristics
     # more than once and inserting the node into the queue too many times.
-    enqueued = {}
+    enqueued = EdgesDict(PrimitiveType.INTEGER, PrimitiveType.FEDGE)
     # Maps explored nodes to parent closest to the source.
-    explored = {}
+    explored = IntDict()
 
     while queue:
         # Pop the smallest item from queue.
         _, __, curnode, dist, parent = pop(queue)
 
         if curnode == target:
-            path = [curnode]
+            path = OutOfCoreList([curnode])
             node = parent
             while node is not None:
                 path.append(node)
