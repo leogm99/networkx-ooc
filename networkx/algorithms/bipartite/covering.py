@@ -5,6 +5,8 @@ from networkx.algorithms.bipartite.matching import hopcroft_karp_matching
 from networkx.algorithms.covering import min_edge_cover as _min_edge_cover
 from networkx.utils import not_implemented_for
 
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = ["min_edge_cover"]
 
 
@@ -51,7 +53,7 @@ def min_edge_cover(G, matching_algorithm=None):
     ``matching_algorithm``.
     """
     if G.order() == 0:  # Special case for the empty graph
-        return set()
+        return OutOfCoreSet()
     if matching_algorithm is None:
         matching_algorithm = hopcroft_karp_matching
     return _min_edge_cover(G, matching_algorithm=matching_algorithm)
