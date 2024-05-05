@@ -71,10 +71,10 @@ class TestGlobalReachingCentrality:
 
     def test_directed_weighted(self):
         G = nx.DiGraph()
-        G.add_edge("A", "B", weight=5)
-        G.add_edge("B", "C", weight=1)
-        G.add_edge("B", "D", weight=0.25)
-        G.add_edge("D", "E", weight=1)
+        G.add_edge(1, 2, weight=5)
+        G.add_edge(2, 3, weight=1)
+        G.add_edge(2, 4, weight=0.25)
+        G.add_edge(4, 5, weight=1)
 
         denom = len(G) - 1
         A_local = sum([5, 3, 2.625, 2.0833333333333]) / denom

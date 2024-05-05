@@ -26,9 +26,9 @@ class TestFlowClosenessCentrality:
     def test_star(self):
         """Closeness centrality: star"""
         G = nx.Graph()
-        nx.add_star(G, ["a", "b", "c", "d"])
+        nx.add_star(G, [1, 2, 3, 4])
         b = nx.current_flow_closeness_centrality(G)
-        b_answer = {"a": 1.0 / 3, "b": 0.6 / 3, "c": 0.6 / 3, "d": 0.6 / 3}
+        b_answer = {1: 1.0 / 3, 2: 0.6 / 3, 3: 0.6 / 3, 4: 0.6 / 3}
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
