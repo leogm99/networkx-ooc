@@ -34,10 +34,7 @@ def test_dodecahedral():
 
 def test_empty():
     G = nx.empty_graph(5)
-    LazyG = LazyGraph()
-    for e in G.nodes:
-        LazyG.add_node(e)
-    assert average_clustering(LazyG, trials=len(LazyG) // 2) == 0
+    assert average_clustering(G, trials=len(G) // 2) == 0
 
 
 def test_complete():
