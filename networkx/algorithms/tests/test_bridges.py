@@ -29,7 +29,7 @@ class TestBridges:
             (5, 10),
             (6, 8),
         ]
-        G = LazyGraph()
+        G = nx.Graph()
         for e in edges:
             G.add_edge(*e)
         source = 1
@@ -38,7 +38,7 @@ class TestBridges:
 
     def test_barbell_graph(self):
         # The (3, 0) barbell graph has two triangles joined by a single edge.
-        G = LazyGraph.from_graph_edges(nx.barbell_graph(3, 0))
+        G = nx.barbell_graph(3, 0)
         source = 0
         bridges = list(nx.bridges(G, source))
         assert bridges == [(2, 3)]
@@ -79,14 +79,14 @@ class TestHasBridges:
             (5, 10),
             (6, 8),
         ]
-        G = LazyGraph()
+        G = nx.Graph()
         for e in edges:
             G.add_edge(*e)
         assert nx.has_bridges(G)  # Default root
         assert nx.has_bridges(G, root=1)  # arbitrary root in G
 
     def test_has_bridges_raises_root_not_in_G(self):
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_nodes_from([1, 2, 3])
         with pytest.raises(nx.NodeNotFound):
             nx.has_bridges(G, root=6)
@@ -108,7 +108,7 @@ class TestHasBridges:
         assert not nx.has_bridges(G)
 
     def test_bridges_multiple_components(self):
-        G = LazyGraph()
+        G = nx.Graph()
         nx.add_path(G, [0, 1, 2])  # One connected component
         nx.add_path(G, [4, 5, 6])  # Another connected component
         assert list(nx.bridges(G, root=4)) == [(4, 5), (5, 6)]
