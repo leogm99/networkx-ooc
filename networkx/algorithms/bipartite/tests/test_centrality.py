@@ -5,7 +5,6 @@ from networkx.algorithms import bipartite
 
 from networkx.classes.lazygraph import LazyGraph
 
-nx.Graph = nx.LazyGraph
 
 class TestBipartiteCentrality:
     @classmethod
