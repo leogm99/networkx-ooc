@@ -592,7 +592,7 @@ def single_source_all_shortest_paths(G, source, weight=None, method="dijkstra"):
         raise ValueError(f"method not supported: {method}")
     for n in G:
         try:
-            yield n, list(_build_paths_from_predecessors({source}, n, pred))
+            yield n, _build_paths_from_predecessors({source}, n, pred)
         except nx.NetworkXNoPath:
             pass
 
@@ -701,7 +701,7 @@ def _build_paths_from_predecessors(sources, target, pred):
 
     seen = OutOfCoreSet({target})
     # stack = [(target, 0)]
-    stack = OutOfCoreList(value_primitive_type=PrimitiveType.TUPLE)
+    stack = OutOfCoreList(value_primitive_type=PrimitiveType.EDGE)
     stack.append((target, 0))
     top = 0
     while top >= 0:

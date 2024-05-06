@@ -1,5 +1,5 @@
 from typing import MutableSequence
-from networkx.structures.edges_dict import BiTupleDict, EdgesDict
+from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
@@ -21,8 +21,8 @@ class OutOfCoreList(MutableSequence):
             self._out_of_core_dict = IOutOfCoreDict()
         elif value_primitive_type == PrimitiveType.FLOAT:
             self._out_of_core_dict = IntFloatDict()
-        elif value_primitive_type == PrimitiveType.TUPLE:
-            self._out_of_core_dict = BiTupleDict(PrimitiveType.INTEGER, PrimitiveType.TUPLE)
+        elif value_primitive_type == PrimitiveType.EDGE:
+            self._out_of_core_dict = EdgesDict(PrimitiveType.INTEGER, PrimitiveType.EDGE)
         else:
             raise NotImplementedError("This functionality is not implemented yet.")
 

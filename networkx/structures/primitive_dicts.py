@@ -12,7 +12,7 @@ class PrimitiveType(str, enum.Enum):
     DOUBLE = "!d"
     ULONG = "!L"
     EDGE = "@ll" # two elements tuple
-    TUPLE = EDGE
+    FEDGE = "@ff" # two float elements tuple
 
 
 class PrimitiveDict(OutOfCoreDict):
@@ -43,15 +43,23 @@ class PrimitiveDict(OutOfCoreDict):
         yield from map(self.__deserialize_key, super().prefix_iter(self.__serialize_key(prefix)))
 
     def __serialize_key(self, key):
+        if key is None:
+            return bytes()
         return struct.pack(self._key_format, key)
 
     def __serialize_value(self, value):
+        if value is None:
+            return bytes()
         return struct.pack(self._value_format, value)
 
     def __deserialize_key(self, key):
+        if key == bytes():
+            return None
         return struct.unpack(self._key_format, key)[0]
 
     def __deserialize_value(self, value):
+        if value == bytes():
+            return None
         return struct.unpack(self._value_format, value)[0]
 
 
@@ -68,9 +76,3 @@ class IntFloatDict(PrimitiveDict):
 
     def copy(self, c=None):
         return super().copy(IntFloatDict())
-
-# class EdgesDict(PrimitiveDict):
-#     def __init__(self, key_primitive_type: PrimitiveType = PrimitiveType.EDGE, value_primitive_type: PrimitiveType = PrimitiveType.INTEGER):
-#         if key_primitive_type != PrimitiveType.EDGE and value_primitive_type != PrimitiveType.EDGE:
-#             raise ValueError("Key or value type must be EDGE")
-#         super().__init__(key_primitive_type, value_primitive_type)

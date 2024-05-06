@@ -2051,9 +2051,12 @@ def goldberg_radzik(G, source, weight="weight"):
     G_succ = G._adj  # For speed-up (and works for both directed and undirected graphs)
 
     inf = float("inf")
-    d = {u: inf for u in G}
+    d = IntFloatDict()
+    for u in G:
+        d[u] = inf
     d[source] = 0
-    pred = {source: None}
+    pred = IntDict()
+    pred[source] = None
 
     def topo_sort(relabeled):
         """Topologically sort nodes relabeled in the previous round and detect
@@ -2061,14 +2064,14 @@ def goldberg_radzik(G, source, weight="weight"):
         """
         # List of nodes to scan in this round. Denoted by A in Goldberg and
         # Radzik's paper.
-        to_scan = []
+        to_scan = OutOfCoreList()
         # In the DFS in the loop below, neg_count records for each node the
         # number of edges of negative reduced costs on the path from a DFS root
         # to the node in the DFS forest. The reduced cost of an edge (u, v) is
         # defined as d[u] + weight[u][v] - d[v].
         #
         # neg_count also doubles as the DFS visit marker array.
-        neg_count = {}
+        neg_count = IntFloatDict()
         for u in relabeled:
             # Skip visited nodes.
             if u in neg_count:
@@ -2081,7 +2084,7 @@ def goldberg_radzik(G, source, weight="weight"):
             # nonpositive reduced costs into to_scan in (reverse) topological
             # order.
             stack = [(u, iter(G_succ[u].items()))]
-            in_stack = {u}
+            in_stack = OutOfCoreSet([u])
             neg_count[u] = 0
             while stack:
                 u, it = stack[-1]
@@ -2113,7 +2116,7 @@ def goldberg_radzik(G, source, weight="weight"):
 
     def relax(to_scan):
         """Relax out-edges of relabeled nodes."""
-        relabeled = set()
+        relabeled = OutOfCoreSet()
         # Scan nodes in to_scan in topological order and relax incident
         # out-edges. Add the relabled nodes to labeled.
         for u in to_scan:
@@ -2128,14 +2131,16 @@ def goldberg_radzik(G, source, weight="weight"):
 
     # Set of nodes relabled in the last round of scan operations. Denoted by B
     # in Goldberg and Radzik's paper.
-    relabeled = {source}
+    relabeled = OutOfCoreSet([source])
 
     while relabeled:
         to_scan = topo_sort(relabeled)
         relabeled = relax(to_scan)
 
-    d = {u: d[u] for u in pred}
-    return pred, d
+    _d = IntFloatDict()
+    for u in pred:
+        _d[u] = d[u]
+    return pred, _d
 
 
 @nx._dispatch(edge_attrs="weight")
@@ -2273,7 +2278,7 @@ def find_negative_cycle(G, source, weight="weight"):
 
     # negative cycle detected... find it
     neg_cycle = OutOfCoreList()
-    stack = [(v, list(pred[v]))]
+    stack = [(v, pred[v])]
     seen = OutOfCoreSet({v})
     while stack:
         node, preds = stack[-1]
@@ -2392,10 +2397,22 @@ def bidirectional_dijkstra(G, source, target, weight="weight"):
     push = heappush
     pop = heappop
     # Init:  [Forward, Backward]
-    dists = [{}, {}]  # dictionary of final distances
-    paths = [{source: [source]}, {target: [target]}]  # dictionary of paths
+    
+    dists = [IntDict(), IntDict()]  # two dictionary of final distances
+
+    sourceDictOfLists = OutOfCoreDictOfLists()
+    sourceDictOfLists[source] = [source]
+    targetDictOfLists = OutOfCoreDictOfLists()
+    targetDictOfLists[target] = [target]
+    paths = [sourceDictOfLists, targetDictOfLists]  # two dictionary of paths
+    
+    sourceDict = IntDict()
+    sourceDict[source] = 0
+    targetDict = IntDict()
+    targetDict[target] = 0
+    seen = [sourceDict, targetDict]  # two dict of distances to seen nodes
+
     fringe = [[], []]  # heap of (distance, node) for choosing node to expand
-    seen = [{source: 0}, {target: 0}]  # dict of distances to seen nodes
     c = count()
     # initialize fringe heap
     push(fringe[0], (0, next(c), source))
@@ -2523,7 +2540,7 @@ def johnson(G, weight="weight"):
     weight = _weight_function(G, weight)
 
     # Calculate distance of shortest paths
-    dist_bellman = _bellman_ford(G, list(G), weight, pred=pred, dist=dist)
+    dist_bellman = _bellman_ford(G, G.nodes, weight, pred=pred, dist=dist)
 
     # Update the weight function to take into account the Bellman--Ford
     # relaxation distances.
@@ -2536,4 +2553,6 @@ def johnson(G, weight="weight"):
         _dijkstra(G, v, new_weight, paths=paths)
         return paths
 
-    return {v: dist_path(v) for v in G}
+    for v in G:
+        yield v, dist_path(v)
+    # return {v: dist_path(v) for v in G}

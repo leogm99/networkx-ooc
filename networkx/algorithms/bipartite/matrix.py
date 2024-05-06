@@ -8,9 +8,11 @@ import itertools
 import networkx as nx
 from networkx.convert_matrix import _generate_weighted_edges
 
+from networkx.classes.lazygraph import LazyGraph
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import PrimitiveType
 
 __all__ = ["biadjacency_matrix", "from_biadjacency_matrix"]
 
@@ -99,7 +101,7 @@ def biadjacency_matrix(
     col_index = IOutOfCoreDict(zip(column_order, itertools.count()))
 
     if G.number_of_edges() == 0:
-        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList()
+        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList(value_primitive_type = PrimitiveType.FLOAT)
     else:
         # row, col, data = zip(
         #     *(
@@ -110,7 +112,7 @@ def biadjacency_matrix(
         # )
         row = OutOfCoreList()
         col = OutOfCoreList()
-        data = OutOfCoreList()
+        data = OutOfCoreList(value_primitive_type = PrimitiveType.FLOAT)
 
         for u, v, d in G.edges(row_order, data=True):
             if u in row_index and v in col_index:
@@ -161,7 +163,11 @@ def from_biadjacency_matrix(A, create_using=None, edge_attribute="weight"):
     ----------
     [1] https://en.wikipedia.org/wiki/Adjacency_matrix#Adjacency_matrix_of_a_bipartite_graph
     """
-    G = nx.empty_graph(0, create_using)
+    if create_using is None or isinstance(create_using, LazyGraph):
+        G = LazyGraph()
+    else:
+        G = nx.empty_graph(0, create_using)
+
     n, m = A.shape
     # Make sure we get even the isolated nodes of the graph.
     G.add_nodes_from(range(n), bipartite=0)

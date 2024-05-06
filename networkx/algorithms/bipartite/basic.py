@@ -9,6 +9,7 @@ from networkx.exception import AmbiguousSolution
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_dict import IOutOfCoreDict
+from networkx.structures.primitive_dicts import IntFloatDict
 
 __all__ = [
     "is_bipartite",
@@ -330,4 +331,10 @@ def degrees(B, nodes, weight=None):
     """
     bottom = OutOfCoreSet(nodes)
     top = OutOfCoreSet(B) - bottom
-    return (B.degree(top, weight), B.degree(bottom, weight))
+    bottomD = IntFloatDict()
+    for k, v in B.degree(bottom, weight):
+        bottomD[k] = v
+    topD = IntFloatDict()
+    for k, v in B.degree(top, weight):
+        topD[k] = v
+    return (topD, bottomD)
