@@ -91,8 +91,7 @@ def percolation_centrality(G, attribute="percolation", states=None, weight=None)
     if states is None:
         states = IntFloatDict()
         for n, d in G.nodes.items():
-            if attribute in d:
-                states[n] = d[attribute]
+            states[n] = d.get(attribute, 1)
 
     # sum of all percolation states
     p_sigma_x_t = 0.0
