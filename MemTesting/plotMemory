@@ -22,7 +22,7 @@ if __name__ == '__main__':
         print("Usage: python plot_script.py <resource_file.txt>")
         sys.exit(1)
 
-    resource_file = "results/" + sys.argv[1] + ".txt"
-    plot_output_path = "results/" + sys.argv[1] + ".png"
+    resource_file = "newResults/" + sys.argv[1] + ".txt"
+    plot_output_path = "newResults/" + sys.argv[1] + ".png"
 
     plot_memory_usage(resource_file, plot_output_path)
