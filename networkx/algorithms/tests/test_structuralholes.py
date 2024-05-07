@@ -27,29 +27,29 @@ class TestStructuralHoles:
         self.G = nx.Graph()
         self.G.add_edges_from(
             [
-                ("A", "B"),
-                ("A", "F"),
-                ("A", "G"),
-                ("A", "E"),
-                ("E", "G"),
-                ("F", "G"),
-                ("B", "G"),
-                ("B", "D"),
-                ("D", "G"),
-                ("G", "C"),
+                (11, 12),
+                (11, 13),
+                (11, 14),
+                (11, 15),
+                (15, 14),
+                (13, 14),
+                (12, 14),
+                (12, 16),
+                (16, 14),
+                (14, 17),
             ]
         )
         self.G_weights = {
-            ("A", "B"): 2,
-            ("A", "F"): 3,
-            ("A", "G"): 5,
-            ("A", "E"): 2,
-            ("E", "G"): 8,
-            ("F", "G"): 3,
-            ("B", "G"): 4,
-            ("B", "D"): 1,
-            ("D", "G"): 3,
-            ("G", "C"): 10,
+            (11, 12): 2,
+            (11, 13): 3,
+            (11, 14): 5,
+            (11, 15): 2,
+            (15, 14): 8,
+            (13, 14): 3,
+            (12, 14): 4,
+            (12, 16): 1,
+            (16, 14): 3,
+            (14, 17): 10,
         }
 
     # This additionally tests the @nx._dispatch mechanism, treating
@@ -85,39 +85,39 @@ class TestStructuralHoles:
 
     def test_constraint_undirected(self):
         constraint = nx.constraint(self.G)
-        assert constraint["G"] == pytest.approx(0.400, abs=1e-3)
-        assert constraint["A"] == pytest.approx(0.595, abs=1e-3)
-        assert constraint["C"] == pytest.approx(1, abs=1e-3)
+        assert constraint[14] == pytest.approx(0.400, abs=1e-3)
+        assert constraint[11] == pytest.approx(0.595, abs=1e-3)
+        assert constraint[17] == pytest.approx(1, abs=1e-3)
 
     def test_effective_size_undirected_borgatti(self):
         effective_size = nx.effective_size(self.G)
-        assert effective_size["G"] == pytest.approx(4.67, abs=1e-2)
-        assert effective_size["A"] == pytest.approx(2.50, abs=1e-2)
-        assert effective_size["C"] == pytest.approx(1, abs=1e-2)
+        assert effective_size[14] == pytest.approx(4.67, abs=1e-2)
+        assert effective_size[11] == pytest.approx(2.50, abs=1e-2)
+        assert effective_size[17] == pytest.approx(1, abs=1e-2)
 
     def test_effective_size_undirected(self):
         G = self.G.copy()
         nx.set_edge_attributes(G, 1, "weight")
         effective_size = nx.effective_size(G, weight="weight")
-        assert effective_size["G"] == pytest.approx(4.67, abs=1e-2)
-        assert effective_size["A"] == pytest.approx(2.50, abs=1e-2)
-        assert effective_size["C"] == pytest.approx(1, abs=1e-2)
+        assert effective_size[14] == pytest.approx(4.67, abs=1e-2)
+        assert effective_size[11] == pytest.approx(2.50, abs=1e-2)
+        assert effective_size[17] == pytest.approx(1, abs=1e-2)
 
     def test_constraint_weighted_undirected(self):
         G = self.G.copy()
         nx.set_edge_attributes(G, self.G_weights, "weight")
         constraint = nx.constraint(G, weight="weight")
-        assert constraint["G"] == pytest.approx(0.299, abs=1e-3)
-        assert constraint["A"] == pytest.approx(0.795, abs=1e-3)
-        assert constraint["C"] == pytest.approx(1, abs=1e-3)
+        assert constraint[14] == pytest.approx(0.299, abs=1e-3)
+        assert constraint[11] == pytest.approx(0.795, abs=1e-3)
+        assert constraint[17] == pytest.approx(1, abs=1e-3)
 
     def test_effective_size_weighted_undirected(self):
         G = self.G.copy()
         nx.set_edge_attributes(G, self.G_weights, "weight")
         effective_size = nx.effective_size(G, weight="weight")
-        assert effective_size["G"] == pytest.approx(5.47, abs=1e-2)
-        assert effective_size["A"] == pytest.approx(2.47, abs=1e-2)
-        assert effective_size["C"] == pytest.approx(1, abs=1e-2)
+        assert effective_size[14] == pytest.approx(5.47, abs=1e-2)
+        assert effective_size[11] == pytest.approx(2.47, abs=1e-2)
+        assert effective_size[17] == pytest.approx(1, abs=1e-2)
 
     def test_constraint_isolated(self):
         G = self.G.copy()
