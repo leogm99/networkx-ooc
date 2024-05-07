@@ -2,8 +2,6 @@ import networkx as nx
 from networkx.algorithms.approximation import average_clustering
 from networkx import LazyGraph
 
-nx.Graph = nx.LazyGraph
-
 # This approximation has to be exact in regular graphs
 # with no triangles or with all possible triangles.
 
