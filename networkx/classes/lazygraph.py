@@ -42,6 +42,7 @@ class LazyGraph(Graph):
         if node_for_adding is None:
             raise ValueError("Node cannot be None")
         self._node.add_node(node_for_adding, **attr)
+        self._adj.add_node(node_for_adding, **attr)
 
     def add_edge(self, u_of_edge, v_of_edge, **attr):
         if None in (u_of_edge, v_of_edge):
