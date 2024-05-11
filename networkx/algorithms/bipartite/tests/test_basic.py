@@ -36,12 +36,12 @@ class TestBipartiteBasic:
         assert X == {0, 2}
         assert Y == {1, 3}
 
-    # def test_bipartite_sets_directed(self):
-    #     G = self._get_ooc_path_graph(4)
-    #     D = G.to_directed()
-    #     X, Y = bipartite.sets(D)
-    #     assert X == {0, 2}
-    #     assert Y == {1, 3}
+    def test_bipartite_sets_directed(self):
+        G = nx.path_graph(4)
+        D = G.to_directed()
+        X, Y = bipartite.sets(D)
+        assert X == {0, 2}
+        assert Y == {1, 3}
 
     def test_bipartite_sets_given_top_nodes(self):
         G = self._get_ooc_path_graph(4)
