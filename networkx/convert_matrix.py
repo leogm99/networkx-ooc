@@ -31,10 +31,9 @@ from collections import defaultdict
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import PrimitiveType
+from networkx.structures.primitive_dicts import IntDict, PrimitiveType
 
 __all__ = [
     "from_pandas_adjacency",
@@ -572,7 +571,7 @@ def to_scipy_sparse_array(G, nodelist=None, dtype=None, weight="weight", format=
         if nlen < len(G):
             G = G.subgraph(nodelist)
 
-    index = IOutOfCoreDict()
+    index = IntDict()
     for k, v in zip(nodelist, range(nlen)):
         index[k] = v
     # coefficients = zip(

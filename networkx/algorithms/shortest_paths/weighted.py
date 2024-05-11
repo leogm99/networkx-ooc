@@ -11,7 +11,6 @@ from networkx.algorithms.shortest_paths.generic import _build_paths_from_predece
 
 from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.out_of_core_deque import OutOfCoreDeque
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
@@ -1345,7 +1344,7 @@ def _bellman_ford(
             pred[v] = []
 
     if dist is None:
-        dist = IOutOfCoreDict()
+        dist = IntDict()
         for v in source:
             dist[v] = 0
 
