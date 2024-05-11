@@ -109,6 +109,7 @@ __all__ = [
     "DiMultiDegreeView",
     "InMultiDegreeView",
     "OutMultiDegreeView",
+    "LazyDegreeView",
 ]
 
 
@@ -537,6 +538,44 @@ class DegreeView(DiDegreeView):
                     n in nbrs and nbrs[n].get(weight, 1)
                 )
                 yield (n, deg)
+
+class LazyDegreeView(DegreeView):
+    def __init__(self, G, nbunch=None, weight=None):
+        self._graph = G
+        self._adj = G._adj if hasattr(G, "_succ") else G._adj
+        self._nodes = G._node if nbunch is None else list(G.nbunch_iter(nbunch))
+        self._weight = weight
+
+    def __getitem__(self, n):
+        weight = self._weight
+        nbrs = self._adj.get(n)
+        if nbrs is None:
+            return 0
+        if weight is None:
+            return len(nbrs) + (n in nbrs)
+        return sum(dd.get(weight, 1) for dd in nbrs.values()) + (
+            n in nbrs and nbrs[n].get(weight, 1)
+        )
+
+    def __iter__(self):
+        weight = self._weight
+        if weight is None:
+            for n in self._nodes:
+                nbrs = self._adj.get(n)
+                if nbrs is not None:
+                    yield (n, len(nbrs) + (n in nbrs))
+                else:
+                    yield (n, 0)
+        else:
+            for n in self._nodes:
+                nbrs = self._adj.get(n)
+                if nbrs is None:
+                    yield (n, 0)
+                else:
+                    deg = sum(dd.get(weight, 1) for dd in nbrs.values()) + (
+                        n in nbrs and nbrs[n].get(weight, 1)
+                    )
+                    yield (n, deg)
 
 
 class OutDegreeView(DiDegreeView):

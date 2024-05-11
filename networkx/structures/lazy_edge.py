@@ -32,12 +32,7 @@ class LazyEdge(MutableMapping):
 
     def __iter__(self):
         prefix = struct.pack('!l', self._source_node)
-        # yield from map(lambda k: struct.unpack('!l', k)[0], self._store.prefix_iter(prefix=prefix))
-        for k in self._store.prefix_iter(prefix=prefix):
-            try:
-                yield struct.unpack('!l', k)[0]
-            except struct.error:
-                continue
+        yield from map(lambda k: struct.unpack('!l', k)[0], self._store.prefix_iter(prefix=prefix))
 
     @staticmethod
     def __serialize_edge(u, v):

@@ -34,20 +34,6 @@ class LazyAdjacencyList(MutableMapping):
                 LazyAdjacencyList.__serialize_edge(u, v)
             ] = LazyAdjacencyList.__serialize_attr(dd)
 
-    def add_node(self, node_for_adding, **attr):
-        if node_for_adding is None:
-            raise ValueError("Node cannot be None")
-        if len(attr) == 0:
-            self._inner[LazyAdjacencyList.__serialize_node(node_for_adding)] = b""
-        else:
-            try:
-                dd = LazyAdjacencyList.__deserialize_attr(self._inner[LazyAdjacencyList.__serialize_node(node_for_adding)])
-            except (KeyError, EOFError):
-                dd = {}
-
-            dd.update(attr)
-            self._inner[LazyAdjacencyList.__serialize_node(node_for_adding)] = LazyAdjacencyList.__serialize_attr(dd)    
-
     def __getitem__(self, u):
         if not isinstance(u, typing.Hashable):
             raise TypeError(f"unhashable type: {type(u)}")
@@ -66,10 +52,7 @@ class LazyAdjacencyList(MutableMapping):
         # hackish
         last_seen = None
         for k in self._inner:
-            try:
-                u, v = LazyAdjacencyList.__deserialize_edge(k)
-            except struct.error:
-                u = LazyAdjacencyList.__deserialize_node(k)[0]
+            u, v = LazyAdjacencyList.__deserialize_edge(k)
             if u == last_seen:
                 continue
             last_seen = u
@@ -83,14 +66,6 @@ class LazyAdjacencyList(MutableMapping):
     def __deserialize_edge(data: bytes):
         return struct.unpack('!2l', data)
     
-    @staticmethod
-    def __serialize_node(node):
-        return struct.pack('!l', node)
-    
-    @staticmethod
-    def __deserialize_node(data):
-        return struct.unpack('!l', data)
-
     @staticmethod
     def __serialize_attr(attr):
         return pickle.dumps(attr)
