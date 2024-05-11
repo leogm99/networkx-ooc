@@ -9,10 +9,9 @@ import networkx as nx
 from networkx.convert_matrix import _generate_weighted_edges
 
 from networkx.classes.lazygraph import LazyGraph
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import PrimitiveType
+from networkx.structures.primitive_dicts import IntDict, PrimitiveType
 
 __all__ = ["biadjacency_matrix", "from_biadjacency_matrix"]
 
@@ -97,8 +96,8 @@ def biadjacency_matrix(
         msg = "Ambiguous ordering: `column_order` contained duplicates."
         raise nx.NetworkXError(msg)
 
-    row_index = IOutOfCoreDict(zip(row_order, itertools.count()))
-    col_index = IOutOfCoreDict(zip(column_order, itertools.count()))
+    row_index = IntDict(zip(row_order, itertools.count()))
+    col_index = IntDict(zip(column_order, itertools.count()))
 
     if G.number_of_edges() == 0:
         row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList(value_primitive_type = PrimitiveType.FLOAT)

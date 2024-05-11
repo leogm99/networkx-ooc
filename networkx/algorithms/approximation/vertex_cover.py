@@ -9,8 +9,8 @@ is incident to at least one node in the subset.
 """
 import networkx as nx
 
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntDict
 
 __all__ = ["min_weighted_vertex_cover"]
 
@@ -69,7 +69,7 @@ def min_weighted_vertex_cover(G, weight=None):
        <http://www.cs.technion.ac.il/~reuven/PDF/vc_lr.pdf>
 
     """
-    cost = IOutOfCoreDict(G.nodes(data=weight, default=1))
+    cost = IntDict(G.nodes(data=weight, default=1))
     # While there are uncovered edges, choose an uncovered and update
     # the cost of the remaining edges.
     cover = OutOfCoreSet()
