@@ -78,6 +78,9 @@ class OutOfCoreSet(MutableSet):
             union_set.add(i)
         return union_set
 
+    def __str__(self):
+        return str({k for k in self})
+
 class OutOfCoreDictSet(MutableSet):
     def __init__(self, initial_list = None):
         self._out_of_core_dict = OutOfCoreDict()
