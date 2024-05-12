@@ -1,5 +1,6 @@
 import numbers
 
+from networkx.classes.lazygraph import LazyGraph
 import pytest
 
 import networkx as nx
@@ -67,7 +68,7 @@ class TestGeneratorsBipartite:
         assert not mG.is_directed()
 
         # specify nodes rather than number of nodes
-        for n1, n2 in [([1, 2], "ab"), (3, 2), (3, "ab"), ("ab", 3)]:
+        for n1, n2 in [([1, 2], [3,4]), (3, 2), (3, [4,5])]:
             G = complete_bipartite_graph(n1, n2)
             if isinstance(n1, numbers.Integral):
                 if isinstance(n2, numbers.Integral):
@@ -80,7 +81,7 @@ class TestGeneratorsBipartite:
             assert G.size() == len(edges)
 
         # raise when node sets are not distinct
-        for n1, n2 in [([1, 2], 3), (3, [1, 2]), ("abc", "bcd")]:
+        for n1, n2 in [([1, 2], 3), (3, [1, 2]), ([1,2,3], [2,3,4])]:
             pytest.raises(nx.NetworkXError, complete_bipartite_graph, n1, n2)
 
     def test_configuration_model(self):
@@ -122,7 +123,7 @@ class TestGeneratorsBipartite:
         GD = nx.projected_graph(nx.Graph(G), range(len(aseq), len(aseq) + len(bseq)))
         assert GD.number_of_nodes() == 3
 
-        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=nx.Graph)
+        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=LazyGraph)
         assert not G.is_multigraph()
         assert not G.is_directed()
 
@@ -173,7 +174,7 @@ class TestGeneratorsBipartite:
         GD = nx.projected_graph(nx.Graph(G), range(len(aseq), len(aseq) + len(bseq)))
         assert GD.number_of_nodes() == 4
 
-        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=nx.Graph)
+        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=LazyGraph)
         assert not G.is_multigraph()
         assert not G.is_directed()
 
@@ -229,7 +230,7 @@ class TestGeneratorsBipartite:
         GD = nx.projected_graph(nx.Graph(G), range(len(aseq), len(aseq) + len(bseq)))
         assert GD.number_of_nodes() == 3
 
-        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=nx.Graph)
+        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=LazyGraph)
         assert not G.is_multigraph()
         assert not G.is_directed()
 
@@ -293,7 +294,7 @@ class TestGeneratorsBipartite:
         GD = nx.projected_graph(nx.Graph(G), range(len(aseq), len(aseq) + len(bseq)))
         assert GD.number_of_nodes() == 3
 
-        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=nx.Graph)
+        G = reverse_havel_hakimi_graph(aseq, bseq, create_using=LazyGraph)
         assert not G.is_multigraph()
         assert not G.is_directed()
 
@@ -325,7 +326,7 @@ class TestGeneratorsBipartite:
         assert G.is_multigraph()
         assert not G.is_directed()
 
-        G = preferential_attachment_graph(aseq, 0.5, create_using=nx.Graph)
+        G = preferential_attachment_graph(aseq, 0.5, create_using=LazyGraph)
         assert not G.is_multigraph()
         assert not G.is_directed()
 
