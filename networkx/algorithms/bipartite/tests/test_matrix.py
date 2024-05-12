@@ -14,16 +14,13 @@ from networkx.utils import edges_equal
 
 class TestBiadjacencyMatrix:
     def test_biadjacency_matrix_weight(self):
-        G = nx.path_graph(5)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        LazyG.add_edge(0, 1, weight=2, other=4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
+        G.add_edge(0, 1, weight=2, other=4)
         X = [1, 3]
         Y = [0, 2, 4]
-        M = bipartite.biadjacency_matrix(LazyG, X, weight="weight")
+        M = bipartite.biadjacency_matrix(G, X, weight="weight")
         assert M[0, 0] == 2
-        M = bipartite.biadjacency_matrix(LazyG, X, weight="other")
+        M = bipartite.biadjacency_matrix(G, X, weight="other")
         assert M[0, 0] == 4
 
     def test_biadjacency_matrix(self):
@@ -37,14 +34,11 @@ class TestBiadjacencyMatrix:
             assert M.shape[1] == bots[i]
 
     def test_biadjacency_matrix_order(self):
-        G = nx.path_graph(5)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        LazyG.add_edge(0, 1, weight=2)
+        G = LazyGraph.from_graph_edges(nx.path_graph(5))
+        G.add_edge(0, 1, weight=2)
         X = [3, 1]
         Y = [4, 2, 0]
-        M = bipartite.biadjacency_matrix(LazyG, X, Y, weight="weight")
+        M = bipartite.biadjacency_matrix(G, X, Y, weight="weight")
         assert M[1, 2] == 2
 
     def test_null_graph(self):

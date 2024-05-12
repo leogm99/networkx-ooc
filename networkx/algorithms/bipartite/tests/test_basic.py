@@ -110,36 +110,37 @@ class TestBipartiteBasic:
         assert round(d[2], 6) == 2
         assert round(d[4], 6) == 1
 
-    def test_biadjacency_matrix_weight(self):
-        pytest.importorskip("scipy")
-        G = nx.path_graph(5)
-        G.add_edge(0, 1, weight=2, other=4)
-        X = [1, 3]
-        Y = [0, 2, 4]
-        M = bipartite.biadjacency_matrix(G, X, weight="weight")
-        assert M[0, 0] == 2
-        M = bipartite.biadjacency_matrix(G, X, weight="other")
-        assert M[0, 0] == 4
+    #comment this tests because are repeated in matrix tests (test_matrix.py)
+    # def test_biadjacency_matrix_weight(self):
+    #     pytest.importorskip("scipy")
+    #     G = LazyGraph.from_graph_edges(nx.path_graph(5))
+    #     G.add_edge(0, 1, weight=2, other=4)
+    #     X = [1, 3]
+    #     Y = [0, 2, 4]
+    #     M = bipartite.biadjacency_matrix(G, X, weight="weight")
+    #     assert M[0, 0] == 2
+    #     M = bipartite.biadjacency_matrix(G, X, weight="other")
+    #     assert M[0, 0] == 4
 
-    def test_biadjacency_matrix(self):
-        pytest.importorskip("scipy")
-        tops = [2, 5, 10]
-        bots = [5, 10, 15]
-        for i in range(len(tops)):
-            G = bipartite.random_graph(tops[i], bots[i], 0.2)
-            top = [n for n, d in G.nodes(data=True) if d["bipartite"] == 0]
-            M = bipartite.biadjacency_matrix(G, top)
-            assert M.shape[0] == tops[i]
-            assert M.shape[1] == bots[i]
+    # def test_biadjacency_matrix(self):
+    #     pytest.importorskip("scipy")
+    #     tops = [2, 5, 10]
+    #     bots = [5, 10, 15]
+    #     for i in range(len(tops)):
+    #         G = bipartite.random_graph(tops[i], bots[i], 0.2)
+    #         top = [n for n, d in G.nodes(data=True) if d["bipartite"] == 0]
+    #         M = bipartite.biadjacency_matrix(G, top)
+    #         assert M.shape[0] == tops[i]
+    #         assert M.shape[1] == bots[i]
 
-    def test_biadjacency_matrix_order(self):
-        pytest.importorskip("scipy")
-        G = nx.path_graph(5)
-        G.add_edge(0, 1, weight=2)
-        X = [3, 1]
-        Y = [4, 2, 0]
-        M = bipartite.biadjacency_matrix(G, X, Y, weight="weight")
-        assert M[1, 2] == 2
+    # def test_biadjacency_matrix_order(self):
+    #     pytest.importorskip("scipy")
+    #     G = LazyGraph.from_graph_edges(nx.path_graph(5))
+    #     G.add_edge(0, 1, weight=2)
+    #     X = [3, 1]
+    #     Y = [4, 2, 0]
+    #     M = bipartite.biadjacency_matrix(G, X, Y, weight="weight")
+    #     assert M[1, 2] == 2
 
     @staticmethod
     def _get_ooc_path_graph(nodes: int):
