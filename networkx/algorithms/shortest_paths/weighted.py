@@ -768,7 +768,7 @@ def multi_source_dijkstra(G, sources, target=None, cutoff=None, weight="weight")
     if target is None:
         return (dist, paths)
     try:
-        return (dist[target], paths[target])
+        return (dist[target], OutOfCoreList(paths[target]))
     except KeyError as err:
         raise nx.NetworkXNoPath(f"No path to {target}.") from err
 
@@ -873,7 +873,7 @@ def _dijkstra_multisource(
                 if vu_dist < u_dist:
                     raise ValueError("Contradictory paths found:", "negative weights?")
                 elif pred is not None and vu_dist == u_dist:
-                    pred.append(u, v)
+                    pred[u].append(v)
             elif u not in seen or vu_dist < seen[u]:
                 seen[u] = vu_dist
                 push(fringe, (vu_dist, next(c), u))
@@ -883,7 +883,7 @@ def _dijkstra_multisource(
                     pred[u] = [v]
             elif vu_dist == seen[u]:
                 if pred is not None:
-                    pred.append(u, v)
+                    pred[u].append(v)
 
     # The optional predecessor and path dictionaries can be accessed
     # by the caller via the pred and paths objects passed as arguments.
@@ -1474,8 +1474,7 @@ def _inner_bellman_ford(
                     if heuristic:
                         if v in recent_update[u]:
                             # Negative cycle found!
-                            # pred[v].append(u)
-                            pred.append(v, u)
+                            pred[v].append(u)
                             return v
 
                         # Transfer the recent update info from u to v if the
@@ -1501,8 +1500,7 @@ def _inner_bellman_ford(
                     pred_edge[v] = u
 
                 elif dist.get(v) is not None and dist_v == dist.get(v):
-                    # pred[v].append(u)
-                    pred.append(v, u)
+                    pred[v].append(u)
 
     # successfully found shortest_path. No negative cycles found.
     return None
@@ -1846,7 +1844,7 @@ def single_source_bellman_ford(G, source, target=None, weight="weight"):
     if target is None:
         return (dist, paths)
     try:
-        return (dist[target], paths[target])
+        return (dist[target], OutOfCoreList(paths[target]))
     except KeyError as err:
         msg = f"Node {target} not reachable from {source}"
         raise nx.NetworkXNoPath(msg) from err

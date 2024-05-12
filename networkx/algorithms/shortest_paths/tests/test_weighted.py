@@ -116,16 +116,19 @@ class TestWeightedPath(WeightedTestBase):
         validate_path(self.XG, 1, 4, 9, P[4])
         assert D[4] == 9
 
+        path = nx.single_source_dijkstra_path(self.XG, 1)
         validate_path(
-            self.XG, 1, 4, 9, nx.single_source_dijkstra_path(self.XG, 1)[4]
+            self.XG, 1, 4, 9, path[4]
         )
         assert dict(nx.single_source_dijkstra_path_length(self.XG, 1))[4] == 9
 
+        path = nx.single_source_dijkstra(self.XG, 1)
         validate_path(
-            self.XG, 1, 4, 9, nx.single_source_dijkstra(self.XG, 1)[1][4]
+            self.XG, 1, 4, 9, path[1][4]
         )
+        path=nx.single_source_dijkstra_path(self.MXG, 1)
         validate_path(
-            self.MXG, 1, 4, 9, nx.single_source_dijkstra_path(self.MXG, 1)[4]
+            self.MXG, 1, 4, 9, path[4]
         )
 
         # GG = self.XG.to_undirected()
@@ -147,8 +150,9 @@ class TestWeightedPath(WeightedTestBase):
         validate_path(
             self.G, 1, 4, 2, nx.single_source_dijkstra(self.G, 1, 4)[1]
         )
+        path = nx.single_source_dijkstra(self.G, 1)
         validate_path(
-            self.G, 1, 4, 2, nx.single_source_dijkstra(self.G, 1)[1][4]
+            self.G, 1, 4, 2,path[1][4]
         )
 
         validate_path(self.G, 1, 4, 2, nx.dijkstra_path(self.G, 1, 4))
@@ -732,7 +736,8 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
     def test_multigraph(self):
         assert nx.bellman_ford_path(self.MXG, 1, 4) == [1, 3, 2, 4]
         assert nx.bellman_ford_path_length(self.MXG, 1, 4) == 9
-        assert nx.single_source_bellman_ford_path(self.MXG, 1)[4] == [
+        path = nx.single_source_bellman_ford_path(self.MXG, 1)
+        assert path[4] == [
             1,
             3,
             2,
@@ -750,7 +755,8 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         assert D[4] == 9
         assert nx.bellman_ford_path(self.MXG4, 0, 2) == [0, 1, 2]
         assert nx.bellman_ford_path_length(self.MXG4, 0, 2) == 4
-        assert nx.single_source_bellman_ford_path(self.MXG4, 0)[2] == [0, 1, 2]
+        path = nx.single_source_bellman_ford_path(self.MXG4, 0)
+        assert path[2] == [0, 1, 2]
         assert nx.single_source_bellman_ford_path_length(self.MXG4, 0)[2] == 4
         D, P = nx.single_source_bellman_ford(self.MXG4, 0, target=2)
         assert D == 4
@@ -765,7 +771,8 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
     def test_others(self):
         assert nx.bellman_ford_path(self.XG, 1, 4) == [1, 3, 2, 4]
         assert nx.bellman_ford_path_length(self.XG, 1, 4) == 9
-        assert nx.single_source_bellman_ford_path(self.XG, 1)[4] == [
+        path = nx.single_source_bellman_ford_path(self.XG, 1)
+        assert path[4] == [
             1,
             3,
             2,
@@ -968,9 +975,15 @@ class TestJohnsonAlgorithm(WeightedTestBase):
         assert dict(nx.johnson(G)) != dict(nx.johnson(I))
 
     def test_graphs(self):
-        validate_path(self.XG, 1, 4, 9, dict(nx.johnson(self.XG))[1][4])
-        validate_path(self.MXG, 1, 4, 9, dict(nx.johnson(self.MXG))[1][4])
-        validate_path(self.XG2, 1, 3, 4, dict(nx.johnson(self.XG2))[1][3])
-        validate_path(self.XG3, 0, 3, 15, dict(nx.johnson(self.XG3))[0][3])
-        validate_path(self.XG4, 0, 2, 4, dict(nx.johnson(self.XG4))[0][2])
-        validate_path(self.MXG4, 0, 2, 4, dict(nx.johnson(self.MXG4))[0][2])
+        path = dict(nx.johnson(self.XG))
+        validate_path(self.XG, 1, 4, 9, path[1][4])
+        path = dict(nx.johnson(self.MXG))
+        validate_path(self.MXG, 1, 4, 9, path[1][4])
+        path = dict(nx.johnson(self.XG2))
+        validate_path(self.XG2, 1, 3, 4, path[1][3])
+        path = dict(nx.johnson(self.XG3))
+        validate_path(self.XG3, 0, 3, 15,path [0][3])
+        path = dict(nx.johnson(self.XG4))
+        validate_path(self.XG4, 0, 2, 4, path[0][2])
+        path = dict(nx.johnson(self.MXG4))
+        validate_path(self.MXG4, 0, 2, 4, path[0][2])

@@ -566,8 +566,7 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
                     seen[w] = level
                     nextlevel.append(w)
                 elif seen[w] == level:  # add v to predecessor list if it
-                    #pred[w].append(v)  # is at the correct level
-                    pred.append(w, v)
+                    pred[w].append(v)  # is at the correct level
         if cutoff and cutoff <= level:
             break
 
@@ -575,11 +574,11 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
         if return_seen:
             if target not in pred:
                 return ([], -1)  # No predecessor
-            return (pred[target], seen[target])
+            return (OutOfCoreList(pred[target]), seen[target])
         else:
             if target not in pred:
                 return []  # No predecessor
-            return pred[target]
+            return OutOfCoreList(pred[target])
     else:
         if return_seen:
             return (pred, seen)
