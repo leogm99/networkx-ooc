@@ -1,24 +1,15 @@
 from typing import MutableSequence
 from networkx.structures.edges_dict import EdgesDict
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
-from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
 
 __all__ = ["OutOfCoreList"]
 
-'''
-#TODO
-Ver como se usan las listas para ver como conviene implementarla, buscar en internet listas ooc ya hechas.
-'''
 
-'''
-Esta implementacion de Lista out of core deberia usarse unicamente para algoritmos que solo realicen las operaciones de set, get,
-append, len e iter. Operaciones como insert o delete son muy costosas debido al uso de pickle y deberian evitarse.
-'''
 class OutOfCoreList(MutableSequence):
     def __init__(self, initial_list = None, value_primitive_type = PrimitiveType.INTEGER):
         self._out_of_core_dict = None
         if value_primitive_type == PrimitiveType.INTEGER:
-            self._out_of_core_dict = IOutOfCoreDict()
+            self._out_of_core_dict = IntDict()
         elif value_primitive_type == PrimitiveType.FLOAT:
             self._out_of_core_dict = IntFloatDict()
         elif value_primitive_type == PrimitiveType.EDGE:
