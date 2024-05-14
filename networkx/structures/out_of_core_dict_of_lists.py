@@ -1,5 +1,5 @@
+import mmap
 import os
-import shutil
 import struct
 import tempfile
 from networkx.structures.out_of_core_dict import OutOfCoreDict
@@ -15,17 +15,19 @@ class LazyList:
 
     def __setitem__(self, index, value):
         path = self.store
-        temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
-        
-        with open(path, 'r') as f, temp_file:
-            for i, line in enumerate(f):
-                if i == index:
-                    temp_file.write(str(value) + '\n')
-                else:
-                    temp_file.write(line)
+        with open(path, 'r+b') as f:
+            file_size = os.path.getsize(path)
+            if file_size == 0:
+                raise IndexError("list assignment index out of range")
 
-        os.remove(path)
-        shutil.move(temp_file.name, path)
+            element_position = index * 4
+
+            if element_position >= file_size or index < 0:
+                raise IndexError("list assignment index out of range")
+
+            with mmap.mmap(f.fileno(), 0) as m:
+                value_bytes = struct.pack(self.value_primitive_type, value)
+                m[element_position:element_position + 4] = value_bytes
 
     def __getitem__(self, index):
         if (isinstance(index, slice)): return self.__slice__getitem__(index)
@@ -35,17 +37,15 @@ class LazyList:
             index += len(self)
             if index < 0:
                 raise IndexError("Index out of range")
-        with open(path, 'r') as f:
-            for _ in range(index):
-                try:
-                    f.readline()
-                except StopIteration:
+        with open(path, 'rb') as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+                start_index = index * 4
+                end_index = start_index + 4
+                byte_data = m[start_index:end_index]
+                if len(byte_data) == 4:
+                    return struct.unpack(self.value_primitive_type, byte_data)[0]
+                else:
                     raise IndexError("Index out of range")
-            line = f.readline()
-            if line:
-                return self._parse_value(line.strip())
-            else:
-                raise IndexError("Index out of range")
     
     def __slice__getitem__(self, index):
         start, stop, step = index.indices(len(self))
@@ -59,34 +59,33 @@ class LazyList:
         for i in range(start, stop, step):
             l.append(self[i])
         return l
-
-    def _parse_value(self, value_str):
-        if self.value_primitive_type == PrimitiveType.INTEGER:
-            return int(value_str)
-        elif self.value_primitive_type == PrimitiveType.FLOAT:
-            return float(value_str)
         
     def __len__(self):
         path = self.store
-        with open(path, 'r') as f:
-            return sum(1 for _ in f)
+        if os.path.getsize(path) == 0:
+            return 0
+        with open(path, 'rb') as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+                element_size = 4
+                return len(m) // element_size
 
     def append(self, value):
         path = self.store
-        with open(path, 'a+') as f:
+        with open(path, 'a+b') as f:
             f.seek(0, 2)
-            if f.tell() > 0:
-                f.write('\n')
-            f.write(str(value))
+            f.write(struct.pack(self.value_primitive_type, value))
 
     def __iter__(self):
         path = self.store
-        with open(path, 'r') as f:
-            for line in f:
-                if (self.value_primitive_type == PrimitiveType.INTEGER):
-                    yield int(line.strip())
-                elif (self.value_primitive_type == PrimitiveType.FLOAT):
-                    yield float(line.strip())
+        if os.path.getsize(path) == 0:
+            return iter([])
+        with open(path, 'rb') as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+                for i in range(0, len(m), 4):
+                    data = m[i:i+4]
+                    if len(data) == 4:
+                        value = struct.unpack(self.value_primitive_type, data)[0]
+                        yield value
 
     def __str__(self) -> str:
         return str([i for i in self])
@@ -107,21 +106,19 @@ class LazyList:
     
     def pop(self):
         path = self.store
-        temp_file = tempfile.NamedTemporaryFile(mode='w', delete=False)
         popped_value = None
 
-        with open(path, 'r') as f, temp_file:
-            line = next(f, None)
-            while line is not None:
-                next_line = next(f, None)
-                if next_line is not None:
-                    temp_file.write(line)
-                else:
-                    popped_value = self._parse_value(line.strip())
-                line = next_line
+        with open(path, 'r+b') as f:
+            file_size = os.path.getsize(path)
+            if file_size == 0:
+                raise IndexError("pop from empty list")
 
-        os.remove(path)
-        shutil.move(temp_file.name, path)
+            with mmap.mmap(f.fileno(), 0) as m:
+                last_element_position = file_size - 4
+                last_element_bytes = m[last_element_position:last_element_position + 4]
+                popped_value = struct.unpack(self.value_primitive_type, last_element_bytes)[0]
+
+                f.truncate(last_element_position)
 
         return popped_value
 
@@ -135,7 +132,7 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
             path = self._get_list_path(key)
         else:
             path = self._get_new_path()
-        super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(path, value))
+        super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(path, value, self._value_primitive_type))
 
     def __getitem__(self, key):
         path = self._get_list_path(key)
@@ -192,24 +189,13 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         return struct.unpack('@l', b)[0]
 
     @staticmethod
-    def __list_to_bytes(path, l):
-        with open(path, 'w') as f:
-            f.write('\n'.join(map(str, l)))
+    def __list_to_bytes(path, l, type):
+        with open(path, 'wb') as f:
+            for data in l:
+                f.write(struct.pack(type, data))
 
         return OutOfCoreDictOfLists.__str_to_bytes(path)
 
-    @staticmethod
-    def __list_from_bytes(b, type):
-        path = OutOfCoreDictOfLists.__str_from_bytes(b)
-        l = OutOfCoreList(value_primitive_type=type)
-        with open(path, 'r') as f:
-            for line in f:
-                if (type == PrimitiveType.INTEGER):
-                    l.append(int(line.strip()))
-                elif ( type == PrimitiveType.FLOAT):
-                    l.append(float(line.strip()))
-        return l
-    
     @staticmethod
     def __str_to_bytes(s: str):
         return s.encode('utf-8')
