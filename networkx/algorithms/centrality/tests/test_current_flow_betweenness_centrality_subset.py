@@ -75,7 +75,7 @@ class TestFlowBetweennessCentrality:
     def test_star(self):
         """Betweenness centrality: star"""
         G = nx.Graph()
-        nx.add_star(G, ["a", "b", "c", "d"])
+        nx.add_star(G, [1, 2, 3, 4])
         b = nx.current_flow_betweenness_centrality_subset(
             G, list(G), list(G), normalized=True
         )

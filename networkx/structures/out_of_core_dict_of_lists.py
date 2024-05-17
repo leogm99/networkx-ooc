@@ -1,3 +1,4 @@
+import mmap
 import os
 import struct
 import tempfile
@@ -6,6 +7,124 @@ from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.primitive_dicts import PrimitiveType
 
 __all__ = ["OutOfCoreDictOfLists"]
+
+class LazyList:
+    def  __init__(self, store, value_primitive_type):
+        self.store = store
+        self.value_primitive_type = value_primitive_type
+
+    def __setitem__(self, index, value):
+        path = self.store
+        with open(path, 'r+b') as f:
+            file_size = os.path.getsize(path)
+            if file_size == 0:
+                raise IndexError("list assignment index out of range")
+
+            element_position = index * 4
+
+            if element_position >= file_size or index < 0:
+                raise IndexError("list assignment index out of range")
+
+            with mmap.mmap(f.fileno(), 0) as m:
+                value_bytes = struct.pack(self.value_primitive_type, value)
+                m[element_position:element_position + 4] = value_bytes
+
+    def __getitem__(self, index):
+        if (isinstance(index, slice)): return self.__slice__getitem__(index)
+
+        path = self.store
+        if index < 0:
+            index += len(self)
+            if index < 0:
+                raise IndexError("Index out of range")
+        with open(path, 'rb') as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+                start_index = index * 4
+                end_index = start_index + 4
+                byte_data = m[start_index:end_index]
+                if len(byte_data) == 4:
+                    return struct.unpack(self.value_primitive_type, byte_data)[0]
+                else:
+                    raise IndexError("Index out of range")
+    
+    def __slice__getitem__(self, index):
+        start, stop, step = index.indices(len(self))
+        if step != 1:
+            if step == -1:
+                raise NotImplemented("Slice step other than 1 is not supported")
+                # return self.__reversed__()
+            else:
+                raise ValueError("Slice step other than 1 is not supported")
+        l = OutOfCoreList(value_primitive_type=self.value_primitive_type)
+        for i in range(start, stop, step):
+            l.append(self[i])
+        return l
+        
+    def __len__(self): # O(1)
+        path = self.store
+        if os.path.getsize(path) == 0:
+            return 0
+        with open(path, 'rb') as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+                element_size = 4
+                return len(m) // element_size
+
+    def append(self, value):
+        path = self.store
+        with open(path, 'a+b') as f:
+            f.seek(0, 2)
+            f.write(struct.pack(self.value_primitive_type, value))
+
+    def __iter__(self):
+        path = self.store
+        if os.path.getsize(path) == 0:
+            return iter([])
+        with open(path, 'rb') as f:
+            with mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+                for i in range(0, len(m), 4):
+                    data = m[i:i+4]
+                    if len(data) == 4:
+                        value = struct.unpack(self.value_primitive_type, data)[0]
+                        yield value
+
+    def __str__(self) -> str:
+        return str([i for i in self])
+
+    def __add__(self, other):
+        result = OutOfCoreList(value_primitive_type=self.value_primitive_type)
+        result.extend(self)
+        result.extend(other)
+        return result
+    
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, LazyList) and not isinstance(other, OutOfCoreList) and not isinstance(other, list):
+            return False
+
+        if len(self) != len(other):
+            return False
+        
+        for item1, item2 in zip(self, other):
+            if item1 != item2:
+                return False
+        return True
+    
+    def pop(self):
+        path = self.store
+        popped_value = None
+
+        with open(path, 'r+b') as f:
+            file_size = os.path.getsize(path)
+            if file_size == 0:
+                raise IndexError("pop from empty list")
+
+            with mmap.mmap(f.fileno(), 0) as m:
+                last_element_position = file_size - 4
+                last_element_bytes = m[last_element_position:last_element_position + 4]
+                popped_value = struct.unpack(self.value_primitive_type, last_element_bytes)[0]
+
+                f.truncate(last_element_position)
+
+        return popped_value
 
 class OutOfCoreDictOfLists(OutOfCoreDict):
     def __init__(self, value_primitive_type = PrimitiveType.INTEGER):
@@ -17,10 +136,11 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
             path = self._get_list_path(key)
         else:
             path = self._get_new_path()
-        super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(path, value))
+        super().__setitem__(self.__key_to_bytes(key), self.__list_to_bytes(path, value, self._value_primitive_type))
 
     def __getitem__(self, key):
-        return self.__list_from_bytes(super().__getitem__(self.__key_to_bytes(key)), self._value_primitive_type)
+        path = self._get_list_path(key)
+        return LazyList(path, self._value_primitive_type)
     
     def __iter__(self):
         for k in super().__iter__():
@@ -53,25 +173,8 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
 
         return True
     
-    def append(self, key, value):
-        path = self._get_list_path(key)
-        with open(path, 'a+') as f:
-            f.seek(0, 2)
-            if f.tell() > 0:
-                f.write('\n')
-            f.write(str(value))
-
-    #TODO Mejorar
-    def update(self, key, list_idx, value):
-        l = self.__getitem__(key)
-        l[list_idx] = value
-        self.__setitem__(key, l)
-
-    #TODO mejorar
-    def sum_value(self, key, list_idx, value):
-        l = self.__getitem__(key)
-        l[list_idx] += value
-        self.__setitem__(key, l)
+    def __str__(self) -> str:
+        return str({k for k in self})
 
     def _get_new_path(self):
         fd, path = tempfile.mkstemp()
@@ -90,26 +193,13 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         return struct.unpack('@l', b)[0]
 
     @staticmethod
-    def __list_to_bytes(path, l):
-        #_, path = tempfile.mkstemp()
-        with open(path, 'w') as f:
-            f.write('\n'.join(map(str, l)))
-            #Esta ok guardar como str? O seria mejor por ej en bytes?
+    def __list_to_bytes(path, l, type):
+        with open(path, 'wb') as f:
+            for data in l:
+                f.write(struct.pack(type, data))
 
         return OutOfCoreDictOfLists.__str_to_bytes(path)
 
-    @staticmethod
-    def __list_from_bytes(b, type):
-        path = OutOfCoreDictOfLists.__str_from_bytes(b)
-        l = OutOfCoreList(value_primitive_type=type)
-        with open(path, 'r') as f:
-            for line in f:
-                if (type == PrimitiveType.INTEGER):
-                    l.append(int(line.strip()))
-                elif ( type == PrimitiveType.FLOAT):
-                    l.append(float(line.strip()))
-        return l
-    
     @staticmethod
     def __str_to_bytes(s: str):
         return s.encode('utf-8')

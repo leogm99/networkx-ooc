@@ -12,11 +12,11 @@ class LazyNode(MutableMapping):
         data = self._store[self._node]
         if data == b"":
             data = {}
-            self._store[self._node][LazyNode.__serialize_node(key)] = LazyNode.__serialize_attr(data)
+            data[key] = value
         else:
-            LazyNode.__deserialize_attr(data)
-        data[key] = value
-        self._store[self._node][LazyNode.__serialize_node(key)] = LazyNode.__serialize_attr(data)
+            data = LazyNode.__deserialize_attr(data)
+            data[key] = value
+        self._store[self._node] = LazyNode.__serialize_attr(data)
 
     def __delitem__(self, key):
         data = self._store[self._node]

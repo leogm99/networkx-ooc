@@ -16,6 +16,7 @@ __all__ = [
     "FilterAdjacency",
     "FilterMultiInner",
     "FilterMultiAdjacency",
+    "LazyAdjacencyView",
 ]
 
 
@@ -82,6 +83,11 @@ class AdjacencyView(AtlasView):
 
     def copy(self):
         return {n: self[n].copy() for n in self._atlas}
+
+
+class LazyAdjacencyView(AtlasView):
+    def __getitem__(self, name):
+        return AtlasView(self._atlas.get(name, {}))
 
 
 class MultiAdjacencyView(AdjacencyView):

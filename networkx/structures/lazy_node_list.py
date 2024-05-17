@@ -51,17 +51,17 @@ class LazyNodeList(MutableMapping):
                 LazyNodeList.__serialize_node(key)
             ] = dd
         else:
-            if len(attr) == 0:
-                self._inner[LazyNodeList.__serialize_node(key)] = b""
-            else:
-                try:
-                    dd = LazyNodeList.__deserialize_node_attr(self._inner[LazyNodeList.__serialize_node(key)])
-                except KeyError:
+            try:
+                dd = LazyNodeList.__deserialize_node_attr(self._inner[LazyNodeList.__serialize_node(key)])
+            except KeyError:
+                if (len(attr) == 0):
+                    dd = b''
+                else:
                     dd = {}
-                dd.update(attr)
-                self._inner[
-                    LazyNodeList.__serialize_node(key)
-                ] = LazyNodeList.__serialize_node_attr(dd)
+                    dd.update(attr)
+            self._inner[
+                LazyNodeList.__serialize_node(key)
+            ] = LazyNodeList.__serialize_node_attr(dd)
 
     def add_node(self, key, **attr):
         self.__setitem__(key, **attr)
@@ -82,4 +82,6 @@ class LazyNodeList(MutableMapping):
 
     @staticmethod
     def __deserialize_node_attr(data):
+        if data == b'':
+            return {}
         return pickle.loads(data)

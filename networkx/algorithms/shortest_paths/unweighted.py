@@ -4,7 +4,6 @@ Shortest path algorithms for unweighted graphs.
 import warnings
 
 import networkx as nx
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
@@ -64,7 +63,7 @@ def single_source_shortest_path_length(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = [source]
-    return IOutOfCoreDict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
+    return IntDict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
 
 
 def _single_shortest_path_length(G, adj, firstlevel, cutoff):
@@ -392,11 +391,11 @@ def _single_shortest_path(adj, firstlevel, paths, cutoff, join):
             `p1 + p2` (forward from source) or `p2 + p1` (backward from target)
     """
     level = 0  # the current level
-    nextlevel = IOutOfCoreDict(firstlevel)
+    nextlevel = IntDict(firstlevel)
     #lo que hay que ver es como manejamos la variable "Paths", en cual estructura, o si cremaos una nueva.
     while nextlevel and cutoff > level:
         thislevel = nextlevel
-        nextlevel = IOutOfCoreDict()
+        nextlevel = IntDict()
         for v in thislevel:
             for w in adj[v]:
                 if w not in paths:
@@ -552,7 +551,7 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
 
     level = 0  # the current level
     nextlevel = OutOfCoreList([source]) # list of nodes to check at next level
-    seen = IOutOfCoreDict({source: level}) # level (number of hops) when seen in BFS
+    seen = IntDict({source: level}) # level (number of hops) when seen in BFS
     #pred = {source: []}  # predecessor dictionary
     pred = OutOfCoreDictOfLists()
     pred[source] = []
@@ -567,8 +566,7 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
                     seen[w] = level
                     nextlevel.append(w)
                 elif seen[w] == level:  # add v to predecessor list if it
-                    #pred[w].append(v)  # is at the correct level
-                    pred.append(w, v)
+                    pred[w].append(v)  # is at the correct level
         if cutoff and cutoff <= level:
             break
 
@@ -576,11 +574,11 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
         if return_seen:
             if target not in pred:
                 return ([], -1)  # No predecessor
-            return (pred[target], seen[target])
+            return (OutOfCoreList(pred[target]), seen[target])
         else:
             if target not in pred:
                 return []  # No predecessor
-            return pred[target]
+            return OutOfCoreList(pred[target])
     else:
         if return_seen:
             return (pred, seen)

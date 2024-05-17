@@ -279,7 +279,7 @@ def _single_source_shortest_path_basic(G, s):
                 D[w] = Dv + 1
             if D[w] == Dv + 1:  # this is a shortest path, count paths
                 sigma[w] += sigmav
-                P.append(w, v)  # predecessors
+                P[w].append(v)  # predecessors
     return S, P, sigma, D
 
 
@@ -318,8 +318,7 @@ def _single_source_dijkstra_path_basic(G, s, weight):
                 P[w] = [v]
             elif vw_dist == seen[w]:  # handle equal paths
                 sigma[w] += sigma[v]
-                # P[w].append(v)
-                P.append(w, v)
+                P[w].append(v)
     return S, P, sigma, D
 
 

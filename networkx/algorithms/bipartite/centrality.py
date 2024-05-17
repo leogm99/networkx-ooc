@@ -1,6 +1,5 @@
 import networkx as nx
 
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.primitive_dicts import IntFloatDict
 

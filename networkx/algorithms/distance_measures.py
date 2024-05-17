@@ -3,10 +3,9 @@
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict
 
 __all__ = [
     "eccentricity",
@@ -92,7 +91,9 @@ def _extrema_bounding(G, compute="diameter", weight=None):
        https://www.sciencedirect.com/science/article/pii/S0304397515001644
     """
     # init variables
-    degrees = IOutOfCoreDict(G.degree())  # start with the highest degree node
+    degrees = IntDict()  # start with the highest degree node
+    for k, v in G.degree():
+        degrees[k] = v
     minlowernode = max(degrees, key=degrees.get)
     N = len(degrees)  # number of nodes
     # alternate between smallest lower and largest upper bound
@@ -142,8 +143,8 @@ def _extrema_bounding(G, compute="diameter", weight=None):
         for i in candidates:
             # update eccentricity bounds
             d = dist[i]
-            ecc_lower[i] = low = max(ecc_lower[i], max(d, (current_ecc - d)))
-            ecc_upper[i] = upp = min(ecc_upper[i], current_ecc + d)
+            ecc_lower[i] = low = max(round(ecc_lower[i], 6), max(round(d, 6), (round(current_ecc - d, 6))))
+            ecc_upper[i] = upp = min(round(ecc_upper[i], 6), round(current_ecc + d, 6))
 
             # update min/max values of lower and upper bounds
             minlower = min(ecc_lower[i], minlower)

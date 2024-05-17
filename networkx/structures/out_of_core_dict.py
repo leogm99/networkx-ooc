@@ -79,34 +79,3 @@ class OutOfCoreDict(MutableMapping):
         for i in self:
             c[i] = self.__getitem__(i)
         return c
-
-class IOutOfCoreDict(OutOfCoreDict):
-    def __init__(self, initial_values = None) -> None:
-        super().__init__()
-
-        if (initial_values != None):
-            super().update(initial_values)
-
-    def __setitem__(self, key, value):
-        super().__setitem__(self.__to_bytes(key), self.__to_bytes(value))
-
-    def __getitem__(self, key):
-        return self.__from_bytes(super().__getitem__(self.__to_bytes(key)))
-    
-    def __iter__(self):
-        for k in super().__iter__():
-            yield self.__from_bytes(k)
-
-    def __delitem__(self, index):
-        super().__delitem__(self.__to_bytes(index))
-
-    def copy(self, c=None):
-        return super().copy(IOutOfCoreDict())
-
-    @staticmethod
-    def __to_bytes(i: int):
-        return struct.pack('@l', i)
-
-    @staticmethod
-    def __from_bytes(b: bytes):
-        return struct.unpack('@l', b)[0]

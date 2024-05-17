@@ -4,9 +4,8 @@ import math
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntFloatDict
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict
 
 __all__ = ["eigenvector_centrality", "eigenvector_centrality_numpy"]
 
@@ -168,7 +167,7 @@ def eigenvector_centrality(G, max_iter=100, tol=1.0e-6, nstart=None, weight=None
         )
     # If no initial vector is provided, start with the all-ones vector.
     if nstart is None:
-        nstart = IOutOfCoreDict()
+        nstart = IntDict()
         for v in G:
             nstart[v] = 1
     if all(v == 0 for v in nstart.values()):

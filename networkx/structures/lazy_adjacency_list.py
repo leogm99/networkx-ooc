@@ -65,7 +65,7 @@ class LazyAdjacencyList(MutableMapping):
     @staticmethod
     def __deserialize_edge(data: bytes):
         return struct.unpack('!2l', data)
-
+    
     @staticmethod
     def __serialize_attr(attr):
         return pickle.dumps(attr)

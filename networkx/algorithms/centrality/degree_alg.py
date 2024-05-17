@@ -1,6 +1,5 @@
 """Degree centrality measures."""
 import networkx as nx
-from networkx.structures.out_of_core_dict import IOutOfCoreDict
 from networkx.structures.primitive_dicts import IntDict, IntFloatDict
 from networkx.utils.decorators import not_implemented_for
 

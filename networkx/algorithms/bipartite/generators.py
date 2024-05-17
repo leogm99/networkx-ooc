@@ -8,6 +8,10 @@ from functools import reduce
 import networkx as nx
 from networkx.utils import nodes_or_number, py_random_state
 
+from networkx.classes.lazygraph import LazyGraph
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+
 __all__ = [
     "configuration_model",
     "havel_hakimi_graph",
@@ -48,14 +52,18 @@ def complete_bipartite_graph(n1, n2, create_using=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.complete_bipartite_graph
     """
-    G = nx.empty_graph(0, create_using)
+    G = nx.empty_graph(0, create_using, default=LazyGraph)
     if G.is_directed():
         raise nx.NetworkXError("Directed Graph not supported")
 
     n1, top = n1
     n2, bottom = n2
     if isinstance(n1, numbers.Integral) and isinstance(n2, numbers.Integral):
-        bottom = [n1 + i for i in bottom]
+        # bottom = [n1 + i for i in bottom]
+        _bottom = OutOfCoreList()
+        for i in bottom:
+           _bottom.append(n1 + i)
+        bottom = _bottom
     G.add_nodes_from(top, bipartite=0)
     G.add_nodes_from(bottom, bipartite=1)
     if len(G) != len(top) + len(bottom):
@@ -120,11 +128,19 @@ def configuration_model(aseq, bseq, create_using=None, seed=None):
         return G  # done if no edges
 
     # build lists of degree-repeated vertex numbers
-    stubs = [[v] * aseq[v] for v in range(0, lena)]
-    astubs = [x for subseq in stubs for x in subseq]
+    # stubs = [[v] * aseq[v] for v in range(0, lena)]
+    # astubs = [x for subseq in stubs for x in subseq]
+    astubs = OutOfCoreList()
+    for v in range(0, lena):
+        stub = [v] * aseq[v]
+        astubs.extend(stub)
 
-    stubs = [[v] * bseq[v - lena] for v in range(lena, lena + lenb)]
-    bstubs = [x for subseq in stubs for x in subseq]
+    # stubs = [[v] * bseq[v - lena] for v in range(lena, lena + lenb)]
+    # bstubs = [x for subseq in stubs for x in subseq]
+    bstubs = OutOfCoreList()
+    for v in range(lena, lena + lenb):
+        stub = [v] * bseq[v - lena]
+        bstubs.extend(stub)
 
     # shuffle lists
     seed.shuffle(astubs)
@@ -476,10 +492,11 @@ def random_graph(n, m, p, seed=None, directed=False):
        "Efficient generation of large random networks",
        Phys. Rev. E, 71, 036113, 2005.
     """
-    G = nx.Graph()
+    G = LazyGraph()
     G = _add_nodes_with_bipartite_label(G, n, m)
     if directed:
-        G = nx.DiGraph(G)
+        G = nx.DiGraph()
+        G = _add_nodes_with_bipartite_label(G, n, m)
     G.name = f"fast_gnp_random_graph({n},{m},{p})"
 
     if p <= 0:
@@ -561,10 +578,11 @@ def gnmk_random_graph(n, m, k, seed=None, directed=False):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.gnmk_random_graph
     """
-    G = nx.Graph()
+    G = LazyGraph()
     G = _add_nodes_with_bipartite_label(G, n, m)
     if directed:
-        G = nx.DiGraph(G)
+        G = nx.DiGraph()
+        G = _add_nodes_with_bipartite_label(G, n, m)
     G.name = f"bipartite_gnm_random_graph({n},{m},{k})"
     if n == 1 or m == 1:
         return G
@@ -572,8 +590,11 @@ def gnmk_random_graph(n, m, k, seed=None, directed=False):
     if k >= max_edges:  # Maybe we should raise an exception here
         return nx.complete_bipartite_graph(n, m, create_using=G)
 
-    top = [n for n, d in G.nodes(data=True) if d["bipartite"] == 0]
-    bottom = list(set(G) - set(top))
+    top = OutOfCoreList()
+    for n, d in G.nodes(data=True):
+        if d["bipartite"] == 0:
+            top.append(n)
+    bottom = OutOfCoreList(OutOfCoreSet(G) - OutOfCoreSet(top))
     edge_count = 0
     while edge_count < k:
         # generate random edge,u,v

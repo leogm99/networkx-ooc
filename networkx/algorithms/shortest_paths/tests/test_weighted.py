@@ -1,3 +1,4 @@
+from networkx.classes.lazygraph import LazyGraph
 import pytest
 
 import networkx as nx
@@ -40,7 +41,7 @@ class WeightedTestBase:
         """Creates some graphs for use in the unit tests."""
         cnlti = nx.convert_node_labels_to_integers
         self.grid = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
-        self.cycle = nx.cycle_graph(7)
+        self.cycle = LazyGraph.from_graph_edges(nx.cycle_graph(7))
         self.directed_cycle = nx.cycle_graph(7, create_using=nx.DiGraph())
         self.XG = nx.DiGraph()
         self.XG.add_weighted_edges_from(
@@ -72,7 +73,7 @@ class WeightedTestBase:
             ]
         )
 
-        self.XG3 = nx.Graph()
+        self.XG3 = LazyGraph()
         self.XG3.add_weighted_edges_from(
             [[0, 1, 2], [1, 2, 12], [2, 3, 1], [3, 4, 5], [4, 5, 1], [5, 0, 10]]
         )
@@ -115,16 +116,19 @@ class TestWeightedPath(WeightedTestBase):
         validate_path(self.XG, 1, 4, 9, P[4])
         assert D[4] == 9
 
+        path = nx.single_source_dijkstra_path(self.XG, 1)
         validate_path(
-            self.XG, 1, 4, 9, nx.single_source_dijkstra_path(self.XG, 1)[4]
+            self.XG, 1, 4, 9, path[4]
         )
         assert dict(nx.single_source_dijkstra_path_length(self.XG, 1))[4] == 9
 
+        path = nx.single_source_dijkstra(self.XG, 1)
         validate_path(
-            self.XG, 1, 4, 9, nx.single_source_dijkstra(self.XG, 1)[1][4]
+            self.XG, 1, 4, 9, path[1][4]
         )
+        path=nx.single_source_dijkstra_path(self.MXG, 1)
         validate_path(
-            self.MXG, 1, 4, 9, nx.single_source_dijkstra_path(self.MXG, 1)[4]
+            self.MXG, 1, 4, 9, path[4]
         )
 
         # GG = self.XG.to_undirected()
@@ -146,8 +150,9 @@ class TestWeightedPath(WeightedTestBase):
         validate_path(
             self.G, 1, 4, 2, nx.single_source_dijkstra(self.G, 1, 4)[1]
         )
+        path = nx.single_source_dijkstra(self.G, 1)
         validate_path(
-            self.G, 1, 4, 2, nx.single_source_dijkstra(self.G, 1)[1][4]
+            self.G, 1, 4, 2,path[1][4]
         )
 
         validate_path(self.G, 1, 4, 2, nx.dijkstra_path(self.G, 1, 4))
@@ -244,7 +249,7 @@ class TestWeightedPath(WeightedTestBase):
 
     def test_bidirectional_dijkstra_no_path(self):
         with pytest.raises(nx.NetworkXNoPath):
-            G = nx.Graph()
+            G = nx.LazyGraph()
             nx.add_path(G, [1, 2, 3])
             nx.add_path(G, [4, 5, 6])
             path = nx.bidirectional_dijkstra(G, 1, 6)
@@ -261,7 +266,7 @@ class TestWeightedPath(WeightedTestBase):
         ),
     )
     def test_absent_source(self, fn):
-        G = nx.path_graph(2)
+        G = LazyGraph.from_graph_edges(nx.path_graph(2))
         with pytest.raises(nx.NodeNotFound):
             fn(G, 3, 0)
         # Test when source == target, which is handled specially by some functions
@@ -269,7 +274,7 @@ class TestWeightedPath(WeightedTestBase):
             fn(G, 3, 3)
 
     def test_dijkstra_predecessor1(self):
-        G = nx.path_graph(4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(4))
         assert nx.dijkstra_predecessor_and_distance(G, 0) == (
             {0: [], 1: [0], 2: [1], 3: [2]},
             {0: 0, 1: 1, 2: 2, 3: 3},
@@ -277,7 +282,7 @@ class TestWeightedPath(WeightedTestBase):
 
     def test_dijkstra_predecessor2(self):
         # 4-cycle
-        G = nx.Graph([(0, 1), (1, 2), (2, 3), (3, 0)])
+        G = LazyGraph([(0, 1), (1, 2), (2, 3), (3, 0)])
         pred, dist = nx.dijkstra_predecessor_and_distance(G, (0))
         assert pred[0] == []
         assert pred[1] == [0]
@@ -453,15 +458,15 @@ class TestMultiSourceDijkstra:
 
     def test_no_sources(self):
         with pytest.raises(ValueError):
-            nx.multi_source_dijkstra(nx.Graph(), {})
+            nx.multi_source_dijkstra(LazyGraph(), {})
 
     def test_path_no_sources(self):
         with pytest.raises(ValueError):
-            nx.multi_source_dijkstra_path(nx.Graph(), {})
+            nx.multi_source_dijkstra_path(LazyGraph(), {})
 
     def test_path_length_no_sources(self):
         with pytest.raises(ValueError):
-            nx.multi_source_dijkstra_path_length(nx.Graph(), {})
+            nx.multi_source_dijkstra_path_length(LazyGraph(), {})
 
     @pytest.mark.parametrize(
         "fn",
@@ -472,7 +477,7 @@ class TestMultiSourceDijkstra:
         ),
     )
     def test_absent_source(self, fn):
-        G = nx.path_graph(2)
+        G = LazyGraph.from_graph_edges(nx.path_graph(2))
         with pytest.raises(nx.NodeNotFound):
             fn(G, [3], 0)
         with pytest.raises(nx.NodeNotFound):
@@ -480,7 +485,7 @@ class TestMultiSourceDijkstra:
 
     def test_two_sources(self):
         edges = [(0, 1, 1), (1, 2, 1), (2, 3, 10), (3, 4, 1)]
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_weighted_edges_from(edges)
         sources = {0, 4}
         distances, paths = nx.multi_source_dijkstra(G, sources)
@@ -490,7 +495,7 @@ class TestMultiSourceDijkstra:
         assert paths == expected_paths
 
     def test_simple_paths(self):
-        G = nx.path_graph(4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(4))
         lengths = nx.multi_source_dijkstra_path_length(G, [0])
         assert lengths == {n: n for n in G}
         paths = nx.multi_source_dijkstra_path(G, [0])
@@ -510,7 +515,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
     def test_absent_source_bellman_ford(self):
         # the check is in _bellman_ford; this provides regression testing
         # against later changes to "client" Bellman-Ford functions
-        G = nx.path_graph(2)
+        G = LazyGraph.from_graph_edges(nx.path_graph(2))
         for fn in (
             nx.bellman_ford_predecessor_and_distance,
             nx.bellman_ford_path,
@@ -524,7 +529,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
 
     def test_absent_source_goldberg_radzik(self):
         with pytest.raises(nx.NodeNotFound):
-            G = nx.path_graph(2)
+            G = LazyGraph.from_graph_edges(nx.path_graph(2))
             nx.goldberg_radzik(G, 3, 0)
 
     def test_negative_cycle_heuristic(self):
@@ -571,7 +576,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
                 nx.NetworkXUnbounded, nx.bellman_ford_predecessor_and_distance, G, i
             )
             pytest.raises(nx.NetworkXUnbounded, nx.goldberg_radzik, G, i)
-        G = nx.cycle_graph(5)  # undirected Graph
+        G = LazyGraph.from_graph_edges(nx.cycle_graph(5))  # undirected Graph
         G.add_edge(1, 2, weight=-3)
         for i in range(5):
             pytest.raises(
@@ -622,7 +627,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         pytest.raises(nx.NetworkXError, nx.find_negative_cycle, G, 3)
 
     def test_find_negative_cycle_single_edge(self):
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_edge(0, 1, weight=-1)
         assert nx.find_negative_cycle(G, 1) == [1, 0, 1]
 
@@ -657,7 +662,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         )
 
     def test_not_connected(self):
-        G = nx.complete_graph(6)
+        G = LazyGraph.from_graph_edges(nx.complete_graph(6))
         G.add_edge(10, 11)
         G.add_edge(10, 12)
         assert nx.single_source_bellman_ford_path(G, 0) == {
@@ -691,7 +696,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
 
         # not connected, with a component not containing the source that
         # contains a negative cycle.
-        G = nx.complete_graph(6)
+        G = LazyGraph.from_graph_edges(nx.complete_graph(6))
         G.add_edges_from(
             [
                 (11, 22, {"load": 3}),
@@ -731,7 +736,8 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
     def test_multigraph(self):
         assert nx.bellman_ford_path(self.MXG, 1, 4) == [1, 3, 2, 4]
         assert nx.bellman_ford_path_length(self.MXG, 1, 4) == 9
-        assert nx.single_source_bellman_ford_path(self.MXG, 1)[4] == [
+        path = nx.single_source_bellman_ford_path(self.MXG, 1)
+        assert path[4] == [
             1,
             3,
             2,
@@ -749,7 +755,8 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         assert D[4] == 9
         assert nx.bellman_ford_path(self.MXG4, 0, 2) == [0, 1, 2]
         assert nx.bellman_ford_path_length(self.MXG4, 0, 2) == 4
-        assert nx.single_source_bellman_ford_path(self.MXG4, 0)[2] == [0, 1, 2]
+        path = nx.single_source_bellman_ford_path(self.MXG4, 0)
+        assert path[2] == [0, 1, 2]
         assert nx.single_source_bellman_ford_path_length(self.MXG4, 0)[2] == 4
         D, P = nx.single_source_bellman_ford(self.MXG4, 0, target=2)
         assert D == 4
@@ -764,7 +771,8 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
     def test_others(self):
         assert nx.bellman_ford_path(self.XG, 1, 4) == [1, 3, 2, 4]
         assert nx.bellman_ford_path_length(self.XG, 1, 4) == 9
-        assert nx.single_source_bellman_ford_path(self.XG, 1)[4] == [
+        path = nx.single_source_bellman_ford_path(self.XG, 1)
+        assert path[4] == [
             1,
             3,
             2,
@@ -782,7 +790,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         assert D[4] == 9
 
     def test_path_graph(self):
-        G = nx.path_graph(4)
+        G = LazyGraph.from_graph_edges(nx.path_graph(4))
         assert nx.single_source_bellman_ford_path(G, 0) == {
             0: [0],
             1: [0, 1],
@@ -904,7 +912,7 @@ class TestJohnsonAlgorithm(WeightedTestBase):
         except:
             assert False
 
-        G = nx.Graph()
+        G = LazyGraph()
         G.add_weighted_edges_from(
             [
                 (0, 3, 3),
@@ -967,9 +975,15 @@ class TestJohnsonAlgorithm(WeightedTestBase):
         assert dict(nx.johnson(G)) != dict(nx.johnson(I))
 
     def test_graphs(self):
-        validate_path(self.XG, 1, 4, 9, dict(nx.johnson(self.XG))[1][4])
-        validate_path(self.MXG, 1, 4, 9, dict(nx.johnson(self.MXG))[1][4])
-        validate_path(self.XG2, 1, 3, 4, dict(nx.johnson(self.XG2))[1][3])
-        validate_path(self.XG3, 0, 3, 15, dict(nx.johnson(self.XG3))[0][3])
-        validate_path(self.XG4, 0, 2, 4, dict(nx.johnson(self.XG4))[0][2])
-        validate_path(self.MXG4, 0, 2, 4, dict(nx.johnson(self.MXG4))[0][2])
+        path = dict(nx.johnson(self.XG))
+        validate_path(self.XG, 1, 4, 9, path[1][4])
+        path = dict(nx.johnson(self.MXG))
+        validate_path(self.MXG, 1, 4, 9, path[1][4])
+        path = dict(nx.johnson(self.XG2))
+        validate_path(self.XG2, 1, 3, 4, path[1][3])
+        path = dict(nx.johnson(self.XG3))
+        validate_path(self.XG3, 0, 3, 15,path [0][3])
+        path = dict(nx.johnson(self.XG4))
+        validate_path(self.XG4, 0, 2, 4, path[0][2])
+        path = dict(nx.johnson(self.MXG4))
+        validate_path(self.MXG4, 0, 2, 4, path[0][2])

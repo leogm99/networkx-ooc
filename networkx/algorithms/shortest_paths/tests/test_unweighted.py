@@ -3,8 +3,6 @@ import pytest
 import networkx as nx
 from networkx import LazyGraph
 
-nx.Graph = nx.LazyGraph
-
 def validate_grid_path(r, c, s, t, p):
     #assert isinstance(p, list)
     assert p[0] == s

@@ -1,6 +1,11 @@
 from networkx.classes.graph import Graph
 from networkx.structures.lazy_adjacency_list import LazyAdjacencyList
 from networkx.structures.lazy_node_list import LazyNodeList
+from functools import cached_property
+from networkx.classes.reportviews import LazyDegreeView
+from networkx.classes.coreviews import LazyAdjacencyView
+
+
 
 __all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
 
@@ -37,6 +42,10 @@ class LazyGraph(Graph):
         G = cls()
         G.add_edges_from(LazyGraph.read_file_sep(path_to_edgelist, sep))
         return G
+
+    @cached_property
+    def degree(self):
+        return LazyDegreeView(self)
 
     def add_node(self, node_for_adding, **attr):
         if node_for_adding is None:
@@ -78,6 +87,20 @@ class LazyGraph(Graph):
                     self.add_edge(u, v, **attr)
                 else:
                     self.add_edge(u, v)
+
+    def number_of_edges(self, u=None, v=None) -> int:
+        if u is None:
+            return int(self.size())
+        if u not in self._node:
+            raise KeyError(u)
+        nbrs_u = self._adj.get(u)
+        if nbrs_u is None:
+            return 0
+        return 1 if v in nbrs_u else 0
+
+    @cached_property
+    def adj(self):
+        return LazyAdjacencyView(self._adj)
 
     @classmethod
     def from_graph_edges(cls, G):

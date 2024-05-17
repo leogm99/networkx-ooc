@@ -64,15 +64,21 @@ class PrimitiveDict(OutOfCoreDict):
 
 
 class IntDict(PrimitiveDict):
-    def __init__(self):
+    def __init__(self, initial_values = None):
         super().__init__(PrimitiveType.INTEGER, PrimitiveType.INTEGER)
+
+        if (initial_values != None):
+            super().update(initial_values)
 
     def copy(self, c=None):
         return super().copy(IntDict())
 
 class IntFloatDict(PrimitiveDict):
-    def __init__(self):
+    def __init__(self, initial_values = None):
         super().__init__(PrimitiveType.INTEGER, PrimitiveType.FLOAT)
+
+        if (initial_values != None):
+            super().update(initial_values)
 
     def copy(self, c=None):
         return super().copy(IntFloatDict())

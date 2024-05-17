@@ -59,9 +59,9 @@ class TestFlowBetweennessCentrality:
     def test_star(self):
         """Betweenness centrality: star"""
         G = nx.Graph()
-        nx.add_star(G, ["a", "b", "c", "d"])
+        nx.add_star(G, [1, 2, 3, 4])
         b = nx.current_flow_betweenness_centrality(G, normalized=True)
-        b_answer = {"a": 1.0, "b": 0.0, "c": 0.0, "d": 0.0}
+        b_answer = {1: 1.0, 2: 0.0, 3: 0.0, 4: 0.0}
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
@@ -99,7 +99,7 @@ class TestApproximateFlowBetweennessCentrality:
     def test_star(self):
         "Approximate current-flow betweenness centrality: star"
         G = nx.Graph()
-        nx.add_star(G, ["a", "b", "c", "d"])
+        nx.add_star(G, [1, 2, 3, 4])
         b = nx.current_flow_betweenness_centrality(G, normalized=True)
         epsilon = 0.1
         ba = approximate_cfbc(G, normalized=True, epsilon=0.5 * epsilon)
