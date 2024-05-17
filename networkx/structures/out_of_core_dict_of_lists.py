@@ -60,7 +60,7 @@ class LazyList:
             l.append(self[i])
         return l
         
-    def __len__(self):
+    def __len__(self): # O(1)
         path = self.store
         if os.path.getsize(path) == 0:
             return 0
@@ -92,17 +92,21 @@ class LazyList:
 
     def __add__(self, other):
         result = OutOfCoreList(value_primitive_type=self.value_primitive_type)
-        for i in self:
-            result.append(i)
+        result.extend(self)
         result.extend(other)
         return result
     
-    def __eq__(self, value) -> bool:
-        l = OutOfCoreList(value_primitive_type=self.value_primitive_type)
+    def __eq__(self, other) -> bool:
+        if not isinstance(other, LazyList) and not isinstance(other, OutOfCoreList) and not isinstance(other, list):
+            return False
+
+        if len(self) != len(other):
+            return False
         
-        for i in self:
-            l.append(i)
-        return value == l
+        for item1, item2 in zip(self, other):
+            if item1 != item2:
+                return False
+        return True
     
     def pop(self):
         path = self.store
