@@ -4,8 +4,9 @@
 
 
 import networkx as nx
+import pytest
 
-from networkx.classes.lazygraph import LazyGraph
+from networkx.algorithms.centrality.tests import app_mode
 
 
 class TestVoteRankCentrality:
@@ -28,21 +29,19 @@ class TestVoteRankCentrality:
                 (4, 6),
             ]
         )
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        assert [0, 7, 6] == nx.voterank(LazyG)
+        assert [0, 7, 6] == nx.voterank(G)
 
     def test_voterank_emptygraph(self):
-        LazyG = LazyGraph()
-        assert [] == nx.voterank(LazyG)
+        G = nx.Graph()
+        assert [] == nx.voterank(G)
 
     # Graph unit test
-    # def test_voterank_centrality_2(self):
-    #     G = nx.florentine_families_graph()
-    #     d = nx.voterank(G, 4)
-    #     exact = ["Medici", "Strozzi", "Guadagni", "Castellani"]
-    #     assert exact == d
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    def test_voterank_centrality_2(self):
+        G = nx.florentine_families_graph()
+        d = nx.voterank(G, 4)
+        exact = ["Medici", "Strozzi", "Guadagni", "Castellani"]
+        assert exact == d
 
     # DiGraph unit test
     def test_voterank_centrality_3(self):

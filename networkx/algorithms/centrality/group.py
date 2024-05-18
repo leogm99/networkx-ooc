@@ -9,8 +9,6 @@ from networkx.algorithms.centrality.betweenness import (
 )
 from networkx.utils.decorators import not_implemented_for
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
-
 __all__ = [
     "group_betweenness_centrality",
     "group_closeness_centrality",
@@ -209,7 +207,7 @@ def _group_preprocessing(G, set_v, weight):
             S, P, sigma[s], D[s] = _single_source_shortest_path_basic(G, s)
         else:  # use Dijkstra's algorithm
             S, P, sigma[s], D[s] = _single_source_dijkstra_path_basic(G, s, weight)
-        betweenness, delta[s] = _accumulate_endpoints(betweenness, S, P, sigma[s], s)
+        betweenness, delta[s] = _accumulate_endpoints(G, betweenness, S, P, sigma[s], s)
         for i in delta[s]:  # add the paths from s to i and rescale sigma
             if s != i:
                 delta[s][i] += 1
@@ -625,8 +623,8 @@ def group_closeness_centrality(G, S, weight=None):
     if G.is_directed():
         G = G.reverse()  # reverse view
     closeness = 0  # initialize to 0
-    V = OutOfCoreSet(G)  # set of nodes in G
-    S = OutOfCoreSet(S)  # set of nodes in group S
+    V = G.set_(G)  # set of nodes in G
+    S = G.set_(S)  # set of nodes in group S
     V_S = V - S  # set of nodes in V but not S
     shortest_path_lengths = nx.multi_source_dijkstra_path_length(G, S, weight=weight)
     # accumulation
@@ -689,8 +687,8 @@ def group_degree_centrality(G, S):
        http://www.analytictech.com/borgatti/group_centrality.htm
     """
     # centrality = len(set().union(*[set(G.neighbors(i)) for i in S]) - set(S))
-    S = OutOfCoreSet(S)
-    neighbors = OutOfCoreSet()
+    S = G.set_(S)
+    neighbors = G.set_()
     for i in S:
         for j in G.neighbors(i):
             neighbors.add(j)

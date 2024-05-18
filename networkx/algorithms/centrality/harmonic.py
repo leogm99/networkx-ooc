@@ -3,9 +3,6 @@ from functools import partial
 
 import networkx as nx
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict
-
 __all__ = ["harmonic_centrality"]
 
 
@@ -68,21 +65,21 @@ def harmonic_centrality(G, nbunch=None, distance=None, sources=None):
     """
 
     if nbunch is not None:
-        nbunch_ooc = OutOfCoreSet(G.nbunch_iter(nbunch))
+        nbunch_ooc = G.set_(G.nbunch_iter(nbunch))
     else:
-        nbunch_ooc = OutOfCoreSet()
+        nbunch_ooc = G.set_()
         for v in G.nodes:
             nbunch_ooc.add(v)
 
     if sources is not None:
-        sources_ooc = OutOfCoreSet(G.nbunch_iter(sources))
+        sources_ooc = G.set_(G.nbunch_iter(sources))
     else:
-        sources_ooc = OutOfCoreSet()
+        sources_ooc = G.set_()
         for v in G.nodes:
             sources_ooc.add(v)
 
     spl = partial(nx.shortest_path_length, G, weight=distance)
-    centrality = IntFloatDict()
+    centrality = G.int_float_dict()
     for u in nbunch_ooc:
         centrality[u] = 0
     for v in sources_ooc:

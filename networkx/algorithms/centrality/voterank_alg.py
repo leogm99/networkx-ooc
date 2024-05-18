@@ -1,15 +1,11 @@
 """Algorithm to select influential nodes in a graph using VoteRank."""
 import networkx as nx
 
-from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import PrimitiveType
-
 __all__ = ["voterank"]
 
 
 @nx._dispatch
-def voterank(G, number_of_nodes=None):
+def voterank(G: nx.Graph, number_of_nodes=None):
     """Select a list of influential nodes in a graph using VoteRank algorithm
 
     VoteRank [1]_ computes a ranking of the nodes in a graph G based on a
@@ -56,8 +52,8 @@ def voterank(G, number_of_nodes=None):
         Identifying a set of influential spreaders in complex networks.
         Sci. Rep. 6, 27823; doi: 10.1038/srep27823.
     """
-    influential_nodes = OutOfCoreList()
-    vote_rank = OutOfCoreDictOfLists(PrimitiveType.FLOAT)
+    influential_nodes = G.int_list()
+    vote_rank = G.float_dict_of_lists()
     if len(G) == 0:
         return influential_nodes
     if number_of_nodes is None or number_of_nodes > len(G):

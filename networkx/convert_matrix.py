@@ -31,10 +31,6 @@ from collections import defaultdict
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntDict, PrimitiveType
-
 __all__ = [
     "from_pandas_adjacency",
     "to_pandas_adjacency",
@@ -556,13 +552,13 @@ def to_scipy_sparse_array(G, nodelist=None, dtype=None, weight="weight", format=
         raise nx.NetworkXError("Graph has no nodes or edges")
 
     if nodelist is None:
-        nodelist = OutOfCoreList(G)
+        nodelist = G.int_list(G)
         nlen = len(G)
     else:
         nlen = len(nodelist)
         if nlen == 0:
             raise nx.NetworkXError("nodelist has no nodes")
-        nodeset = OutOfCoreSet(G.nbunch_iter(nodelist))
+        nodeset = G.set_(G.nbunch_iter(nodelist))
         if nlen != len(nodeset):
             for n in nodelist:
                 if n not in G:
@@ -571,15 +567,15 @@ def to_scipy_sparse_array(G, nodelist=None, dtype=None, weight="weight", format=
         if nlen < len(G):
             G = G.subgraph(nodelist)
 
-    index = IntDict()
+    index = G.int_dict()
     for k, v in zip(nodelist, range(nlen)):
         index[k] = v
     # coefficients = zip(
     #     *((index[u], index[v], wt) for u, v, wt in G.edges(data=weight, default=1))
     # )
-    # coefficients = OutOfCoreList()
+    # coefficients = G.int_list()
     try:
-        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList(value_primitive_type=PrimitiveType.FLOAT)
+        row, col, data = G.int_list(), G.int_list(), G.float_list()
         for u, v, wt in G.edges(data=weight, default=1):
             row.append(index[u])
             col.append(index[v])
@@ -588,7 +584,7 @@ def to_scipy_sparse_array(G, nodelist=None, dtype=None, weight="weight", format=
         # row, col, data = coefficients
     except ValueError:
         # there is no edge in the subgraph
-        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList()
+        row, col, data = G.int_list(), G.int_list(), G.int_list()
 
     if G.is_directed():
         A = sp.sparse.coo_array((data, (row, col)), shape=(nlen, nlen), dtype=dtype)
@@ -601,7 +597,7 @@ def to_scipy_sparse_array(G, nodelist=None, dtype=None, weight="weight", format=
         # so we subtract the data on the diagonal
         #selfloops = list(nx.selfloop_edges(G, data=weight, default=1))
         #if selfloops:
-        #diag_index, diag_data = OutOfCoreList(), OutOfCoreList()
+        #diag_index, diag_data = G.int_list(), G.int_list()
         for u, v, wt in nx.selfloop_edges(G, data=weight, default=1):
             r.append(index[u])
             c.append(index[u])

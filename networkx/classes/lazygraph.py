@@ -141,10 +141,10 @@ class LazyGraph(Graph):
         return OutOfCoreDictOfLists(PrimitiveType.FLOAT)
 
     def int_deque(self, *args):
-        return OutOfCoreDeque(*args, IntDict())
+        return OutOfCoreDeque(*args)
 
     def float_deque(self, *args):
-        return OutOfCoreDeque(*args, IntFloatDict())
+        return OutOfCoreDeque(*args, IntFloatDict)
     
     def tuple_int_dict_of_edges(self):
         return EdgesDict()
@@ -154,3 +154,12 @@ class LazyGraph(Graph):
 
     def int_tuple_dict_of_edges(self):
         return EdgesDict(PrimitiveType.INTEGER, PrimitiveType.EDGE)
+    
+    def float_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.FLOAT, PrimitiveType.EDGE)
+    
+    def int_float_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.INTEGER, PrimitiveType.FEDGE)
+
+    def tuple_float_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)

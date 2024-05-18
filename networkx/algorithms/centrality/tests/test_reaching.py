@@ -3,8 +3,6 @@ import pytest
 
 import networkx as nx
 
-from networkx.classes.lazygraph import LazyGraph
-
 
 class TestGlobalReachingCentrality:
     """Unit tests for the global reaching centrality function."""
@@ -16,7 +14,7 @@ class TestGlobalReachingCentrality:
 
     def test_negatively_weighted(self):
         with pytest.raises(nx.NetworkXError):
-            G = LazyGraph()
+            G = nx.Graph()
             G.add_weighted_edges_from([(0, 1, -2), (1, 2, +1)])
             nx.global_reaching_centrality(G, weight="weight")
 
@@ -29,14 +27,11 @@ class TestGlobalReachingCentrality:
 
     def test_undirected_unweighted_star(self):
         G = nx.star_graph(2)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         grc = nx.global_reaching_centrality
-        assert grc(LazyG, normalized=False, weight=None) == 0.25
+        assert grc(G, normalized=False, weight=None) == 0.25
 
     def test_undirected_weighted_star(self):
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_weighted_edges_from([(1, 2, 1), (1, 3, 2)])
         grc = nx.global_reaching_centrality
         assert grc(G, normalized=False, weight="weight") == 0.375
@@ -50,10 +45,7 @@ class TestGlobalReachingCentrality:
     def test_cycle_undirected_unweighted(self):
         G = nx.Graph()
         G.add_edge(1, 2)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        assert nx.global_reaching_centrality(LazyG, weight=None) == 0
+        assert nx.global_reaching_centrality(G, weight=None) == 0
 
     def test_cycle_directed_weighted(self):
         G = nx.DiGraph()
@@ -63,11 +55,8 @@ class TestGlobalReachingCentrality:
     def test_cycle_undirected_weighted(self):
         G = nx.Graph()
         G.add_edge(1, 2, weight=1)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         grc = nx.global_reaching_centrality
-        assert grc(LazyG, normalized=False) == 0
+        assert grc(G, normalized=False) == 0
 
     def test_directed_weighted(self):
         G = nx.DiGraph()
@@ -102,19 +91,16 @@ class TestLocalReachingCentrality:
 
     def test_negatively_weighted(self):
         with pytest.raises(nx.NetworkXError):
-            G = LazyGraph()
+            G = nx.Graph()
             nx.local_reaching_centrality(G, 0, weight="weight")
 
     def test_undirected_unweighted_star(self):
         G = nx.star_graph(2)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         grc = nx.local_reaching_centrality
-        assert grc(LazyG, 1, weight=None, normalized=False) == 0.75
+        assert grc(G, 1, weight=None, normalized=False) == 0.75
 
     def test_undirected_weighted_star(self):
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_weighted_edges_from([(1, 2, 1), (1, 3, 2)])
         centrality = nx.local_reaching_centrality(
             G, 1, normalized=False, weight="weight"
@@ -122,7 +108,7 @@ class TestLocalReachingCentrality:
         assert centrality == 1.5
 
     def test_undirected_weighted_normalized(self):
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_weighted_edges_from([(1, 2, 1), (1, 3, 2)])
         centrality = nx.local_reaching_centrality(
             G, 1, normalized=True, weight="weight"

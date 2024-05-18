@@ -2066,3 +2066,12 @@ class Graph:
 
     def int_tuple_dict_of_edges(self):
         return dict()
+    
+    def float_tuple_dict_of_edges(self):
+        return dict()
+
+    def int_float_tuple_dict_of_edges(self):
+        return dict()
+
+    def tuple_float_dict_of_edges(self):
+        return dict()

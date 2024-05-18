@@ -2,22 +2,16 @@ import pytest
 
 import networkx as nx
 
-from networkx.classes.lazygraph import LazyGraph
-from networkx.structures.out_of_core_list import OutOfCoreList
-
 
 class TestSubsetBetweennessCentrality:
     def test_K5(self):
         """Betweenness Centrality Subset: K5"""
         G = nx.complete_graph(5)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         b = nx.betweenness_centrality_subset(
-            LazyG, sources=OutOfCoreList([0]), targets=OutOfCoreList([1, 3]), weight=None
+            G, sources=list([0]), targets=list([1, 3]), weight=None
         )
         b_answer = {0: 0.0, 1: 0.0, 2: 0.0, 3: 0.0, 4: 0.0}
-        for n in sorted(LazyG):
+        for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
     def test_P5_directed(self):
@@ -25,7 +19,7 @@ class TestSubsetBetweennessCentrality:
         G = nx.DiGraph()
         nx.add_path(G, range(5))
         b_answer = {0: 0, 1: 1, 2: 1, 3: 0, 4: 0, 5: 0}
-        b = nx.betweenness_centrality_subset(G, sources=OutOfCoreList([0]), targets=OutOfCoreList([3]), weight=None)
+        b = nx.betweenness_centrality_subset(G, sources=list([0]), targets=list([3]), weight=None)
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
@@ -34,7 +28,7 @@ class TestSubsetBetweennessCentrality:
         G = nx.Graph()
         nx.add_path(G, range(5))
         b_answer = {0: 0, 1: 0.5, 2: 0.5, 3: 0, 4: 0, 5: 0}
-        b = nx.betweenness_centrality_subset(G, sources=OutOfCoreList([0]), targets=OutOfCoreList([3]), weight=None)
+        b = nx.betweenness_centrality_subset(G, sources=list([0]), targets=list([3]), weight=None)
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
@@ -42,54 +36,42 @@ class TestSubsetBetweennessCentrality:
         """Betweenness Centrality Subset: P5 multiple target"""
         G = nx.Graph()
         nx.add_path(G, range(5))
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         b_answer = {0: 0, 1: 1, 2: 1, 3: 0.5, 4: 0, 5: 0}
         b = nx.betweenness_centrality_subset(
-            LazyG, sources=OutOfCoreList([0]), targets=OutOfCoreList([3, 4]), weight=None
+            G, sources=list([0]), targets=list([3, 4]), weight=None
         )
-        for n in sorted(LazyG):
+        for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
     def test_box(self):
         """Betweenness Centrality Subset: box"""
         G = nx.Graph()
         G.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3)])
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         b_answer = {0: 0, 1: 0.25, 2: 0.25, 3: 0}
-        b = nx.betweenness_centrality_subset(LazyG, sources=OutOfCoreList([0]), targets=OutOfCoreList([3]), weight=None)
-        for n in sorted(LazyG):
+        b = nx.betweenness_centrality_subset(G, sources=list([0]), targets=list([3]), weight=None)
+        for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
     def test_box_and_path(self):
         """Betweenness Centrality Subset: box and path"""
         G = nx.Graph()
         G.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 5)])
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         b_answer = {0: 0, 1: 0.5, 2: 0.5, 3: 0.5, 4: 0, 5: 0}
         b = nx.betweenness_centrality_subset(
-            LazyG, sources=OutOfCoreList([0]), targets=OutOfCoreList([3, 4]), weight=None
+            G, sources=list([0]), targets=list([3, 4]), weight=None
         )
-        for n in sorted(LazyG):
+        for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
     def test_box_and_path2(self):
         """Betweenness Centrality Subset: box and path multiple target"""
         G = nx.Graph()
         G.add_edges_from([(0, 1), (1, 2), (2, 3), (1, 20), (20, 3), (3, 4)])
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         b_answer = {0: 0, 1: 1.0, 2: 0.5, 20: 0.5, 3: 0.5, 4: 0}
         b = nx.betweenness_centrality_subset(
-            LazyG, sources=OutOfCoreList([0]), targets=OutOfCoreList([3, 4]), weight=None
+            G, sources=list([0]), targets=list([3, 4]), weight=None
         )
-        for n in sorted(LazyG):
+        for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
     def test_diamond_multi_path(self):
@@ -114,10 +96,7 @@ class TestSubsetBetweennessCentrality:
                 (8, 9),
             ]
         )
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        b = nx.betweenness_centrality_subset(LazyG, sources=OutOfCoreList([1]), targets=OutOfCoreList([9]), weight=None)
+        b = nx.betweenness_centrality_subset(G, sources=list([1]), targets=list([9]), weight=None)
 
         expected_b = {
             1: 0,
@@ -134,7 +113,7 @@ class TestSubsetBetweennessCentrality:
             12: 1.0 / 10,
         }
 
-        for n in sorted(LazyG):
+        for n in sorted(G):
             assert b[n] == pytest.approx(expected_b[n], abs=1e-7)
 
     def test_normalized_p2(self):
@@ -144,14 +123,11 @@ class TestSubsetBetweennessCentrality:
         """
         G = nx.Graph()
         nx.add_path(G, range(2))
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
         b_answer = {0: 0, 1: 0.0}
         b = nx.betweenness_centrality_subset(
-            LazyG, sources=OutOfCoreList([0]), targets=OutOfCoreList([1]), normalized=True, weight=None
+            G, sources=list([0]), targets=list([1]), normalized=True, weight=None
         )
-        for n in sorted(LazyG):
+        for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
     def test_normalized_P5_directed(self):
@@ -160,7 +136,7 @@ class TestSubsetBetweennessCentrality:
         nx.add_path(G, range(5))
         b_answer = {0: 0, 1: 1.0 / 12.0, 2: 1.0 / 12.0, 3: 0, 4: 0, 5: 0}
         b = nx.betweenness_centrality_subset(
-            G, sources=OutOfCoreList([0]), targets=OutOfCoreList([3]), normalized=True, weight=None
+            G, sources=list([0]), targets=list([3]), normalized=True, weight=None
         )
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
@@ -180,7 +156,7 @@ class TestSubsetBetweennessCentrality:
         G.add_edge(4, 5, weight=4)
         b_answer = {0: 0.0, 1: 0.0, 2: 0.5, 3: 0.5, 4: 0.5, 5: 0.0}
         b = nx.betweenness_centrality_subset(
-            G, sources=OutOfCoreList([0]), targets=OutOfCoreList([5]), normalized=False, weight="weight"
+            G, sources=list([0]), targets=list([5]), normalized=False, weight="weight"
         )
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
@@ -189,7 +165,7 @@ class TestSubsetBetweennessCentrality:
 class TestEdgeSubsetBetweennessCentrality:
     def test_K5(self):
         """Edge betweenness subset centrality: K5"""
-        G = LazyGraph.from_graph_edges(nx.complete_graph(5))
+        G = nx.complete_graph(5)
         b = nx.edge_betweenness_centrality_subset(
             G, sources=[0], targets=[1, 3], weight=None
         )
@@ -212,7 +188,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_P5(self):
         """Edge betweenness subset centrality: P5"""
-        G = LazyGraph()
+        G = nx.Graph()
         nx.add_path(G, range(5))
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(1, 2)] = b_answer[(2, 3)] = 0.5
@@ -224,7 +200,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_P5_multiple_target(self):
         """Edge betweenness subset centrality: P5 multiple target"""
-        G = LazyGraph()
+        G = nx.Graph()
         nx.add_path(G, range(5))
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(1, 2)] = b_answer[(2, 3)] = 1
@@ -237,7 +213,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_box(self):
         """Edge betweenness subset centrality: box"""
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3)])
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(0, 2)] = 0.25
@@ -250,7 +226,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_box_and_path(self):
         """Edge betweenness subset centrality: box and path"""
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3), (3, 4), (4, 5)])
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = b_answer[(0, 2)] = 0.5
@@ -264,7 +240,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_box_and_path2(self):
         """Edge betweenness subset centrality: box and path multiple target"""
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_edges_from([(0, 1), (1, 2), (2, 3), (1, 20), (20, 3), (3, 4)])
         b_answer = dict.fromkeys(G.edges(), 0)
         b_answer[(0, 1)] = 1.0
@@ -279,7 +255,7 @@ class TestEdgeSubsetBetweennessCentrality:
 
     def test_diamond_multi_path(self):
         """Edge betweenness subset centrality: Diamond Multi Path"""
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_edges_from(
             [
                 (1, 2),
