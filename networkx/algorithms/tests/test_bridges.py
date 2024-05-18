@@ -1,12 +1,11 @@
 """Unit tests for bridge-finding algorithms."""
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
 
-from networkx.classes.lazygraph import LazyGraph
-
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestBridges:
     """Unit tests for the bridge-finding function."""
 
@@ -57,6 +56,7 @@ class TestBridges:
         assert list(nx.bridges(G)) == [(2, 3)]
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestHasBridges:
     """Unit tests for the has bridges function."""
 
@@ -119,9 +119,9 @@ class TestLocalBridges:
 
     @classmethod
     def setup_class(cls):
-        cls.BB = LazyGraph.from_graph_edges(nx.barbell_graph(4, 0))
-        cls.square = LazyGraph.from_graph_edges(nx.cycle_graph(4))
-        cls.tri =  LazyGraph.from_graph_edges(nx.cycle_graph(3))
+        cls.BB = nx.barbell_graph(4, 0)
+        cls.square = nx.cycle_graph(4)
+        cls.tri =  nx.cycle_graph(3)
 
     def test_nospan(self):
         expected = {(3, 4), (4, 3)}
