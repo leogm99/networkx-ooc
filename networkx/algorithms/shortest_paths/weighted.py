@@ -9,13 +9,6 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.generic import _build_paths_from_predecessors
 
-from networkx.structures.edges_dict import EdgesDict
-from networkx.structures.out_of_core_deque import OutOfCoreDeque
-from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
-
 __all__ = [
     "dijkstra_path",
     "dijkstra_path_length",
@@ -757,9 +750,9 @@ def multi_source_dijkstra(G, sources, target=None, cutoff=None, weight="weight")
         if s not in G:
             raise nx.NodeNotFound(f"Node {s} not found in graph")
     if target in sources:
-        return (0, OutOfCoreList([target]))
+        return (0, G.int_list([target]))
     weight = _weight_function(G, weight)
-    paths = OutOfCoreDictOfLists() # dictionary of paths
+    paths = G.int_dict_of_lists() # dictionary of paths
     for source in sources:
         paths[source] = [source]
     dist = _dijkstra_multisource(
@@ -768,7 +761,7 @@ def multi_source_dijkstra(G, sources, target=None, cutoff=None, weight="weight")
     if target is None:
         return (dist, paths)
     try:
-        return (dist[target], OutOfCoreList(paths[target]))
+        return (dist[target], G.int_list(paths[target]))
     except KeyError as err:
         raise nx.NetworkXNoPath(f"No path to {target}.") from err
 
@@ -844,8 +837,8 @@ def _dijkstra_multisource(
 
     push = heappush
     pop = heappop
-    dist = IntFloatDict()  # dictionary of final distances
-    seen = IntFloatDict()
+    dist = G.int_float_dict()  # dictionary of final distances
+    seen = G.int_float_dict()
     # fringe is heapq with 3-tuples (distance,c,node)
     # use the count c to avoid comparing nodes (may not be able to)
     c = count()
@@ -959,7 +952,7 @@ def dijkstra_predecessor_and_distance(G, source, cutoff=None, weight="weight"):
     if source not in G:
         raise nx.NodeNotFound(f"Node {source} is not found in the graph")
     weight = _weight_function(G, weight)
-    pred = OutOfCoreDictOfLists() # dictionary of predecessors
+    pred = G.int_dict_of_lists() # dictionary of predecessors
     pred[source] = []
     return (pred, _dijkstra(G, source, weight, pred=pred, cutoff=cutoff))
 
@@ -1255,9 +1248,9 @@ def bellman_ford_predecessor_and_distance(
     if any(weight(u, v, d) < 0 for u, v, d in nx.selfloop_edges(G, data=True)):
         raise nx.NetworkXUnbounded("Negative cycle detected.")
 
-    dist = IntFloatDict()
+    dist = G.int_float_dict()
     dist[source] = 0
-    pred = OutOfCoreDictOfLists()
+    pred = G.int_dict_of_lists()
     pred[source] = []
 
     if len(G) == 1:
@@ -1339,12 +1332,12 @@ def _bellman_ford(
         undirected graph is a negative cycle
     """
     if pred is None:
-        pred = OutOfCoreDictOfLists()
+        pred = G.int_dict_of_lists()
         for v in source:
             pred[v] = []
 
     if dist is None:
-        dist = IntDict()
+        dist = G.int_dict()
         for v in source:
             dist[v] = 0
 
@@ -1360,10 +1353,10 @@ def _bellman_ford(
         raise nx.NetworkXUnbounded("Negative cycle detected.")
 
     if paths is not None:
-        sources = OutOfCoreSet(source)
-        dsts = OutOfCoreList([target]) if target is not None else pred
+        sources = G.set_(source)
+        dsts = G.int_list([target]) if target is not None else pred
         for dst in dsts:
-            gen = _build_paths_from_predecessors(sources, dst, pred)
+            gen = _build_paths_from_predecessors(G, sources, dst, pred)
             paths[dst] = next(gen)
 
     return dist
@@ -1424,23 +1417,23 @@ def _inner_bellman_ford(
             raise nx.NodeNotFound(f"Source {s} not in G")
 
     if pred is None:
-        pred = OutOfCoreDictOfLists()
+        pred = G.int_dict_of_lists()
         for v in sources:
             pred[v] = []
 
     if dist is None:
-        dist = IntDict()
+        dist = G.int_dict()
         for v in sources:
             dist[v] = 0
 
     # Heuristic Storage setup. Note: use None because nodes cannot be None
     nonexistent_edge = (None, None)
-    recent_update = EdgesDict(PrimitiveType.INTEGER, PrimitiveType.EDGE)
+    recent_update = G.int_tuple_dict_of_edges()
     for v in sources:
         recent_update[v] = nonexistent_edge
 
     # pred_edge = {v: None for v in sources}
-    pred_edge = IntDict()
+    pred_edge = G.int_dict()
     for v in sources:
         pred_edge[v] = v
 
@@ -1448,9 +1441,9 @@ def _inner_bellman_ford(
     inf = float("inf")
     n = len(G)
 
-    count = IntDict()
-    q = OutOfCoreDeque()
-    in_q = OutOfCoreSet()
+    count = G.int_dict()
+    q = G.int_deque()
+    in_q = G.set_()
     for s in sources:
         q.append(s)
         in_q.add(s)
@@ -1838,13 +1831,13 @@ def single_source_bellman_ford(G, source, target=None, weight="weight"):
 
     weight = _weight_function(G, weight)
 
-    paths = OutOfCoreDictOfLists() # dictionary of paths
+    paths = G.int_dict_of_lists() # dictionary of paths
     paths[source] = [source]
     dist = _bellman_ford(G, [source], weight, paths=paths, target=target)
     if target is None:
         return (dist, paths)
     try:
-        return (dist[target], OutOfCoreList(paths[target]))
+        return (dist[target], G.int_list(paths[target]))
     except KeyError as err:
         msg = f"Node {target} not reachable from {source}"
         raise nx.NetworkXNoPath(msg) from err
@@ -2048,11 +2041,11 @@ def goldberg_radzik(G, source, weight="weight"):
     G_succ = G._adj  # For speed-up (and works for both directed and undirected graphs)
 
     inf = float("inf")
-    d = IntFloatDict()
+    d = G.int_float_dict()
     for u in G:
         d[u] = inf
     d[source] = 0
-    pred = IntDict()
+    pred = G.int_dict()
     pred[source] = None
 
     def topo_sort(relabeled):
@@ -2061,14 +2054,14 @@ def goldberg_radzik(G, source, weight="weight"):
         """
         # List of nodes to scan in this round. Denoted by A in Goldberg and
         # Radzik's paper.
-        to_scan = OutOfCoreList()
+        to_scan = G.int_list()
         # In the DFS in the loop below, neg_count records for each node the
         # number of edges of negative reduced costs on the path from a DFS root
         # to the node in the DFS forest. The reduced cost of an edge (u, v) is
         # defined as d[u] + weight[u][v] - d[v].
         #
         # neg_count also doubles as the DFS visit marker array.
-        neg_count = IntFloatDict()
+        neg_count = G.int_float_dict()
         for u in relabeled:
             # Skip visited nodes.
             if u in neg_count:
@@ -2081,7 +2074,7 @@ def goldberg_radzik(G, source, weight="weight"):
             # nonpositive reduced costs into to_scan in (reverse) topological
             # order.
             stack = [(u, iter(G_succ[u].items()))]
-            in_stack = OutOfCoreSet([u])
+            in_stack = G.set_([u])
             neg_count[u] = 0
             while stack:
                 u, it = stack[-1]
@@ -2113,7 +2106,7 @@ def goldberg_radzik(G, source, weight="weight"):
 
     def relax(to_scan):
         """Relax out-edges of relabeled nodes."""
-        relabeled = OutOfCoreSet()
+        relabeled = G.set_()
         # Scan nodes in to_scan in topological order and relax incident
         # out-edges. Add the relabled nodes to labeled.
         for u in to_scan:
@@ -2128,13 +2121,13 @@ def goldberg_radzik(G, source, weight="weight"):
 
     # Set of nodes relabled in the last round of scan operations. Denoted by B
     # in Goldberg and Radzik's paper.
-    relabeled = OutOfCoreSet([source])
+    relabeled = G.set_([source])
 
     while relabeled:
         to_scan = topo_sort(relabeled)
         relabeled = relax(to_scan)
 
-    _d = IntFloatDict()
+    _d = G.int_float_dict()
     for u in pred:
         _d[u] = d[u]
     return pred, _d
@@ -2266,7 +2259,7 @@ def find_negative_cycle(G, source, weight="weight"):
         If no negative cycle is found.
     """
     weight = _weight_function(G, weight)
-    pred = OutOfCoreDictOfLists()
+    pred = G.int_dict_of_lists()
     pred[source] = []
 
     v = _inner_bellman_ford(G, [source], weight, pred=pred)
@@ -2274,15 +2267,15 @@ def find_negative_cycle(G, source, weight="weight"):
         raise nx.NetworkXError("No negative cycles detected.")
 
     # negative cycle detected... find it
-    neg_cycle = OutOfCoreList()
+    neg_cycle = G.int_list()
     stack = [(v, pred[v])]
-    seen = OutOfCoreSet({v})
+    seen = G.set_({v})
     while stack:
         node, preds = stack[-1]
         if v in preds:
             # found the cycle
             neg_cycle.extend([node, v])
-            neg_cycle = OutOfCoreList(reversed(neg_cycle))
+            neg_cycle = G.int_list(reversed(neg_cycle))
             return neg_cycle
 
         if preds:
@@ -2297,7 +2290,7 @@ def find_negative_cycle(G, source, weight="weight"):
                 neg_cycle.pop()
             else:
                 if v in G[v] and weight(G, v, v) < 0:
-                    return OutOfCoreList([v, v])
+                    return G.int_list([v, v])
                 # should not reach here
                 raise nx.NetworkXError("Negative cycle is detected but not found")
     # should not get here...
@@ -2395,17 +2388,17 @@ def bidirectional_dijkstra(G, source, target, weight="weight"):
     pop = heappop
     # Init:  [Forward, Backward]
     
-    dists = [IntDict(), IntDict()]  # two dictionary of final distances
+    dists = [G.int_dict(), G.int_dict()]  # two dictionary of final distances
 
-    sourceDictOfLists = OutOfCoreDictOfLists()
+    sourceDictOfLists = G.int_dict_of_lists()
     sourceDictOfLists[source] = [source]
-    targetDictOfLists = OutOfCoreDictOfLists()
+    targetDictOfLists = G.int_dict_of_lists()
     targetDictOfLists[target] = [target]
     paths = [sourceDictOfLists, targetDictOfLists]  # two dictionary of paths
     
-    sourceDict = IntDict()
+    sourceDict = G.int_dict()
     sourceDict[source] = 0
-    targetDict = IntDict()
+    targetDict = G.int_dict()
     targetDict[target] = 0
     seen = [sourceDict, targetDict]  # two dict of distances to seen nodes
 
@@ -2528,10 +2521,10 @@ def johnson(G, weight="weight"):
     all_pairs_bellman_ford_path_length
 
     """
-    dist = IntDict()
+    dist = G.int_dict()
     for v in G:
         dist[v] = 0
-    pred = OutOfCoreDictOfLists()
+    pred = G.int_dict_of_lists()
     for v in G:
         pred[v] = []
     weight = _weight_function(G, weight)
@@ -2545,7 +2538,7 @@ def johnson(G, weight="weight"):
         return weight(u, v, d) + dist_bellman[u] - dist_bellman[v]
 
     def dist_path(v):
-        paths = OutOfCoreDictOfLists()
+        paths = G.int_dict_of_lists()
         paths[v] = [v]
         _dijkstra(G, v, new_weight, paths=paths)
         return paths
