@@ -1,13 +1,11 @@
 from random import Random
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
 from networkx import convert_node_labels_to_integers as cnlti
 from networkx.algorithms.distance_measures import _extrema_bounding
-
-from networkx.classes.lazygraph import LazyGraph
-from networkx.structures.out_of_core_list import OutOfCoreList
 
 
 def test__extrema_bounding_invalid_compute_kwarg():
@@ -19,10 +17,7 @@ def test__extrema_bounding_invalid_compute_kwarg():
 class TestDistance:
     def setup_method(self):
         G = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        self.G = LazyG
+        self.G = G
 
     def test_eccentricity(self):
         assert nx.eccentricity(self.G, 1) == 6
@@ -82,19 +77,19 @@ class TestDistance:
         assert set(nx.center(self.G, usebounds=True)) == result
 
     def test_radius_exception(self):
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_edge(1, 2)
         G.add_edge(3, 4)
         pytest.raises(nx.NetworkXError, nx.diameter, G)
 
     def test_eccentricity_infinite(self):
         with pytest.raises(nx.NetworkXError):
-            G = LazyGraph([(1, 2), (3, 4)])
+            G = nx.Graph([(1, 2), (3, 4)])
             e = nx.eccentricity(G)
 
     def test_eccentricity_undirected_not_connected(self):
         with pytest.raises(nx.NetworkXError):
-            G = LazyGraph([(1, 2), (3, 4)])
+            G = nx.Graph([(1, 2), (3, 4)])
             e = nx.eccentricity(G, sp=1)
 
     def test_eccentricity_directed_weakly_connected(self):
@@ -105,7 +100,7 @@ class TestDistance:
 
 class TestWeightedDistance:
     def setup_method(self):
-        G = LazyGraph()
+        G = nx.Graph()
         G.add_edge(0, 1, weight=0.6, cost=0.6, high_cost=6)
         G.add_edge(0, 2, weight=0.2, cost=0.2, high_cost=2)
         G.add_edge(2, 3, weight=0.1, cost=0.1, high_cost=1)
@@ -327,6 +322,7 @@ class TestWeightedDistance:
         assert set(nx.center(self.G, usebounds=True, weight=self.weight_fn)) == result
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestResistanceDistance:
     @classmethod
     def setup_class(cls):
@@ -401,7 +397,6 @@ class TestBarycenter:
     def barycenter_as_subgraph(self, g, **kwargs):
         """Return the subgraph induced on the barycenter of g"""
         b = nx.barycenter(g, **kwargs)
-        assert isinstance(b, OutOfCoreList)
         assert set(b) <= set(g)
         return g.subgraph(b)
 
@@ -423,6 +418,7 @@ class TestBarycenter:
         del sp[0][1]
         pytest.raises(nx.NetworkXNoPath, nx.barycenter, K_5, sp=sp)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_trees(self):
         """The barycenter of a tree is a single vertex or an edge.
 
@@ -438,45 +434,46 @@ class TestBarycenter:
                 assert len(b) == 1
                 assert b.size() == 0
 
-    # def test_this_one_specific_tree(self):
-    #     """Test the tree pictured at the bottom of [West01]_, p. 78."""
-    #     g = nx.Graph(
-    #         {
-    #             "a": ["b"],
-    #             "b": ["a", "x"],
-    #             "x": ["b", "y"],
-    #             "y": ["x", "z"],
-    #             "z": ["y", 0, 1, 2, 3, 4],
-    #             0: ["z"],
-    #             1: ["z"],
-    #             2: ["z"],
-    #             3: ["z"],
-    #             4: ["z"],
-    #         }
-    #     )
-    #     b = self.barycenter_as_subgraph(g, attr="barycentricity")
-    #     assert list(b) == ["z"]
-    #     assert not b.edges
-    #     expected_barycentricity = {
-    #         0: 23,
-    #         1: 23,
-    #         2: 23,
-    #         3: 23,
-    #         4: 23,
-    #         "a": 35,
-    #         "b": 27,
-    #         "x": 21,
-    #         "y": 17,
-    #         "z": 15,
-    #     }
-    #     for node, barycentricity in expected_barycentricity.items():
-    #         assert g.nodes[node]["barycentricity"] == barycentricity
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    def test_this_one_specific_tree(self):
+        """Test the tree pictured at the bottom of [West01]_, p. 78."""
+        g = nx.Graph(
+            {
+                5: [6],
+                6: [5, 7],
+                7: [6, 8],
+                8: [7, 9],
+                9: [8, 0, 1, 2, 3, 4],
+                0: [9],
+                1: [9],
+                2: [9],
+                3: [9],
+                4: [9],
+            }
+        )
+        b = self.barycenter_as_subgraph(g, attr="barycentricity")
+        assert list(b) == [9]
+        assert not b.edges
+        expected_barycentricity = {
+            0: 23,
+            1: 23,
+            2: 23,
+            3: 23,
+            4: 23,
+            5: 35,
+            6: 27,
+            7: 21,
+            8: 17,
+            9: 15,
+        }
+        for node, barycentricity in expected_barycentricity.items():
+            assert g.nodes[node]["barycentricity"] == barycentricity
 
-    #     # Doubling weights should do nothing but double the barycentricities
-    #     for edge in g.edges:
-    #         g.edges[edge]["weight"] = 2
-    #     b = self.barycenter_as_subgraph(g, weight="weight", attr="barycentricity2")
-    #     assert list(b) == ["z"]
-    #     assert not b.edges
-    #     for node, barycentricity in expected_barycentricity.items():
-    #         assert g.nodes[node]["barycentricity2"] == barycentricity * 2
+        #Doubling weights should do nothing but double the barycentricities
+        for edge in g.edges:
+            g.edges[edge]["weight"] = 2
+        b = self.barycenter_as_subgraph(g, weight="weight", attr="barycentricity2")
+        assert list(b) == [9]
+        assert not b.edges
+        for node, barycentricity in expected_barycentricity.items():
+            assert g.nodes[node]["barycentricity2"] == barycentricity * 2
