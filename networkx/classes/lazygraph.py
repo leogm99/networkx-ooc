@@ -1,9 +1,16 @@
 from networkx.classes.graph import Graph
+from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.lazy_adjacency_list import LazyAdjacencyList
 from networkx.structures.lazy_node_list import LazyNodeList
 from functools import cached_property
 from networkx.classes.reportviews import LazyDegreeView
 from networkx.classes.coreviews import LazyAdjacencyView
+
+from networkx.structures.out_of_core_deque import OutOfCoreDeque
+from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
 
 
 
@@ -108,3 +115,42 @@ class LazyGraph(Graph):
         for e in G.edges:
             LazyG.add_edge(*e)
         return LazyG
+
+    def int_list(self, *args):
+        return OutOfCoreList(*args)
+
+    def float_list(self, *args):
+        return OutOfCoreList(*args, value_primitive_type=PrimitiveType.FLOAT)
+    
+    def tuple_list(self, *args):
+        return OutOfCoreList(*args, value_primitive_type=PrimitiveType.EDGE)
+
+    def set_(self, *args):
+        return OutOfCoreSet(*args)
+
+    def int_dict(self, *args):
+        return IntDict(*args)
+
+    def int_float_dict(self, *args):
+        return IntFloatDict(*args)
+
+    def int_dict_of_lists(self):
+        return OutOfCoreDictOfLists()
+    
+    def float_dict_of_lists(self):
+        return OutOfCoreDictOfLists(PrimitiveType.FLOAT)
+
+    def int_deque(self, *args):
+        return OutOfCoreDeque(*args, IntDict())
+
+    def float_deque(self, *args):
+        return OutOfCoreDeque(*args, IntFloatDict())
+    
+    def tuple_int_dict_of_edges(self):
+        return EdgesDict()
+    
+    def tuple_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.EDGE, PrimitiveType.EDGE)
+
+    def int_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.INTEGER, PrimitiveType.EDGE)
