@@ -13,6 +13,7 @@ from networkx.generators.classic import (
     wheel_graph,
 )
 
+from networkx.algorithms.approximation.tests import app_mode
 
 def nmatch(n1, n2):
     return n1 == n2
@@ -252,11 +253,11 @@ class TestSimilarity:
     def test_selfloops(self):
         G0 = nx.Graph()
         G1 = nx.Graph()
-        G1.add_edges_from((("A", "A"), ("A", "B")))
+        G1.add_edges_from(((1, 1), (1, 2)))
         G2 = nx.Graph()
-        G2.add_edges_from((("A", "B"), ("B", "B")))
+        G2.add_edges_from(((1, 2), (2, 2)))
         G3 = nx.Graph()
-        G3.add_edges_from((("A", "A"), ("A", "B"), ("B", "B")))
+        G3.add_edges_from(((1, 1), (1, 2), (2, 2)))
 
         assert graph_edit_distance(G0, G0) == 0
         assert graph_edit_distance(G0, G1) == 4
@@ -360,6 +361,7 @@ class TestSimilarity:
         assert graph_edit_distance(G2, G1) == 5
 
     # by https://github.com/jfbeaumont
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testCopy(self):
         G = nx.Graph()
         G.add_node("A", label="A")
@@ -369,17 +371,19 @@ class TestSimilarity:
             graph_edit_distance(G, G.copy(), node_match=nmatch, edge_match=ematch) == 0
         )
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testSame(self):
         G1 = nx.Graph()
-        G1.add_node("A", label="A")
-        G1.add_node("B", label="B")
-        G1.add_edge("A", "B", label="a-b")
+        G1.add_node(1, label="A")
+        G1.add_node(2, label="B")
+        G1.add_edge(1, 2, label="a-b")
         G2 = nx.Graph()
-        G2.add_node("A", label="A")
-        G2.add_node("B", label="B")
-        G2.add_edge("A", "B", label="a-b")
+        G2.add_node(1, label="A")
+        G2.add_node(2, label="B")
+        G2.add_edge(1, 2, label="a-b")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 0
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testOneEdgeLabelDiff(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -391,6 +395,7 @@ class TestSimilarity:
         G2.add_edge("A", "B", label="bad")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testOneNodeLabelDiff(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -402,6 +407,7 @@ class TestSimilarity:
         G2.add_edge("A", "B", label="a-b")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testOneExtraNode(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -414,6 +420,7 @@ class TestSimilarity:
         G2.add_node("C", label="C")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testOneExtraEdge(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -429,6 +436,7 @@ class TestSimilarity:
         G2.add_edge("A", "C", label="a-c")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testOneExtraNodeAndEdge(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -442,6 +450,7 @@ class TestSimilarity:
         G2.add_edge("A", "C", label="a-c")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 2
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testGraph1(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -454,6 +463,7 @@ class TestSimilarity:
         G2.add_edge("D", "E", label="d-e")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 3
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testGraph2(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -468,6 +478,7 @@ class TestSimilarity:
         G2.add_edge("C", "E", label="c-e")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 4
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testGraph3(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -486,6 +497,7 @@ class TestSimilarity:
         G2.add_edge("E", "B", label="e-b")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 12
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testGraph4(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -498,6 +510,7 @@ class TestSimilarity:
         G2.add_edge("C", "D", label="c-d")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 2
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testGraph4_a(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -510,6 +523,7 @@ class TestSimilarity:
         G2.add_edge("A", "D", label="a-d")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 2
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def testGraph4_b(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -810,13 +824,13 @@ class TestSimilarity:
         np.random.seed(42)
 
         G = nx.Graph()
-        G.add_edge("v1", "v2", w=5)
-        G.add_edge("v1", "v3", w=1)
-        G.add_edge("v1", "v4", w=2)
-        G.add_edge("v2", "v3", w=0.1)
-        G.add_edge("v3", "v5", w=1)
-        expected = {"v3": 0.75, "v4": 0.5, "v2": 0.5, "v5": 0.25}
-        sim = nx.panther_similarity(G, "v1", path_length=2, weight="w")
+        G.add_edge(1, 2, w=5)
+        G.add_edge(1, 3, w=1)
+        G.add_edge(1, 4, w=2)
+        G.add_edge(2, 3, w=0.1)
+        G.add_edge(3, 5, w=1)
+        expected = {3: 0.75, 4: 0.5, 2: 0.5, 5: 0.25}
+        sim = nx.panther_similarity(G, 1, path_length=2, weight="w")
         assert sim == expected
 
     def test_generate_random_paths_unweighted(self):
@@ -857,6 +871,7 @@ class TestSimilarity:
         assert expected_paths == list(paths)
         assert expected_map == index_map
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_generate_random_paths_weighted(self):
         np.random.seed(42)
 
@@ -898,6 +913,7 @@ class TestSimilarity:
         assert expected_paths == list(paths)
         assert expected_map == index_map
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_symmetry_with_custom_matching(self):
         print("G2 is edge (a,b) and G3 is edge (a,a)")
         print("but node order for G2 is (a,b) while for G3 it is (b,a)")

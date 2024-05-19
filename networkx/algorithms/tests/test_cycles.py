@@ -7,6 +7,7 @@ import pytest
 import networkx as nx
 from networkx.algorithms.traversal.edgedfs import FORWARD, REVERSE
 
+from networkx.algorithms.approximation.tests import app_mode
 
 def check_independent(basis):
     if len(basis) == 0:
@@ -40,7 +41,8 @@ class TestCycles:
             return False
         l = a + a
         return any(l[i : i + n] == b for i in range(n))
-
+    
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_cycle_basis(self):
         G = self.G
         cy = nx.cycle_basis(G, 0)
@@ -425,6 +427,7 @@ class TestCycleEnumeration:
         expected_cycles = [(i,) for i in range(1, 10, 2)]
         self.check_cycle_algorithm(g, expected_cycles, chordless=True)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_simple_cycles_notable_clique_sequences(self):
         # A000292: Number of labeled graphs on n+3 nodes that are triangles.
         g_family = [self.K(n) for n in range(2, 12)]
@@ -470,6 +473,7 @@ class TestCycleEnumeration:
         g_family = [self.K(n) for n in range(8)]
         self.check_cycle_enumeration_integer_sequence(g_family, expected)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_directed_chordless_cycle_parallel_multiedges(self):
         g = nx.MultiGraph()
 
@@ -507,6 +511,7 @@ class TestCycleEnumeration:
         nx.add_cycle(g, range(5))
         self.check_cycle_algorithm(g, [], chordless=True)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_chordless_cycles_graph(self):
         G = nx.Graph()
         nx.add_cycle(G, range(5))
@@ -525,6 +530,7 @@ class TestCycleEnumeration:
             G, [c for c in expected if len(c) <= 5], length_bound=5, chordless=True
         )
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_chordless_cycles_giant_hamiltonian(self):
         # ... o - e - o - e - o ... # o = odd, e = even
         # ... ---/ \-----/ \--- ... # <-- "long" edges
@@ -582,7 +588,8 @@ class TestCycleEnumeration:
         for k in range(n + 1):
             self.check_cycle_algorithm(G, [], length_bound=k)
             self.check_cycle_algorithm(G, [], length_bound=k, chordless=True)
-
+    
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_simple_cycles_graph(self):
         testG = nx.cycle_graph(8)
         cyc1 = tuple(range(8))
@@ -634,6 +641,7 @@ class TestCycleEnumeration:
         expected = (2**5 - 1) - 11  # 11 disjoint combinations
         self.check_cycle_algorithm(testG, expected)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_simple_cycles_bounded(self):
         # iteratively construct a cluster of nested cycles running in the same direction
         # there should be one cycle of every length
@@ -861,14 +869,17 @@ class TestMinimumCycleBasis:
         T.add_edge(2, 4, weight=5)
         cls.diamond_graph = T
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_unweighted_diamond(self):
         mcb = nx.minimum_cycle_basis(self.diamond_graph)
         assert_basis_equal(mcb, [[2, 4, 1], [3, 4, 2]])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_weighted_diamond(self):
         mcb = nx.minimum_cycle_basis(self.diamond_graph, weight="weight")
         assert_basis_equal(mcb, [[2, 4, 1], [4, 3, 2, 1]])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_dimensionality(self):
         # checks |MCB|=|E|-|V|+|NC|
         ntrial = 10
@@ -882,6 +893,7 @@ class TestMinimumCycleBasis:
             assert len(mcb) == nedges - nnodes + ncomp
             check_independent(mcb)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_complete_graph(self):
         cg = nx.complete_graph(5)
         mcb = nx.minimum_cycle_basis(cg)
@@ -892,6 +904,7 @@ class TestMinimumCycleBasis:
         tg = nx.balanced_tree(3, 3)
         assert not nx.minimum_cycle_basis(tg)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_petersen_graph(self):
         G = nx.petersen_graph()
         mcb = list(nx.minimum_cycle_basis(G))
@@ -912,6 +925,7 @@ class TestMinimumCycleBasis:
         # check independence of the basis
         check_independent(mcb)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_gh6787_variable_weighted_complete_graph(self):
         N = 8
         cg = nx.complete_graph(N)
@@ -920,6 +934,7 @@ class TestMinimumCycleBasis:
         mcb = nx.minimum_cycle_basis(cg, weight="weight")
         check_independent(mcb)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_gh6787_and_edge_attribute_names(self):
         G = nx.cycle_graph(4)
         G.add_weighted_edges_from([(0, 2, 10), (1, 3, 10)], weight="dist")
