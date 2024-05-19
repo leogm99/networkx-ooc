@@ -3,8 +3,6 @@ import networkx as nx
 from networkx.algorithms.approximation import ramsey
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
-
 __all__ = [
     "clique_removal",
     "max_clique",
@@ -249,7 +247,7 @@ def large_clique_size(G):
             return max(best_size, size)
         u = max(U, key=degrees)
         U.remove(u)
-        N_prime = OutOfCoreSet()
+        N_prime = G.set_()
         for v in G[u]:
             if degrees[v] >= best_size:
                 N_prime.add(v)
@@ -258,7 +256,7 @@ def large_clique_size(G):
     best_size = 0
     nodes = (u for u in G if degrees[u] >= best_size)
     for u in nodes:
-        neighbors = OutOfCoreSet()
+        neighbors = G.set_()
         for v in G[u]:
             if degrees[v] >= best_size:
                 neighbors.add(v)

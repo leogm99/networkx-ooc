@@ -10,6 +10,9 @@ from networkx.algorithms.approximation.treewidth import (
     min_fill_in_heuristic,
 )
 
+import pytest
+from networkx.algorithms.approximation.tests import app_mode
+
 
 def is_tree_decomp(graph, decomp):
     """Check if the given tree decomposition is valid."""
@@ -90,12 +93,14 @@ class TestTreewidthMinDegree:
 
         cls.deterministic_graph.add_edge(8, 9)  # deg(8) = 4
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_petersen_graph(self):
         """Test Petersen graph tree decomposition result"""
         G = nx.petersen_graph()
         _, decomp = treewidth_min_degree(G)
         is_tree_decomp(G, decomp)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_small_tree_treewidth(self):
         """Test small tree
 
@@ -126,11 +131,13 @@ class TestTreewidthMinDegree:
         else:
             assert False
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_empty_graph(self):
         """Test empty graph"""
         G = nx.Graph()
         _, _ = treewidth_min_degree(G)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_two_component_graph(self):
         G = nx.Graph()
         G.add_node(1)
@@ -138,6 +145,7 @@ class TestTreewidthMinDegree:
         treewidth, _ = treewidth_min_degree(G)
         assert treewidth == 0
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_not_sortable_nodes(self):
         G = nx.Graph([(0, "a")])
         treewidth_min_degree(G)
@@ -205,12 +213,14 @@ class TestTreewidthMinFillIn:
         cls.deterministic_graph.add_edge(3, 6)
         cls.deterministic_graph.add_edge(5, 6)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_petersen_graph(self):
         """Test Petersen graph tree decomposition result"""
         G = nx.petersen_graph()
         _, decomp = treewidth_min_fill_in(G)
         is_tree_decomp(G, decomp)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_small_tree_treewidth(self):
         """Test if the computed treewidth of the known self.small_tree is 2"""
         G = self.small_tree
@@ -234,11 +244,13 @@ class TestTreewidthMinFillIn:
         else:
             assert False
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_empty_graph(self):
         """Test empty graph"""
         G = nx.Graph()
         _, _ = treewidth_min_fill_in(G)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_two_component_graph(self):
         G = nx.Graph()
         G.add_node(1)
@@ -246,6 +258,7 @@ class TestTreewidthMinFillIn:
         treewidth, _ = treewidth_min_fill_in(G)
         assert treewidth == 0
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_not_sortable_nodes(self):
         G = nx.Graph([(0, "a")])
         treewidth_min_fill_in(G)

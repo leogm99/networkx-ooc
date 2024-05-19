@@ -4,6 +4,7 @@ import pytest
 import networkx as nx
 from networkx.algorithms.approximation import k_components
 from networkx.algorithms.approximation.kcomponents import _AntiGraph, _same
+from networkx.algorithms.approximation.tests import app_mode
 
 
 def build_k_number_dict(k_components):
@@ -130,22 +131,22 @@ def _check_connectivity(G):
             K = nx.node_connectivity(C)
             assert K >= k
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_torrents_and_ferraro_graph():
     G = torrents_and_ferraro_graph()
     _check_connectivity(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_example_1():
     G = graph_example_1()
     _check_connectivity(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_karate_0():
     G = nx.karate_club_graph()
     _check_connectivity(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_karate_1():
     karate_k_num = {
         0: 4,
@@ -191,7 +192,7 @@ def test_karate_1():
     k_num = build_k_number_dict(k_comps)
     assert k_num in (karate_k_num, approx_karate_k_num)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_example_1_detail_3_and_4():
     G = graph_example_1()
     result = k_components(G)
@@ -229,7 +230,7 @@ def test_same():
     assert not _same(different)
     assert not _same(different, tol=4)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestAntiGraph:
     @classmethod
     def setup_class(cls):

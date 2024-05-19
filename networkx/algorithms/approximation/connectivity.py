@@ -5,10 +5,6 @@ from operator import itemgetter
 
 import networkx as nx
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntDict
-
 __all__ = [
     "local_node_connectivity",
     "node_connectivity",
@@ -100,11 +96,12 @@ def local_node_connectivity(G, source, target, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
 
-    exclude = OutOfCoreSet()
+    exclude = G.set_()
     for i in range(min(possible, cutoff)):
         try:
             path = _bidirectional_shortest_path(G, source, target, exclude)
-            exclude.update_with_list(path)
+            for i in path:
+                exclude.add(i)
             K += 1
         except nx.NetworkXNoPath:
             break
@@ -209,7 +206,7 @@ def node_connectivity(G, s=None, t=None):
     K = minimum_degree
     # compute local node connectivity with all non-neighbors nodes
     # and store the minimum
-    ngbrs = OutOfCoreSet(neighbors(v))
+    ngbrs = G.set_(neighbors(v))
     nodes = _remove_cut(G, ngbrs)
     nodes.remove(v)
     # for w in set(G) - set(neighbors(v)) - {v}:
@@ -222,7 +219,7 @@ def node_connectivity(G, s=None, t=None):
     return K
 
 def _remove_cut(G, cut):
-    s = OutOfCoreSet()
+    s = G.set_()
     for n in G.nodes():
         if n not in cut:
             s.add(n)
@@ -356,7 +353,7 @@ def _bidirectional_shortest_path(G, source, target, exclude):
     pred, succ, w = results
 
     # build path from pred+w+succ
-    path = OutOfCoreList()
+    path = G.int_list()
     # from source to w
     while w is not None:
         path.append(w)
@@ -384,14 +381,14 @@ def _bidirectional_pred_succ(G, source, target, exclude):
         Gsucc = G.neighbors
 
     # predecessor and successors in search
-    pred = IntDict()
+    pred = G.int_dict()
     pred[source] = None
-    succ = IntDict()
+    succ = G.int_dict()
     succ[target] = None
 
     # initialize fringes, start with forward
-    forward_fringe = OutOfCoreList([source])
-    reverse_fringe = OutOfCoreList([target])
+    forward_fringe = G.int_list([source])
+    reverse_fringe = G.int_list([target])
 
     level = 0
 
@@ -402,7 +399,7 @@ def _bidirectional_pred_succ(G, source, target, exclude):
         level += 1
         if level % 2 != 0:
             this_level = forward_fringe
-            forward_fringe = OutOfCoreList()
+            forward_fringe = G.int_list()
             for v in this_level:
                 for w in Gsucc(v):
                     if w in exclude:
@@ -414,7 +411,7 @@ def _bidirectional_pred_succ(G, source, target, exclude):
                         return pred, succ, w  # found path
         else:
             this_level = reverse_fringe
-            reverse_fringe = OutOfCoreList()
+            reverse_fringe = G.int_list()
             for v in this_level:
                 for w in Gpred(v):
                     if w in exclude:
