@@ -1,6 +1,7 @@
 """Unit tests for the :mod:`networkx.algorithms.structuralholes` module."""
 import math
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -61,12 +62,14 @@ class TestStructuralHoles:
         assert constraint[1] == pytest.approx(1.003, abs=1e-3)
         assert constraint[2] == pytest.approx(1.389, abs=1e-3)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_directed(self):
         effective_size = nx.effective_size(self.D)
         assert effective_size[0] == pytest.approx(1.167, abs=1e-3)
         assert effective_size[1] == pytest.approx(1.167, abs=1e-3)
         assert effective_size[2] == pytest.approx(1, abs=1e-3)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_constraint_weighted_directed(self):
         D = self.D.copy()
         nx.set_edge_attributes(D, self.D_weights, "weight")
@@ -75,6 +78,7 @@ class TestStructuralHoles:
         assert constraint[1] == pytest.approx(1.143, abs=1e-3)
         assert constraint[2] == pytest.approx(1.378, abs=1e-3)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_weighted_directed(self):
         D = self.D.copy()
         nx.set_edge_attributes(D, self.D_weights, "weight")
@@ -89,12 +93,14 @@ class TestStructuralHoles:
         assert constraint[11] == pytest.approx(0.595, abs=1e-3)
         assert constraint[17] == pytest.approx(1, abs=1e-3)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_undirected_borgatti(self):
         effective_size = nx.effective_size(self.G)
         assert effective_size[14] == pytest.approx(4.67, abs=1e-2)
         assert effective_size[11] == pytest.approx(2.50, abs=1e-2)
         assert effective_size[17] == pytest.approx(1, abs=1e-2)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_undirected(self):
         G = self.G.copy()
         nx.set_edge_attributes(G, 1, "weight")
@@ -103,6 +109,7 @@ class TestStructuralHoles:
         assert effective_size[11] == pytest.approx(2.50, abs=1e-2)
         assert effective_size[17] == pytest.approx(1, abs=1e-2)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_constraint_weighted_undirected(self):
         G = self.G.copy()
         nx.set_edge_attributes(G, self.G_weights, "weight")
@@ -111,6 +118,7 @@ class TestStructuralHoles:
         assert constraint[11] == pytest.approx(0.795, abs=1e-3)
         assert constraint[17] == pytest.approx(1, abs=1e-3)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_weighted_undirected(self):
         G = self.G.copy()
         nx.set_edge_attributes(G, self.G_weights, "weight")
@@ -119,12 +127,14 @@ class TestStructuralHoles:
         assert effective_size[11] == pytest.approx(2.47, abs=1e-2)
         assert effective_size[17] == pytest.approx(1, abs=1e-2)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_constraint_isolated(self):
         G = self.G.copy()
         G.add_node(1)
         constraint = nx.constraint(G)
         assert math.isnan(constraint[1])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_isolated(self):
         G = self.G.copy()
         G.add_node(1)
@@ -132,6 +142,7 @@ class TestStructuralHoles:
         effective_size = nx.effective_size(G, weight="weight")
         assert math.isnan(effective_size[1])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_effective_size_borgatti_isolated(self):
         G = self.G.copy()
         G.add_node(1)

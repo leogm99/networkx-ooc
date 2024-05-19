@@ -1,3 +1,4 @@
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -66,6 +67,7 @@ class TestMCS:
         assert not nx.is_chordal(nx.cycle_graph(5))
         assert nx.is_chordal(self.self_loop_G)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_induced_nodes(self):
         G = nx.generators.classic.path_graph(10)
         Induced_nodes = nx.find_induced_nodes(G, 1, 9, 2)
@@ -81,6 +83,7 @@ class TestMCS:
         with pytest.raises(nx.NetworkXError, match="Input graph is not chordal"):
             nx.chordal_graph_treewidth(self.non_chordal_G)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_chordal_find_cliques(self):
         cliques = {
             frozenset([9]),
@@ -101,11 +104,13 @@ class TestMCS:
         for u, v in G.edges():
             assert frozenset([u, v]) in cliqueset or frozenset([v, u]) in cliqueset
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_chordal_find_cliquesCC(self):
         cliques = {frozenset([1, 2, 3]), frozenset([2, 3, 4]), frozenset([3, 4, 5, 6])}
         cgc = nx.chordal_graph_cliques
         assert set(cgc(self.connected_chordal_G)) == cliques
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_complete_to_chordal_graph(self):
         fgrg = nx.fast_gnp_random_graph
         test_graphs = [
