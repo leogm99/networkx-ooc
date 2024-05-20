@@ -1,7 +1,6 @@
 """Unit tests for the :mod:`networkx.algorithms.bipartite.matching` module."""
 import itertools
 
-from networkx.classes.lazygraph import LazyGraph
 import pytest
 
 import networkx as nx
@@ -222,7 +221,7 @@ class TestMinimumWeightFullMatching:
         pytest.importorskip("scipy")
 
     def test_minimum_weight_full_matching_incomplete_graph(self):
-        B = LazyGraph()
+        B = nx.Graph()
         B.add_nodes_from([1, 2], bipartite=0)
         B.add_nodes_from([3, 4], bipartite=1)
         B.add_edge(1, 4, weight=100)
@@ -232,7 +231,7 @@ class TestMinimumWeightFullMatching:
         assert matching == {1: 4, 2: 3, 4: 1, 3: 2}
 
     def test_minimum_weight_full_matching_with_no_full_matching(self):
-        B = LazyGraph()
+        B = nx.Graph()
         B.add_nodes_from([1, 2, 3], bipartite=0)
         B.add_nodes_from([4, 5, 6], bipartite=1)
         B.add_edge(1, 4, weight=100)

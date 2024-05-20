@@ -9,7 +9,6 @@ import networkx as nx
 from networkx.convert_matrix import _generate_weighted_edges
 
 from networkx.classes.lazygraph import LazyGraph
-from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.primitive_dicts import IntDict, PrimitiveType
 
@@ -85,22 +84,22 @@ def biadjacency_matrix(
     nlen = len(row_order)
     if nlen == 0:
         raise nx.NetworkXError("row_order is empty list")
-    row_order_set = OutOfCoreSet(row_order)
+    row_order_set = G.set_(row_order)
     if len(row_order) != len(row_order_set):
         msg = "Ambiguous ordering: `row_order` contained duplicates."
         raise nx.NetworkXError(msg)
     if column_order is None:
-        column_order = OutOfCoreList(OutOfCoreSet(G) - row_order_set)
+        column_order = G.int_list(G.set_(G) - row_order_set)
     mlen = len(column_order)
-    if len(column_order) != len(OutOfCoreSet(column_order)):
+    if len(column_order) != len(G.set_(column_order)):
         msg = "Ambiguous ordering: `column_order` contained duplicates."
         raise nx.NetworkXError(msg)
 
-    row_index = IntDict(zip(row_order, itertools.count()))
-    col_index = IntDict(zip(column_order, itertools.count()))
+    row_index = G.int_dict(zip(row_order, itertools.count()))
+    col_index = G.int_dict(zip(column_order, itertools.count()))
 
     if G.number_of_edges() == 0:
-        row, col, data = OutOfCoreList(), OutOfCoreList(), OutOfCoreList(value_primitive_type = PrimitiveType.FLOAT)
+        row, col, data = G.int_list(), G.int_list(), G.float_list()
     else:
         # row, col, data = zip(
         #     *(
@@ -109,9 +108,9 @@ def biadjacency_matrix(
         #         if u in row_index and v in col_index
         #     )
         # )
-        row = OutOfCoreList()
-        col = OutOfCoreList()
-        data = OutOfCoreList(value_primitive_type = PrimitiveType.FLOAT)
+        row = G.int_list()
+        col = G.int_list()
+        data = G.float_list()
 
         for u, v, d in G.edges(row_order, data=True):
             if u in row_index and v in col_index:
@@ -162,10 +161,7 @@ def from_biadjacency_matrix(A, create_using=None, edge_attribute="weight"):
     ----------
     [1] https://en.wikipedia.org/wiki/Adjacency_matrix#Adjacency_matrix_of_a_bipartite_graph
     """
-    if create_using is None or isinstance(create_using, LazyGraph):
-        G = LazyGraph()
-    else:
-        G = nx.empty_graph(0, create_using)
+    G = nx.empty_graph(0, create_using)
 
     n, m = A.shape
     # Make sure we get even the isolated nodes of the graph.

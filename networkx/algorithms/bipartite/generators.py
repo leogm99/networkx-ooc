@@ -8,10 +8,6 @@ from functools import reduce
 import networkx as nx
 from networkx.utils import nodes_or_number, py_random_state
 
-from networkx.classes.lazygraph import LazyGraph
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-
 __all__ = [
     "configuration_model",
     "havel_hakimi_graph",
@@ -52,7 +48,7 @@ def complete_bipartite_graph(n1, n2, create_using=None):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.complete_bipartite_graph
     """
-    G = nx.empty_graph(0, create_using, default=LazyGraph)
+    G = nx.empty_graph(0, create_using, default=nx.Graph)
     if G.is_directed():
         raise nx.NetworkXError("Directed Graph not supported")
 
@@ -60,7 +56,7 @@ def complete_bipartite_graph(n1, n2, create_using=None):
     n2, bottom = n2
     if isinstance(n1, numbers.Integral) and isinstance(n2, numbers.Integral):
         # bottom = [n1 + i for i in bottom]
-        _bottom = OutOfCoreList()
+        _bottom = G.int_list()
         for i in bottom:
            _bottom.append(n1 + i)
         bottom = _bottom
@@ -130,14 +126,14 @@ def configuration_model(aseq, bseq, create_using=None, seed=None):
     # build lists of degree-repeated vertex numbers
     # stubs = [[v] * aseq[v] for v in range(0, lena)]
     # astubs = [x for subseq in stubs for x in subseq]
-    astubs = OutOfCoreList()
+    astubs = G.int_list()
     for v in range(0, lena):
         stub = [v] * aseq[v]
         astubs.extend(stub)
 
     # stubs = [[v] * bseq[v - lena] for v in range(lena, lena + lenb)]
     # bstubs = [x for subseq in stubs for x in subseq]
-    bstubs = OutOfCoreList()
+    bstubs = G.int_list()
     for v in range(lena, lena + lenb):
         stub = [v] * bseq[v - lena]
         bstubs.extend(stub)
@@ -492,7 +488,7 @@ def random_graph(n, m, p, seed=None, directed=False):
        "Efficient generation of large random networks",
        Phys. Rev. E, 71, 036113, 2005.
     """
-    G = LazyGraph()
+    G = nx.Graph()
     G = _add_nodes_with_bipartite_label(G, n, m)
     if directed:
         G = nx.DiGraph()
@@ -578,7 +574,7 @@ def gnmk_random_graph(n, m, k, seed=None, directed=False):
     This function is not imported in the main namespace.
     To use it use nx.bipartite.gnmk_random_graph
     """
-    G = LazyGraph()
+    G = nx.Graph()
     G = _add_nodes_with_bipartite_label(G, n, m)
     if directed:
         G = nx.DiGraph()
@@ -590,11 +586,11 @@ def gnmk_random_graph(n, m, k, seed=None, directed=False):
     if k >= max_edges:  # Maybe we should raise an exception here
         return nx.complete_bipartite_graph(n, m, create_using=G)
 
-    top = OutOfCoreList()
+    top = G.int_list()
     for n, d in G.nodes(data=True):
         if d["bipartite"] == 0:
             top.append(n)
-    bottom = OutOfCoreList(OutOfCoreSet(G) - OutOfCoreSet(top))
+    bottom = G.int_list(G.set_(G) - G.set_(top))
     edge_count = 0
     while edge_count < k:
         # generate random edge,u,v

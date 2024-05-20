@@ -4,9 +4,6 @@ from itertools import combinations
 import networkx as nx
 from networkx import NetworkXError
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict
-
 __all__ = ["node_redundancy"]
 
 
@@ -93,7 +90,7 @@ def node_redundancy(G, nodes=None):
             " that has fewer than two neighbors."
         )
     # TODO This can be trivially parallelized.
-    result = IntFloatDict()
+    result = G.int_float_dict()
     for v in nodes:
         result[v] = _node_redundancy(G, v)
     return result
@@ -113,6 +110,6 @@ def _node_redundancy(G, v):
     """
     n = len(G[v])
     overlap = sum(
-        1 for (u, w) in combinations(G[v], 2) if (OutOfCoreSet(G[u]) & OutOfCoreSet(G[w])) - {v}
+        1 for (u, w) in combinations(G[v], 2) if (G.set_(G[u]) & G.set_(G[w])) - {v}
     )
     return (2 * overlap) / (n * (n - 1))

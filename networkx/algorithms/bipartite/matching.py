@@ -36,18 +36,11 @@ the smaller of the two partitions, and for which the sum of the weights of the
 edges included in the matching is minimal.
 
 """
-import collections
 import itertools
 
 import networkx as nx
-from networkx.structures.primitive_dicts import IntDict, IntFloatDict
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.bipartite import sets as bipartite_sets
 from networkx.algorithms.bipartite.matrix import biadjacency_matrix
-
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntDict
 
 __all__ = [
     "maximum_matching",
@@ -162,15 +155,15 @@ def hopcroft_karp_matching(G, top_nodes=None):
     # Initialize the "global" variables that maintain state during the search.
     left, right = bipartite_sets(G, top_nodes)
     # leftmatches = {v: None for v in left}
-    leftmatches = IntDict()
+    leftmatches = G.int_dict()
     for v in left:
        leftmatches[v] = None
     # rightmatches = {v: None for v in right}
-    rightmatches = IntDict()
+    rightmatches = G.int_dict()
     for v in right:
        rightmatches[v] = None
-    distances = IntFloatDict()
-    queue = OutOfCoreDeque()
+    distances = G.int_float_dict()
+    queue = G.int_deque()
 
     # Implementation note: this counter is incremented as pairs are matched but
     # it is currently not used elsewhere in the computation.
@@ -182,8 +175,8 @@ def hopcroft_karp_matching(G, top_nodes=None):
                     num_matched_pairs += 1
 
     # Strip the entries matched to `None`.
-    _leftmatches = IntDict()
-    _rightmatches = IntDict()
+    _leftmatches = G.int_dict()
+    _rightmatches = G.int_dict()
     for k, v in leftmatches.items():
         if v is not None:
             _leftmatches[k] = v
@@ -200,7 +193,7 @@ def hopcroft_karp_matching(G, top_nodes=None):
     #     leftmatches == {v, k for k, v in rightmatches.items()}
     #
     # Finally, we combine both the left matches and right matches.
-    matching = IntDict()
+    matching = G.int_dict()
     for k, v in itertools.chain(_leftmatches.items(), _rightmatches.items()):
         matching[k] = v
     return matching
@@ -430,15 +423,15 @@ def _connected_by_alternating_paths(G, matching, targets):
     # one version of each undirected edge (for example, include edge (1, 2) but
     # not edge (2, 1)). Using frozensets as an intermediary step we do not
     # require nodes to be orderable.
-    edge_sets = OutOfCoreSet()
+    edge_sets = G.set_()
     for u, v in matching.items():
         edge_sets.add(frozenset((u, v)))
     # edge_sets = {frozenset((u, v)) for u, v in matching.items()}
-    matched_edges = OutOfCoreSet()
+    matched_edges = G.set_()
     for edge in edge_sets:
         matched_edges.add(tuple(edge))
     # matched_edges = {tuple(edge) for edge in edge_sets}
-    unmatched_edges = OutOfCoreSet()
+    unmatched_edges = G.set_()
     for u, v in G.edges():
         if frozenset((u, v)) not in edge_sets:
             unmatched_edges.add((u, v))
@@ -521,7 +514,7 @@ def to_vertex_cover(G, matching, top_nodes=None):
     # <https://en.wikipedia.org/wiki/K%C3%B6nig%27s_theorem_%28graph_theory%29#Proof>.
     L, R = bipartite_sets(G, top_nodes)
     # Let U be the set of unmatched vertices in the left vertex set.
-    unmatched_vertices = OutOfCoreSet(G) - OutOfCoreSet(matching)
+    unmatched_vertices = G.set_(G) - G.set_(matching)
     U = unmatched_vertices & L
     # Let Z be the set of vertices that are either in U or are connected to U
     # by alternating paths.
@@ -607,8 +600,8 @@ def minimum_weight_full_matching(G, top_nodes=None, weight="weight"):
     import scipy as sp
 
     left, right = nx.bipartite.sets(G, top_nodes)
-    U = OutOfCoreList(left)
-    V = OutOfCoreList(right)
+    U = G.int_list(left)
+    V = G.int_list(right)
     # We explicitly create the biadjacency matrix having infinities
     # where edges are missing (as opposed to zeros, which is what one would
     # get by using toarray on the sparse matrix).
@@ -618,7 +611,7 @@ def minimum_weight_full_matching(G, top_nodes=None, weight="weight"):
     weights = np.full(weights_sparse.shape, np.inf)
     weights[weights_sparse.row, weights_sparse.col] = weights_sparse.data
     left_matches = sp.optimize.linear_sum_assignment(weights)
-    d = IntDict()
+    d = G.int_dict()
     for u, v in zip(*left_matches):
         d[U[u]] = V[v]
     # d will contain the matching from edges in left to right; we need to
