@@ -193,7 +193,7 @@ def _plain_bfs(G, source):
     """A fast BFS node generator"""
     adj = G._adj
     n = len(adj)
-    seen = G.set_()
+    seen = G.set_({source})
     nextlevel = G.int_list([source])
     while nextlevel:
         thislevel = nextlevel
