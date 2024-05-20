@@ -1,8 +1,9 @@
 import math
 from itertools import permutations
 
+from networkx.algorithms.tests import app_mode
 from pytest import raises
-
+import pytest
 import networkx as nx
 from networkx.algorithms.matching import matching_dict_to_set
 from networkx.utils import edges_equal
@@ -38,17 +39,18 @@ class TestMaxWeightMatching:
 
     def test_two_path(self):
         G = nx.Graph()
-        G.add_edge("one", "two", weight=10)
-        G.add_edge("two", "three", weight=11)
+        G.add_edge(1, 2, weight=10)
+        G.add_edge(2, 3, weight=11)
         assert edges_equal(
             nx.max_weight_matching(G),
-            matching_dict_to_set({"three": "two", "two": "three"}),
+            matching_dict_to_set({3: 2, 2: 3}),
         )
         assert edges_equal(
             nx.min_weight_matching(G),
-            matching_dict_to_set({"one": "two", "two": "one"}),
+            matching_dict_to_set({1: 2, 2: 1}),
         )
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_path(self):
         G = nx.Graph()
         G.add_edge(1, 2, weight=5)
@@ -82,15 +84,15 @@ class TestMaxWeightMatching:
 
     def test_edge_attribute_name(self):
         G = nx.Graph()
-        G.add_edge("one", "two", weight=10, abcd=11)
-        G.add_edge("two", "three", weight=11, abcd=10)
+        G.add_edge(1, 2, weight=10, abcd=11)
+        G.add_edge(2, 3, weight=11, abcd=10)
         assert edges_equal(
             nx.max_weight_matching(G, weight="abcd"),
-            matching_dict_to_set({"one": "two", "two": "one"}),
+            matching_dict_to_set({1: 2, 2: 1}),
         )
         assert edges_equal(
             nx.min_weight_matching(G, weight="abcd"),
-            matching_dict_to_set({"three": "two"}),
+            matching_dict_to_set({3: 2}),
         )
 
     def test_floating_point_weights(self):
@@ -137,6 +139,7 @@ class TestMaxWeightMatching:
         assert edges_equal(nx.max_weight_matching(G), answer)
         assert edges_equal(nx.min_weight_matching(G), answer)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_s_t_blossom(self):
         """Create S-blossom, relabel as T-blossom, use for augmentation:"""
         G = nx.Graph()

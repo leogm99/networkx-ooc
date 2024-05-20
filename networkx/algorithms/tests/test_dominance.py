@@ -1,9 +1,11 @@
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
 
 
 class TestImmediateDominators:
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_exceptions(self):
         G = nx.Graph()
         G.add_node(0)
@@ -80,6 +82,7 @@ class TestImmediateDominators:
 
 
 class TestDominanceFrontiers:
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_exceptions(self):
         G = nx.Graph()
         G.add_node(0)

@@ -1,5 +1,6 @@
 import collections
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -9,17 +10,20 @@ class TestIsEulerian:
     def test_is_eulerian(self):
         assert nx.is_eulerian(nx.complete_graph(5))
         assert nx.is_eulerian(nx.complete_graph(7))
-        assert nx.is_eulerian(nx.hypercube_graph(4))
-        assert nx.is_eulerian(nx.hypercube_graph(6))
+        if (app_mode != 'lazy'):
+            assert nx.is_eulerian(nx.hypercube_graph(4))
+            assert nx.is_eulerian(nx.hypercube_graph(6))
 
         assert not nx.is_eulerian(nx.complete_graph(4))
         assert not nx.is_eulerian(nx.complete_graph(6))
-        assert not nx.is_eulerian(nx.hypercube_graph(3))
-        assert not nx.is_eulerian(nx.hypercube_graph(5))
+        if (app_mode != 'lazy'):
+            assert not nx.is_eulerian(nx.hypercube_graph(3))
+            assert not nx.is_eulerian(nx.hypercube_graph(5))
 
         assert not nx.is_eulerian(nx.petersen_graph())
         assert not nx.is_eulerian(nx.path_graph(4))
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_is_eulerian2(self):
         # not connected
         G = nx.Graph()
@@ -116,8 +120,9 @@ class TestIsSemiEulerian:
         # Test graphs with Eulerian cycles return False.
         assert not nx.is_semieulerian(nx.complete_graph(5))
         assert not nx.is_semieulerian(nx.complete_graph(7))
-        assert not nx.is_semieulerian(nx.hypercube_graph(4))
-        assert not nx.is_semieulerian(nx.hypercube_graph(6))
+        if (app_mode != 'lazy'):
+            assert not nx.is_semieulerian(nx.hypercube_graph(4))
+            assert not nx.is_semieulerian(nx.hypercube_graph(6))
 
 
 class TestHasEulerianPath:
@@ -125,8 +130,9 @@ class TestHasEulerianPath:
         # Test graphs with Eulerian cycles return True.
         assert nx.has_eulerian_path(nx.complete_graph(5))
         assert nx.has_eulerian_path(nx.complete_graph(7))
-        assert nx.has_eulerian_path(nx.hypercube_graph(4))
-        assert nx.has_eulerian_path(nx.hypercube_graph(6))
+        if (app_mode != 'lazy'):
+            assert nx.has_eulerian_path(nx.hypercube_graph(4))
+            assert nx.has_eulerian_path(nx.hypercube_graph(6))
 
     def test_has_eulerian_path_non_cyclic(self):
         # Test graphs with Eulerian paths but no cycles return True.
@@ -215,6 +221,7 @@ class TestEulerianPath:
         assert result2 == list(nx.eulerian_path(G, source=2))
         assert result3 == list(nx.eulerian_path(G, source=3))
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_eulerian_path_undirected(self):
         G = nx.Graph()
         result = [(1, 2), (2, 3), (3, 4), (4, 5)]

@@ -1,6 +1,8 @@
 import networkx as nx
+import pytest
+from networkx.algorithms.tests import app_mode
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_is_at_free():
     is_at_free = nx.asteroidal.is_at_free
 

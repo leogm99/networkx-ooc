@@ -7,6 +7,7 @@ from random import sample
 import pytest
 
 import networkx as nx
+from networkx.algorithms.tests import app_mode
 
 
 def test_triadic_census():
@@ -34,7 +35,7 @@ def test_triadic_census():
     actual = nx.triadic_census(G)
     assert expected == actual
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_is_triad():
     """Tests the is_triad function"""
     G = nx.karate_club_graph()
@@ -74,7 +75,7 @@ def test_all_triads():
     actual = list(nx.all_triads(G))
     assert all(any(nx.is_isomorphic(G1, G2) for G1 in expected) for G2 in actual)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_triad_type():
     """Tests the triad_type function."""
     # 0 edges (1 type)
@@ -117,7 +118,7 @@ def test_triad_type():
     G = nx.DiGraph([(0, 1), (1, 0), (1, 2), (2, 1), (0, 2), (2, 0)])
     assert nx.triad_type(G) == "300"
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_triads_by_type():
     """Tests the all_triplets function."""
     G = nx.DiGraph()
@@ -134,7 +135,7 @@ def test_triads_by_type():
         for a in actual_Gs:
             assert any(nx.is_isomorphic(a, e) for e in expected_Gs)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_random_triad():
     """Tests the random_triad function"""
     G = nx.karate_club_graph()
@@ -170,7 +171,7 @@ def test_triadic_census_tiny_graphs():
     tc = nx.triadic_census(nx.DiGraph([(1, 2)]))
     assert {} == {typ: cnt for typ, cnt in tc.items() if cnt > 0}
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_triadic_census_selfloops():
     GG = nx.path_graph("abc", create_using=nx.DiGraph)
     expected = {"021C": 1}
@@ -241,7 +242,7 @@ def test_triadic_census_nodelist():
         actual[k] //= 3
     assert expected == actual
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 @pytest.mark.parametrize("N", [5, 10])
 def test_triadic_census_on_random_graph(N):
     G = nx.binomial_graph(N, 0.3, directed=True, seed=42)
