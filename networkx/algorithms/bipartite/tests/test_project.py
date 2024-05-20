@@ -3,9 +3,11 @@ import pytest
 import networkx as nx
 from networkx.algorithms import bipartite
 from networkx.utils import edges_equal, nodes_equal
+from networkx.algorithms.bipartite.tests import app_mode
 
 
 class TestBipartiteProject:
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_path_projected_graph(self):
         G = nx.path_graph(4)
         P = bipartite.projected_graph(G, [1, 3])
@@ -18,6 +20,7 @@ class TestBipartiteProject:
         with pytest.raises(nx.NetworkXError, match="not defined for multigraphs"):
             bipartite.projected_graph(G, [0])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_path_projected_properties_graph(self):
         G = nx.path_graph(4)
         G.add_node(1, name="one")
@@ -31,6 +34,7 @@ class TestBipartiteProject:
         assert edges_equal(list(P.edges()), [(0, 2)])
         assert P.nodes[2]["name"] == G.nodes[2]["name"]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_path_collaboration_projected_graph(self):
         G = nx.path_graph(4)
         P = bipartite.collaboration_weighted_projected_graph(G, [1, 3])
@@ -54,6 +58,7 @@ class TestBipartiteProject:
         assert edges_equal(list(P.edges()), [(0, 2)])
         P[0][2]["weight"] = 1
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_path_weighted_projected_graph(self):
         G = nx.path_graph(4)
 
@@ -87,6 +92,7 @@ class TestBipartiteProject:
         assert edges_equal(list(P.edges()), [(0, 2)])
         P[0][2]["weight"] = 1
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_star_projected_graph(self):
         G = nx.star_graph(3)
         P = bipartite.projected_graph(G, [1, 2, 3])
@@ -100,6 +106,7 @@ class TestBipartiteProject:
         assert nodes_equal(list(P), [0])
         assert edges_equal(list(P.edges()), [])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_project_multigraph(self):
         G = nx.Graph()
         G.add_edge("a", 1)
@@ -113,6 +120,7 @@ class TestBipartiteProject:
         P = bipartite.projected_graph(G, "ab", multigraph=True)
         assert edges_equal(list(P.edges()), [("a", "b"), ("a", "b")])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_project_collaboration(self):
         G = nx.Graph()
         G.add_edge("a", 1)
@@ -155,7 +163,7 @@ class TestBipartiteProject:
         P = bipartite.projected_graph(G, "AB", multigraph=True)
         assert edges_equal(list(P.edges()), [("A", "B"), ("A", "B")])
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestBipartiteWeightedProjection:
     @classmethod
     def setup_class(cls):
