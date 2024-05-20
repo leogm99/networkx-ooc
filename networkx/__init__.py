@@ -14,6 +14,8 @@ __version__ = "3.2rc0.dev0"
 # These are imported in order as listed
 from networkx.lazy_imports import _lazy_import
 
+
+
 from networkx.exception import *
 
 from networkx import utils
@@ -22,6 +24,15 @@ from networkx.utils.backends import _dispatch
 from networkx import classes
 from networkx.classes import filters
 from networkx.classes import *
+
+import os
+
+from dotenv import load_dotenv
+
+load_dotenv()
+app_mode = os.getenv('MODE')
+if app_mode == 'lazy':
+    Graph = LazyGraph
 
 from networkx import convert
 from networkx.convert import *
@@ -50,3 +61,4 @@ from networkx.drawing import *
 
 from networkx import structures
 from networkx.structures.primitive_dicts import *
+
