@@ -5,19 +5,7 @@ from functools import cached_property
 from networkx.classes.reportviews import LazyDegreeView
 from networkx.classes.coreviews import LazyAdjacencyView
 
-
-
-__all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
-
-
-class NotSupportedForLazyGraph(BaseException):
-    def __init__(self, message):
-        super().__init__(message)
-
-
-def not_supported(*_, **__):
-    raise NotSupportedForLazyGraph("Method not supported")
-
+__all__ = ["LazyGraph"]
 
 class LazyGraph(Graph):
     node_dict_factory = LazyNodeList
