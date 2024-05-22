@@ -1,3 +1,4 @@
+from networkx.algorithms.shortest_paths.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -181,20 +182,22 @@ class TestAStar:
         assert nx.astar_path(C, 0, 3) == [0, 1, 2, 3]
         assert nx.dijkstra_path(C, 0, 4) == [0, 6, 5, 4]
 
-    # def test_unorderable_nodes(self):
-    #     """Tests that A* accommodates nodes that are not orderable.
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    def test_unorderable_nodes(self):
+        """Tests that A* accommodates nodes that are not orderable.
 
-    #     For more information, see issue #554.
+        For more information, see issue #554.
 
-    #     """
-    #     # Create the cycle graph on four nodes, with nodes represented
-    #     # as (unorderable) Python objects.
-    #     nodes = [object() for n in range(4)]
-    #     G = nx.Graph()
-    #     G.add_edges_from(pairwise(nodes, cyclic=True))
-    #     path = nx.astar_path(G, nodes[0], nodes[2])
-    #     assert len(path) == 3
+        """
+        # Create the cycle graph on four nodes, with nodes represented
+        # as (unorderable) Python objects.
+        nodes = [object() for n in range(4)]
+        G = nx.Graph()
+        G.add_edges_from(pairwise(nodes, cyclic=True))
+        path = nx.astar_path(G, nodes[0], nodes[2])
+        assert len(path) == 3
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_astar_NetworkXNoPath(self):
         """Tests that exception is raised when there exists no
         path between source and target"""
