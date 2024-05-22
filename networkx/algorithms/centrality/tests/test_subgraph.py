@@ -20,20 +20,20 @@ class TestSubgraph:
             assert answer[k] == pytest.approx(v, abs=1e-7)
 
         answer1 = {
-            "1": 1.6445956054135658,
-            "Albert": 2.4368257358712189,
-            "Aric": 2.4368257358712193,
-            "Dan": 3.1306328496328168,
-            "Franck": 2.3876142275231915,
+            1: 1.6445956054135658,
+            2: 2.4368257358712189,
+            3: 2.4368257358712193,
+            4: 3.1306328496328168,
+            5: 2.3876142275231915,
         }
         G1 = nx.Graph(
             [
-                ("Franck", "Aric"),
-                ("Aric", "Dan"),
-                ("Dan", "Albert"),
-                ("Albert", "Franck"),
-                ("Dan", "1"),
-                ("Franck", "Albert"),
+                (5, 3),
+                (3, 4),
+                (4, 2),
+                (2, 5),
+                (4, 1),
+                (5, 2),
             ]
         )
         result1 = subgraph_centrality(G1)
@@ -84,20 +84,20 @@ class TestSubgraph:
             assert answer[k] == pytest.approx(v, abs=1e-7)
 
         answer1 = {
-            "1": 0.060039074193949521,
-            "Albert": 0.315470761661372,
-            "Aric": 0.31547076166137211,
-            "Dan": 0.68297778678316201,
-            "Franck": 0.21977926617449497,
+            1: 0.060039074193949521,
+            3: 0.315470761661372,
+            4: 0.31547076166137211,
+            5: 0.68297778678316201,
+            2: 0.21977926617449497,
         }
         G1 = nx.Graph(
             [
-                ("Franck", "Aric"),
-                ("Aric", "Dan"),
-                ("Dan", "Albert"),
-                ("Albert", "Franck"),
-                ("Dan", "1"),
-                ("Franck", "Albert"),
+                (2, 4),
+                (4, 5),
+                (5, 3),
+                (3, 2),
+                (5, 1),
+                (2, 3),
             ]
         )
         result1 = communicability_betweenness_centrality(G1)

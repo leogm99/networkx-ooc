@@ -53,6 +53,7 @@ def test_bipartite():
     assert sorted(indep) == list(range(12))
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_random_graphs():
     """Generate 5 random graphs of different types and sizes and
     make sure that all sets are independent and maximal."""

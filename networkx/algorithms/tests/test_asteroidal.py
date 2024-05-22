@@ -1,6 +1,5 @@
 import networkx as nx
 import pytest
-from networkx.algorithms.tests import app_mode
 
 def test_is_at_free():
     is_at_free = nx.asteroidal.is_at_free

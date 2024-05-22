@@ -3,6 +3,7 @@ module.
 """
 from itertools import permutations
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -25,7 +26,7 @@ def test_partition_argument():
     C = kernighan_lin_bisection(G, partition)
     assert_partition_equal(C, partition)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_partition_argument_non_integer_nodes():
     G = nx.Graph([("A", "B"), ("A", "C"), ("B", "C"), ("C", "D")])
     partition = ({"A", "B"}, {"C", "D"})
@@ -65,7 +66,7 @@ def test_multigraph():
             [A, B], [{mapping[0], mapping[1]}, {mapping[2], mapping[3]}]
         )
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_max_iter_argument():
     G = nx.Graph(
         [

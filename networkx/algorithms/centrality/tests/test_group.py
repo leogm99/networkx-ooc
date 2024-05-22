@@ -3,6 +3,7 @@ Tests for Group Centrality Measures
 """
 
 
+from networkx.algorithms.centrality.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -106,6 +107,7 @@ class TestProminentGroup:
     np = pytest.importorskip("numpy")
     pd = pytest.importorskip("pandas")
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_prominent_group_single_node(self):
         """
         Prominent group for single node
@@ -116,6 +118,7 @@ class TestProminentGroup:
         b_answer, g_answer = 4.0, [2]
         assert b == b_answer and g == g_answer
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_prominent_group_with_c(self):
         """
         Prominent group without some nodes
@@ -126,6 +129,7 @@ class TestProminentGroup:
         b_answer, g_answer = 3.0, [1]
         assert b == b_answer and g == g_answer
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_prominent_group_normalized_endpoints(self):
         """
         Prominent group with normalized result, with endpoints
@@ -136,6 +140,7 @@ class TestProminentGroup:
         b_answer, g_answer = 1.7, [2, 5]
         assert b == b_answer and g == g_answer
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_prominent_group_disconnected_graph(self):
         """
         Prominent group of disconnected graph
@@ -154,6 +159,7 @@ class TestProminentGroup:
         with pytest.raises(nx.NodeNotFound):
             nx.prominent_group(nx.path_graph(5), 1, C=[10])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_group_betweenness_directed_weighted(self):
         """
         Group betweenness centrality in a directed and weighted graph
@@ -171,6 +177,7 @@ class TestProminentGroup:
         b_answer, g_answer = 5.0, [1, 2]
         assert b == b_answer and g == g_answer
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_prominent_group_greedy_algorithm(self):
         """
         Group betweenness centrality in a greedy algorithm
@@ -192,6 +199,7 @@ class TestGroupClosenessCentrality:
         c_answer = nx.closeness_centrality(G, 1)
         assert round(c, 6) == round(c_answer, 6)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_group_closeness_disconnected(self):
         """
         Group closeness centrality for a disconnected graph

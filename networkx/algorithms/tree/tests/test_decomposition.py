@@ -1,7 +1,9 @@
 import networkx as nx
 from networkx.algorithms.tree.decomposition import junction_tree
+import pytest
+from networkx.algorithms.tests import app_mode
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_junction_tree_directed_confounders():
     B = nx.DiGraph()
     B.add_edges_from([("A", "C"), ("B", "C"), ("C", "D"), ("C", "E")])
@@ -19,7 +21,7 @@ def test_junction_tree_directed_confounders():
 
     assert nx.is_isomorphic(G, J)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_junction_tree_directed_unconnected_nodes():
     B = nx.DiGraph()
     B.add_nodes_from([("A", "B", "C", "D")])
@@ -30,7 +32,7 @@ def test_junction_tree_directed_unconnected_nodes():
 
     assert nx.is_isomorphic(G, J)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_junction_tree_directed_cascade():
     B = nx.DiGraph()
     B.add_edges_from([("A", "B"), ("B", "C"), ("C", "D")])
@@ -47,7 +49,7 @@ def test_junction_tree_directed_cascade():
     )
     assert nx.is_isomorphic(G, J)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_junction_tree_directed_unconnected_edges():
     B = nx.DiGraph()
     B.add_edges_from([("A", "B"), ("C", "D"), ("E", "F")])
@@ -58,7 +60,7 @@ def test_junction_tree_directed_unconnected_edges():
 
     assert nx.is_isomorphic(G, J)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_junction_tree_undirected():
     B = nx.Graph()
     B.add_edges_from([("A", "C"), ("A", "D"), ("B", "C"), ("C", "E")])

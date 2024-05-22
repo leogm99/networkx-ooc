@@ -1,5 +1,6 @@
 from itertools import product
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -100,7 +101,7 @@ def paper_2_case(explicit_edge_wt=True, directed=False):
 
     return clusters_2
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_paper_1_case():
     ground_truth = {frozenset([1, 4]), frozenset([2, 3, 5])}
 
@@ -109,7 +110,7 @@ def test_paper_1_case():
         part = paper_1_case(flt, nwt, drc)
         assert part == ground_truth
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_paper_2_case():
     ground_truth = {
         frozenset(["education", "bs", "ms", "phd"]),

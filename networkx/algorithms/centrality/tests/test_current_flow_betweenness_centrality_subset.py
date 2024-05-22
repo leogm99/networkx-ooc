@@ -1,3 +1,4 @@
+from networkx.algorithms.centrality.tests import app_mode
 import pytest
 
 pytest.importorskip("numpy")
@@ -72,6 +73,7 @@ class TestFlowBetweennessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_star(self):
         """Betweenness centrality: star"""
         G = nx.Graph()
