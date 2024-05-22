@@ -1,51 +1,30 @@
-import pickle
-import struct
-from collections.abc import MutableMapping
+from collections.abc import Mapping
+
+from networkx.classes.lazygraph_serializer import LazyGraphSerializer
 
 
-class LazyEdge(MutableMapping):
-    def __init__(self, source_node, store):
+class LazyEdge(Mapping):
+    def __init__(self, source_node, store, serializer: LazyGraphSerializer):
         self._source_node = source_node
         self._store = store
-
-    def __setitem__(self, key, **attr):
-        pass
-
-    def __delitem__(self, key):
-        pass
+        self.__serializer = serializer
 
     def __getitem__(self, v):
-        edge_key = LazyEdge.__serialize_edge(self._source_node, v)
-        inner_attr = self._store[LazyEdge.__serialize_edge(self._source_node, v)]
+        edge_key = self.__serializer.serialize_edge(self._source_node, v)
+        inner_attr = self._store[edge_key]
         if inner_attr is None or inner_attr == b"":
             inner_attr = {}
-            self._store[edge_key] = LazyEdge.__serialize_attr(inner_attr)
+            self._store[edge_key] = self.__serializer.serialize_attr(inner_attr)
         else:
-            inner_attr = LazyEdge.__deserialize_attr(inner_attr)
+            inner_attr = self.__serializer.deserialize_attr(inner_attr)
         return inner_attr
 
     def __len__(self):
         count = 0
-        for _ in self._store.prefix_iter(prefix=struct.pack('!l', self._source_node)):
+        for _ in self._store.prefix_iter(prefix=self.__serializer.serialize_node(self._source_node)):
             count += 1
         return count
 
     def __iter__(self):
-        prefix = struct.pack('!l', self._source_node)
-        yield from map(lambda k: struct.unpack('!l', k)[0], self._store.prefix_iter(prefix=prefix))
-
-    @staticmethod
-    def __serialize_edge(u, v):
-        return struct.pack('!2l', u, v)
-
-    @staticmethod
-    def __deserialize_edge(data: bytes):
-        return struct.unpack('!2l', data)
-
-    @staticmethod
-    def __serialize_attr(attr):
-        return pickle.dumps(attr)
-
-    @staticmethod
-    def __deserialize_attr(data):
-        return pickle.loads(data)
+        prefix = self.__serializer.serialize_node(self._source_node)
+        yield from map(self.__serializer.deserialize_node, self._store.prefix_iter(prefix=prefix))
