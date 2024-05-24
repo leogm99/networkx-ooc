@@ -55,3 +55,6 @@ class LazyAdjacencyList(Mapping):
                 continue
             last_seen = u
             yield u
+
+    def clear(self):
+        pass

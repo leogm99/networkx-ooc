@@ -155,7 +155,7 @@ def test_shell():
     G = nx.random_shell_graph(constructor, seed=42)
     _check_separating_sets(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support edge deletion")
 def test_configuration():
     deg_seq = nx.random_powerlaw_tree_sequence(100, tries=5, seed=72)
     G = nx.Graph(nx.configuration_model(deg_seq))

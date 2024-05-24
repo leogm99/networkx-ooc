@@ -78,6 +78,7 @@ def test_graph3():
     _test_stoer_wagner(G, 4)
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support edge deletion")
 def test_weight_name():
     G = nx.Graph()
     G.add_edge(1, 2, weight=1, cost=8)

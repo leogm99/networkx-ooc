@@ -366,6 +366,7 @@ class TestMaxflowMinCutCommon:
         flowSoln = {0: {}, 2: {3: 0}, 3: {2: 0}}
         compare_flows_and_cuts(G, 0, 3, flowSoln, 0)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support edge deletion")
     def test_source_target_not_in_graph(self):
         G = nx.Graph()
         G.add_weighted_edges_from([(0, 1, 1), (1, 2, 1), (2, 3, 1)], weight="capacity")

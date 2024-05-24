@@ -20,7 +20,8 @@ class LazyGraph(Graph):
     adjlist_outer_dict_factory = LazyAdjacencyList
     adjlist_inner_dict_factory = lambda _: None
 
-    def __init__(self, node_len=1, incoming_graph_data=None, **attr):
+    def __init__(self, incoming_graph_data=None, **attr):
+        node_len = attr.get('node_len', 1)
         if node_len > 1:
             self._serializer = LazyGraphSerializer(node_len=node_len)
             self.node_dict_factory = lambda: LazyNodeList(serializer=self._serializer)
