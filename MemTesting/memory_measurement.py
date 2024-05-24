@@ -14,21 +14,24 @@ def run_and_monitor_script(script_path, output_dir, n, p):
     swap_memory = []
     io_usage = []
 
+    output_dir =  os.path.join(output_dir, str(time.time()))
+    os.makedirs(output_dir, exist_ok=True)
+
     script_name = os.path.basename(script_path)
     
-    memory_file_name = f"{script_name}_memoryResults_{int(time.time())}.txt"
+    memory_file_name = f"memoryResults.txt"
     memoryOutput_path = os.path.join(output_dir, memory_file_name)
 
-    disk_file_name = f"{script_name}_diskResults_{int(time.time())}.txt"
+    disk_file_name = f"diskResults.txt"
     diskOutput_path = os.path.join(output_dir, disk_file_name)
 
-    io_file_name = f"{script_name}_ioResults_{int(time.time())}.txt"
+    io_file_name = f"ioResults.txt"
     ioOutput_path = os.path.join(output_dir, io_file_name)
 
-    swap_file_name = f"{script_name}_swapResults_{int(time.time())}.txt"
+    swap_file_name = f"swapResults.txt"
     swapOutput_path = os.path.join(output_dir, swap_file_name)
     
-    stdoutFile = open(f"newResults/{script_name}_output_{int(time.time())}.txt", 'x')
+    stdoutFile = open(f"{output_dir}/output.txt", 'x')
 
     process = subprocess.Popen(['python', script_path, f"{n}", f"{p}"], stdout=stdoutFile, stderr=stdoutFile)
     process_pid = process.pid
@@ -86,17 +89,14 @@ def run_and_monitor_script(script_path, output_dir, n, p):
     time.sleep(1)
 
 if __name__ == '__main__':
-    # if len(sys.argv) != 2:
-    #     print("Usage: python monitoring_script.py <script_to_run.py>")
-    #     sys.exit(1)
+    if len(sys.argv) != 2:
+        print("Usage: python monitoring_script.py <script_to_run.py>")
+        sys.exit(1)
 
-    # erdosGenerators= {(10000, 0.0005),(10000, 0.001),(100000, 0.00001),(100000, 0.000005), (1000000, 0.0000001)}
-
-    # values = {(0, 0), (1, 1), (2, 2)}
+    os.environ['TMPDIR'] = '/home/grey/networkx/MemTesting/DB'
     script_to_run = sys.argv[1]
-    output_dir = 'newResults/'
-    # for n,p in values:
-    # run_and_monitor_script(script_to_run, output_dir, n, p)
-    # n=10000
-    # p=0.00005
-    run_and_monitor_script(script_to_run, output_dir, 1, 1)
+    for n in [3, 4]:
+        for p in [13]:
+            output_dir = f'newResults/{script_to_run}_n_{n}_p_{p}/'
+            os.makedirs(output_dir, exist_ok=True)
+            run_and_monitor_script(script_to_run, output_dir, n, p)

@@ -5,40 +5,62 @@ import time
 def main(n, p):
     # TODO: change path
     start_time = time.time()
-    # G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/1912.edges')
-    # G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
     if n == 0:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiTen.txt', ' ')
+        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiTen.txt')
     if n == 1:
         G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiHunderd.txt', ' ')
     if n == 2:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiMillion.txt', ' ')
-    if n==3:
+        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiMillon.txt', ' ')
+    if n == 3:
         G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
+    if n == 4:
+        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-LiveJournal1.txt')
+    if n == 5:
+        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/1912.edges')
 
 
-    # G = nx.read_edgelist("", delimiter="\t")
-    # G = nx.erdos_renyi_graph(n, p, create_using=nx.LazyGraph)
     graphTime = time.time()
     print("graph load done:")
     print(graphTime - start_time)
     print()
 
-    # nx.multi_source_dijkstra_path_length(G, [1])
-    nx.single_source_bellman_ford(G, [1])
-    # print(G)
+    if p == 0:
+        print("no algorithm executed")
+    if p == 1:
+        nx.multi_source_dijkstra_path_length(G, [1])
+    if p == 2:
+        nx.single_source_bellman_ford(G, 1)
+    if p == 3:
+        nx.degree_centrality(G)
+    if p == 4:
+        nx.eigenvector_centrality(G)
+    if p == 5:
+        nx.percolation_centrality(G)
+    if p == 6:
+        nx.harmonic_centrality(G)
+    if p == 7:
+        nx.betweenness_centrality(G)
+    if p == 8:
+        nx.eccentricity(G)
+    if p == 9:
+        nx.barycenter(G)
+    if p == 10:
+        nx.center(G)
+    if p == 11:
+        nx.node_connectivity(G)
+    if p == 12:
+        nx.average_clustering(G)
+    if p == 13:
+        nx.single_source_dijkstra(G, 1)
 
-    # G = nx.read_edgelist("1912.edges", delimiter=" ")
-    # nx.degree_centrality(G)
-    # rank = dict(sorted(degree_centrality.items(), key=lambda item: item[1], reverse=True)[:5])
+
     end_time = time.time()
     print("Algoritm done:")
-    print(graphTime - start_time)
+    print(end_time - graphTime)
     print()
     print("Total Time:")
-    print(start_time - start_time)
-    # print(rank)
-    # print(G)
+    print(end_time - start_time)
+
 
 
 
