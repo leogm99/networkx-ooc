@@ -141,6 +141,7 @@ class TestLRPlanarity:
         G = nx.Graph(e)
         self.check_graph(G, is_planar=True)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_comp(self):
         # test multiple component graph
         e = [(1, 2), (3, 4)]

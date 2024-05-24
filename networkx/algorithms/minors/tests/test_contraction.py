@@ -1,4 +1,5 @@
 """Unit tests for the :mod:`networkx.algorithms.minors.contraction` module."""
+from networkx.algorithms.bipartite.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -24,7 +25,7 @@ def test_quotient_graph_complete_multipartite():
     # small graphs.
     assert nx.is_isomorphic(expected, actual)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_quotient_graph_complete_bipartite():
     """Tests that the quotient graph of the complete bipartite graph under
     the "same neighbors" node relation is `K_2`.
