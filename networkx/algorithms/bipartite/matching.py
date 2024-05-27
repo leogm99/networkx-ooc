@@ -616,6 +616,7 @@ def minimum_weight_full_matching(G, top_nodes=None, weight="weight"):
         d[U[u]] = V[v]
     # d will contain the matching from edges in left to right; we need to
     # add the ones from right to left as well.
+    _d = d.copy()
     for u, v in d.items():
-        d[v] = u
-    return d
+        _d[v] = u
+    return _d
