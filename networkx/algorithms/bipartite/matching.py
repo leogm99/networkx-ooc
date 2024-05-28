@@ -362,7 +362,7 @@ def _is_connected_by_alternating_path(G, v, matched_edges, unmatched_edges, targ
 
     """
 
-    def _alternating_dfs(u, along_matched=True):
+    def _alternating_dfs(G, u, along_matched=True):
         """Returns True if and only if `u` is connected to one of the
         targets by an alternating path.
 
@@ -373,7 +373,7 @@ def _is_connected_by_alternating_path(G, v, matched_edges, unmatched_edges, targ
         will continue only through edges *not* in the given matching.
 
         """
-        visited = set()
+        visited = G.set_()
         # Follow matched edges when depth is even,
         # and follow unmatched edges when depth is odd.
         initial_depth = 0 if along_matched else 1
@@ -396,8 +396,8 @@ def _is_connected_by_alternating_path(G, v, matched_edges, unmatched_edges, targ
     # Check for alternating paths starting with edges in the matching, then
     # check for alternating paths starting with edges not in the
     # matching.
-    return _alternating_dfs(v, along_matched=True) or _alternating_dfs(
-        v, along_matched=False
+    return _alternating_dfs(G, v, along_matched=True) or _alternating_dfs(
+        G, v, along_matched=False
     )
 
 
@@ -438,15 +438,13 @@ def _connected_by_alternating_paths(G, matching, targets):
     #unmatched_edges = {
     #    (u, v) for (u, v) in G.edges() if frozenset((u, v)) not in edge_sets
     #}
-
-    return {
-        v
-        for v in G
-        if v in targets
-        or _is_connected_by_alternating_path(
+    r = G.set_()
+    for v in G:
+        if v in targets or _is_connected_by_alternating_path(
             G, v, matched_edges, unmatched_edges, targets
-        )
-    }
+        ):
+            r.add(v)
+    return r
 
 
 @nx._dispatch
