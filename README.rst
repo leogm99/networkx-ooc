@@ -71,3 +71,31 @@ Released under the 3-Clause BSD license (see `LICENSE.txt`)::
    Aric Hagberg <hagberg@lanl.gov>
    Dan Schult <dschult@colgate.edu>
    Pieter Swart <swart@lanl.gov>
+
+NetworkX OOC Implementation
+========
+
+Install
+-------
+
+To install the library, you need to run the following command:... #todo
+
+Use
+-------
+
+The library have the possibility to run in Out-Of-Core mode or in a normal networkX mode. To run in OOC mode, you need to set the parameter `MODE=lazy` in the .env file at the root of the project.
+If you want to run in a normal networkX way, set the parameter `MODE=normal` in the .env file at the root of the project.
+We set this value at 'lazy' by default.
+The OOC mode is useful when you have a large graph that does not fit in memory.
+
+
+Common Issues
+-------
+
+- _plyvel.IOError: Too many open files. To solve this issue, you can increase the number of open files by running the following command:
+
+.. code:: pycon
+
+    >>> ulimit -n [value]
+
+We recommend setting the value to 524288.
