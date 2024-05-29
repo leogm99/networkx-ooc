@@ -65,8 +65,4 @@ def main(n, p):
 
 
 if __name__ == '__main__':
-    # if len(sys.argv) != 3:
-    #     print("Usage: python ScriptBase.py <nodes> <probability>")
-    #     sys.exit(1)
-        
     main(int(sys.argv[1]), float(sys.argv[2]))

@@ -95,8 +95,8 @@ if __name__ == '__main__':
 
     os.environ['TMPDIR'] = '/home/grey/networkx/MemTesting/DB'
     script_to_run = sys.argv[1]
-    for n in [3, 4]:
-        for p in [13]:
+    for n in [1, 2]:
+        for p in [1, 2, 3, 4, 5, 6, 13, 9, 11]:
             output_dir = f'newResults/{script_to_run}_n_{n}_p_{p}/'
             os.makedirs(output_dir, exist_ok=True)
             run_and_monitor_script(script_to_run, output_dir, n, p)
