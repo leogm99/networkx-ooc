@@ -6,8 +6,6 @@ from itertools import chain
 
 import networkx as nx
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
-
 __all__ = [
     "boundary_expansion",
     "conductance",
@@ -177,7 +175,7 @@ def normalized_cut_size(G, S, T=None, weight=None):
 
     """
     if T is None:
-        T = OutOfCoreSet(G) - OutOfCoreSet(S)
+        T = G.set_(G) - G.set_(S)
     num_cut_edges = cut_size(G, S, T=T, weight=weight)
     volume_S = volume(G, S, weight=weight)
     volume_T = volume(G, T, weight=weight)
@@ -225,7 +223,7 @@ def conductance(G, S, T=None, weight=None):
 
     """
     if T is None:
-        T = OutOfCoreSet(G) - OutOfCoreSet(S)
+        T = G.set_(G) - G.set_(S)
     num_cut_edges = cut_size(G, S, T, weight=weight)
     volume_S = volume(G, S, weight=weight)
     volume_T = volume(G, T, weight=weight)
@@ -274,7 +272,7 @@ def edge_expansion(G, S, T=None, weight=None):
 
     """
     if T is None:
-        T = OutOfCoreSet(G) - OutOfCoreSet(S)
+        T = G.set_(G) - G.set_(S)
     num_cut_edges = cut_size(G, S, T=T, weight=weight)
     return num_cut_edges / min(len(S), len(T))
 
@@ -361,7 +359,7 @@ def node_expansion(G, S):
            <https://doi.org/10.1561/0400000010>
 
     """
-    neighborhood = OutOfCoreSet(chain.from_iterable(G.neighbors(v) for v in S))
+    neighborhood = G.set_(chain.from_iterable(G.neighbors(v) for v in S))
     return len(neighborhood) / len(S)
 
 

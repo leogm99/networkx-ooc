@@ -57,9 +57,9 @@ def average_clustering(G, trials=1000, seed=None):
     """
     n = len(G)
     triangles = 0
-    nodes = OutOfCoreList(G)
+    nodes = G.int_list(G)
     for i in [int(seed.random() * n) for i in range(trials)]:
-        nbrs = OutOfCoreList(G[nodes[i]])
+        nbrs = G.int_list(G[nodes[i]])
         if len(nbrs) < 2:
             continue
         u, v = seed.sample(nbrs, 2)

@@ -4,11 +4,6 @@ Shortest path algorithms for unweighted graphs.
 import warnings
 
 import networkx as nx
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
-from networkx.structures.primitive_dicts import IntDict
-
 __all__ = [
     "bidirectional_shortest_path",
     "single_source_shortest_path",
@@ -63,7 +58,7 @@ def single_source_shortest_path_length(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = [source]
-    return IntDict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
+    return G.int_dict(_single_shortest_path_length(G, G._adj, nextlevel, cutoff))
 
 
 def _single_shortest_path_length(G, adj, firstlevel, cutoff):
@@ -80,9 +75,9 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
             level at which we stop the process
     """
     #seen = set(firstlevel)
-    seen = OutOfCoreSet(firstlevel)
+    seen = G.set_(firstlevel)
     #nextlevel = firstlevel
-    nextlevel = OutOfCoreList(firstlevel)
+    nextlevel = G.int_list(firstlevel)
     level = 0
     n = len(adj)
     for v in nextlevel:
@@ -90,7 +85,7 @@ def _single_shortest_path_length(G, adj, firstlevel, cutoff):
     while nextlevel and cutoff > level:
         level += 1
         thislevel = nextlevel
-        nextlevel = OutOfCoreList() #[]
+        nextlevel = G.int_list() #[]
         for v in thislevel:
             if v not in adj: continue
             for w in adj[v]:
@@ -249,7 +244,7 @@ def bidirectional_shortest_path(G, source, target):
     pred, succ, w = results
 
     # build path from pred+w+succ
-    path = OutOfCoreList()
+    path = G.int_list()
     # from source to w
     while w is not None:
         path.append(w)
@@ -284,19 +279,19 @@ def _bidirectional_pred_succ(G, source, target):
         Gsucc = G.adj
 
     # predecessor and successors in search
-    pred = IntDict()
+    pred = G.int_dict()
     pred[source] = None
-    succ = IntDict()
+    succ = G.int_dict()
     succ[target] = None
 
     # initialize fringes, start with forward
-    forward_fringe = OutOfCoreList([source])
-    reverse_fringe = OutOfCoreList([target])
+    forward_fringe = G.int_list([source])
+    reverse_fringe = G.int_list([target])
 
     while forward_fringe and reverse_fringe:
         if len(forward_fringe) <= len(reverse_fringe):
             this_level = forward_fringe
-            forward_fringe = OutOfCoreList()
+            forward_fringe = G.int_list()
             for v in this_level:
                 for w in Gsucc[v]:
                     if w not in pred:
@@ -306,7 +301,7 @@ def _bidirectional_pred_succ(G, source, target):
                         return pred, succ, w
         else:
             this_level = reverse_fringe
-            reverse_fringe = OutOfCoreList()
+            reverse_fringe = G.int_list()
             for v in this_level:
                 for w in Gpred[v]:
                     if w not in succ:
@@ -365,13 +360,13 @@ def single_source_shortest_path(G, source, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = {source: 1}  # list of nodes to check at next level
-    paths = OutOfCoreDictOfLists()
+    paths = G.int_dict_of_lists()
     paths[source] = [source]
     #paths = {source: [source]}  # paths dictionary  (paths to key from source)
-    return _single_shortest_path(G.adj, nextlevel, paths, cutoff, join)
+    return _single_shortest_path(G, G.adj, nextlevel, paths, cutoff, join)
 
 
-def _single_shortest_path(adj, firstlevel, paths, cutoff, join):
+def _single_shortest_path(G, adj, firstlevel, paths, cutoff, join):
     """Returns shortest paths
 
     Shortest Path helper function
@@ -391,11 +386,11 @@ def _single_shortest_path(adj, firstlevel, paths, cutoff, join):
             `p1 + p2` (forward from source) or `p2 + p1` (backward from target)
     """
     level = 0  # the current level
-    nextlevel = IntDict(firstlevel)
+    nextlevel = G.int_dict(firstlevel)
     #lo que hay que ver es como manejamos la variable "Paths", en cual estructura, o si cremaos una nueva.
     while nextlevel and cutoff > level:
         thislevel = nextlevel
-        nextlevel = IntDict()
+        nextlevel = G.int_dict()
         for v in thislevel:
             for w in adj[v]:
                 if w not in paths:
@@ -453,10 +448,10 @@ def single_target_shortest_path(G, target, cutoff=None):
     if cutoff is None:
         cutoff = float("inf")
     nextlevel = {target: 1}  # list of nodes to check at next level
-    paths = OutOfCoreDictOfLists()
+    paths = G.int_dict_of_lists()
     paths[target] = [target]
     #paths = {target: [target]}  # paths dictionary  (paths to key from source)
-    return _single_shortest_path(adj, nextlevel, paths, cutoff, join)
+    return _single_shortest_path(G, adj, nextlevel, paths, cutoff, join)
 
 
 @nx._dispatch
@@ -550,15 +545,15 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
         raise nx.NodeNotFound(f"Source {source} not in G")
 
     level = 0  # the current level
-    nextlevel = OutOfCoreList([source]) # list of nodes to check at next level
-    seen = IntDict({source: level}) # level (number of hops) when seen in BFS
+    nextlevel = G.int_list([source]) # list of nodes to check at next level
+    seen = G.int_dict({source: level}) # level (number of hops) when seen in BFS
     #pred = {source: []}  # predecessor dictionary
-    pred = OutOfCoreDictOfLists()
+    pred = G.int_dict_of_lists()
     pred[source] = []
     while nextlevel:
         level = level + 1
         thislevel = nextlevel
-        nextlevel = OutOfCoreList()
+        nextlevel = G.int_list()
         for v in thislevel:
             for w in G[v]:
                 if w not in seen:
@@ -574,11 +569,11 @@ def predecessor(G, source, target=None, cutoff=None, return_seen=None):
         if return_seen:
             if target not in pred:
                 return ([], -1)  # No predecessor
-            return (OutOfCoreList(pred[target]), seen[target])
+            return (G.int_list(pred[target]), seen[target])
         else:
             if target not in pred:
                 return []  # No predecessor
-            return OutOfCoreList(pred[target])
+            return G.int_list(pred[target])
     else:
         if return_seen:
             return (pred, seen)

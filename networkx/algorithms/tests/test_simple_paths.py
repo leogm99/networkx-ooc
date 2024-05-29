@@ -1,17 +1,15 @@
 import random
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
-from networkx import LazyGraph
 from networkx import convert_node_labels_to_integers as cnlti
 from networkx.algorithms.simple_paths import (
     _bidirectional_dijkstra,
     _bidirectional_shortest_path,
 )
 from networkx.utils import arbitrary_element, pairwise
-
-from networkx.structures.out_of_core_list import OutOfCoreList
 
 
 class TestIsSimplePath:
@@ -26,91 +24,74 @@ class TestIsSimplePath:
         nodes and paths as lists of edges.
 
         """
-        G = LazyGraph(nx.trivial_graph())
-        assert not nx.is_simple_path(G, OutOfCoreList([]))
+        G = nx.trivial_graph()
+        assert not nx.is_simple_path(G, list([]))
 
     def test_trivial_path(self):
         """Tests that the trivial path, a path of length one, is
         considered a simple path in a graph.
 
         """
-        G = LazyGraph(nx.trivial_graph())
-        assert nx.is_simple_path(G, OutOfCoreList([0]))
+        G = nx.trivial_graph()
+        assert nx.is_simple_path(G, list([0]))
 
     def test_trivial_nonpath(self):
         """Tests that a list whose sole element is an object not in the
         graph is not considered a simple path.
 
         """
-        G = LazyGraph(nx.trivial_graph())
-        assert not nx.is_simple_path(G, OutOfCoreList([9999]))
+        G = nx.trivial_graph()
+        assert not nx.is_simple_path(G, list([9999]))
 
     def test_simple_path(self):
-        G = LazyGraph(nx.path_graph(2))
-        assert nx.is_simple_path(G, OutOfCoreList([0, 1]))
+        G = nx.path_graph(2)
+        assert nx.is_simple_path(G, list([0, 1]))
 
     def test_non_simple_path(self):
-        G = LazyGraph(nx.path_graph(2))
-        assert not nx.is_simple_path(G, OutOfCoreList([0, 1, 0]))
+        G = nx.path_graph(2)
+        assert not nx.is_simple_path(G, list([0, 1, 0]))
 
     def test_cycle(self):
-        G = LazyGraph(nx.cycle_graph(3))
-        assert not nx.is_simple_path(G, OutOfCoreList([0, 1, 2, 0]))
+        G = nx.cycle_graph(3)
+        assert not nx.is_simple_path(G, list([0, 1, 2, 0]))
 
     def test_missing_node(self):
-        G = LazyGraph(nx.path_graph(2))
-        assert not nx.is_simple_path(G, OutOfCoreList([0, 2]))
+        G = nx.path_graph(2)
+        assert not nx.is_simple_path(G, list([0, 2]))
 
     def test_missing_starting_node(self):
-        G = LazyGraph(nx.path_graph(2))
-        assert not nx.is_simple_path(G, OutOfCoreList([2, 0]))
+        G = nx.path_graph(2)
+        assert not nx.is_simple_path(G, list([2, 0]))
 
     def test_directed_path(self):
         G = nx.DiGraph([(0, 1), (1, 2)])
-        assert nx.is_simple_path(G, OutOfCoreList([0, 1, 2]))
+        assert nx.is_simple_path(G, list([0, 1, 2]))
 
     def test_directed_non_path(self):
         G = nx.DiGraph([(0, 1), (1, 2)])
-        assert not nx.is_simple_path(G, OutOfCoreList([2, 1, 0]))
+        assert not nx.is_simple_path(G, list([2, 1, 0]))
 
     def test_directed_cycle(self):
         G = nx.DiGraph([(0, 1), (1, 2), (2, 0)])
-        assert not nx.is_simple_path(G, OutOfCoreList([0, 1, 2, 0]))
+        assert not nx.is_simple_path(G, list([0, 1, 2, 0]))
 
     def test_multigraph(self):
-        G = LazyGraph(nx.MultiGraph([(0, 1), (0, 1)]))
-        assert nx.is_simple_path(G, OutOfCoreList([0, 1]))
+        G = nx.MultiGraph([(0, 1), (0, 1)])
+        assert nx.is_simple_path(G, list([0, 1]))
 
     def test_multidigraph(self):
-        G = LazyGraph(nx.MultiDiGraph([(0, 1), (0, 1), (1, 0), (1, 0)]))
-        assert nx.is_simple_path(G, OutOfCoreList([0, 1]))
-
-@staticmethod
-def _get_ooc_path_graph(n):
-    G = nx.path_graph(n)
-    lazyG = LazyGraph()
-    for e in G.edges:
-        lazyG.add_edge(*e)
-    return lazyG
-
-@staticmethod
-def _get_ooc_complete_graph(n):
-    G = nx.complete_graph(n)
-    lazyG = LazyGraph()
-    for e in G.edges:
-        lazyG.add_edge(*e)
-    return lazyG
-
+        G = nx.MultiDiGraph([(0, 1), (0, 1), (1, 0), (1, 0)])
+        assert nx.is_simple_path(G, list([0, 1]))
 
 # Tests for all_simple_paths
 def test_all_simple_paths():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_paths(G, 0, 3)
     assert {tuple(p) for p in paths} == {(0, 1, 2, 3)}
 
 
 def test_all_simple_paths_with_two_targets_emits_two_paths():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_paths(G, 0, [3, 4])
     assert {tuple(p) for p in paths} == {(0, 1, 2, 3), (0, 1, 2, 4)}
@@ -124,7 +105,7 @@ def test_digraph_all_simple_paths_with_two_targets_emits_two_paths():
 
 
 def test_all_simple_paths_with_two_targets_cutoff():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_paths(G, 0, [3, 4], cutoff=3)
     assert {tuple(p) for p in paths} == {(0, 1, 2, 3), (0, 1, 2, 4)}
@@ -138,7 +119,7 @@ def test_digraph_all_simple_paths_with_two_targets_cutoff():
 
 
 def test_all_simple_paths_with_two_targets_in_line_emits_two_paths():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_paths(G, 0, [2, 3])
     assert {tuple(p) for p in paths} == {(0, 1, 2), (0, 1, 2, 3)}
 
@@ -158,13 +139,13 @@ def test_all_simple_paths_with_two_targets_inside_cycle_emits_two_paths():
 
 
 def test_all_simple_paths_source_target():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_paths(G, 1, 1)
     assert list(paths) == []
 
 
 def test_all_simple_paths_cutoff():
-    G = _get_ooc_complete_graph(4)
+    G = nx.complete_graph(4)
     paths = nx.all_simple_paths(G, 0, 1, cutoff=1)
     assert {tuple(p) for p in paths} == {(0, 1)}
     paths = nx.all_simple_paths(G, 0, 1, cutoff=2)
@@ -224,7 +205,7 @@ def test_all_simple_paths_directed():
 
 
 def test_all_simple_paths_empty():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_paths(G, 0, 3, cutoff=2)
     assert list(paths) == []
 
@@ -232,7 +213,7 @@ def test_all_simple_paths_empty():
 def test_all_simple_paths_corner_cases():
     assert list(nx.all_simple_paths(nx.empty_graph(2), 0, 0)) == []
     assert list(nx.all_simple_paths(nx.empty_graph(2), 0, 1)) == []
-    assert list(nx.all_simple_paths(_get_ooc_path_graph(9), 0, 8, 0)) == []
+    assert list(nx.all_simple_paths(nx.path_graph(9), 0, 8, 0)) == []
 
 
 def hamiltonian_path(G, source):
@@ -248,7 +229,7 @@ def hamiltonian_path(G, source):
 def test_hamiltonian_path():
     from itertools import permutations
 
-    G = _get_ooc_complete_graph(4)
+    G = nx.complete_graph(4)
     paths = [list(p) for p in hamiltonian_path(G, 0)]
     exact = [[0] + list(p) for p in permutations([1, 2, 3], 3)]
     assert sorted(paths) == sorted(exact)
@@ -262,6 +243,7 @@ def test_cutoff_zero():
     assert [list(p) for p in paths] == []
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
 def test_source_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
@@ -269,6 +251,7 @@ def test_source_missing():
         list(nx.all_simple_paths(nx.MultiGraph(G), 0, 3))
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
 def test_target_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
@@ -278,13 +261,13 @@ def test_target_missing():
 
 # Tests for all_simple_edge_paths
 def test_all_simple_edge_paths():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 3)
     assert {tuple(p) for p in paths} == {((0, 1), (1, 2), (2, 3))}
 
 
 def test_all_simple_edge_paths_with_two_targets_emits_two_paths():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_edge_paths(G, 0, [3, 4])
     assert {tuple(p) for p in paths} == {
@@ -304,7 +287,7 @@ def test_digraph_all_simple_edge_paths_with_two_targets_emits_two_paths():
 
 
 def test_all_simple_edge_paths_with_two_targets_cutoff():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     G.add_edge(2, 4)
     paths = nx.all_simple_edge_paths(G, 0, [3, 4], cutoff=3)
     assert {tuple(p) for p in paths} == {
@@ -324,7 +307,7 @@ def test_digraph_all_simple_edge_paths_with_two_targets_cutoff():
 
 
 def test_all_simple_edge_paths_with_two_targets_in_line_emits_two_paths():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, [2, 3])
     assert {tuple(p) for p in paths} == {((0, 1), (1, 2)), ((0, 1), (1, 2), (2, 3))}
 
@@ -344,13 +327,13 @@ def test_all_simple_edge_paths_with_two_targets_inside_cycle_emits_two_paths():
 
 
 def test_all_simple_edge_paths_source_target():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_edge_paths(G, 1, 1)
     assert list(paths) == []
 
 
 def test_all_simple_edge_paths_cutoff():
-    G = _get_ooc_complete_graph(4)
+    G = nx.complete_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 1, cutoff=1)
     assert {tuple(p) for p in paths} == {((0, 1),)}
     paths = nx.all_simple_edge_paths(G, 0, 1, cutoff=2)
@@ -414,7 +397,7 @@ def test_all_simple_edge_paths_directed():
 
 
 def test_all_simple_edge_paths_empty():
-    G = _get_ooc_path_graph(4)
+    G = nx.path_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 3, cutoff=2)
     assert list(paths) == []
 
@@ -438,27 +421,27 @@ def hamiltonian_edge_path(G, source):
 def test_hamiltonian__edge_path():
     from itertools import permutations
 
-    G = _get_ooc_complete_graph(4)
+    G = nx.complete_graph(4)
     paths = hamiltonian_edge_path(G, 0)
     exact = [list(pairwise([0] + list(p))) for p in permutations([1, 2, 3], 3)]
     assert sorted(exact) == sorted(paths)
 
 
 def test_edge_cutoff_zero():
-    G = _get_ooc_complete_graph(4)
+    G = nx.complete_graph(4)
     paths = nx.all_simple_edge_paths(G, 0, 3, cutoff=0)
     assert [list(p) for p in paths] == []
     paths = nx.all_simple_edge_paths(nx.MultiGraph(nx.complete_graph(4)), 0, 3, cutoff=0)
     assert [list(p) for p in paths] == []
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
 def test_edge_source_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
         nx.add_path(G, [1, 2, 3])
         list(nx.all_simple_edge_paths(nx.MultiGraph(G), 0, 3))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
 def test_edge_target_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
@@ -507,15 +490,15 @@ def test_shortest_simple_paths_with_weight_function():
 
 def test_Greg_Bernstein():
     g1 = nx.Graph()
-    g1.add_nodes_from(["N0", "N1", "N2", "N3", "N4"])
-    g1.add_edge("N4", "N1", weight=10.0, capacity=50, name="L5")
-    g1.add_edge("N4", "N0", weight=7.0, capacity=40, name="L4")
-    g1.add_edge("N0", "N1", weight=10.0, capacity=45, name="L1")
-    g1.add_edge("N3", "N0", weight=10.0, capacity=50, name="L0")
-    g1.add_edge("N2", "N3", weight=12.0, capacity=30, name="L2")
-    g1.add_edge("N1", "N2", weight=15.0, capacity=42, name="L3")
-    solution = [["N1", "N0", "N3"], ["N1", "N2", "N3"], ["N1", "N4", "N0", "N3"]]
-    result = list(nx.shortest_simple_paths(g1, "N1", "N3", weight="weight"))
+    g1.add_nodes_from([1, 2, 3, 4, 5])
+    g1.add_edge(5, 2, weight=10.0, capacity=50, name="L5")
+    g1.add_edge(5, 1, weight=7.0, capacity=40, name="L4")
+    g1.add_edge(1, 2, weight=10.0, capacity=45, name="L1")
+    g1.add_edge(4, 1, weight=10.0, capacity=50, name="L0")
+    g1.add_edge(3, 4, weight=12.0, capacity=30, name="L2")
+    g1.add_edge(2, 3, weight=15.0, capacity=42, name="L3")
+    solution = [[2, 1, 4], [2, 3, 4], [2, 5, 1, 4]]
+    result = list(nx.shortest_simple_paths(g1, 2, 4, weight="weight"))
     assert result == solution
 
 
@@ -550,22 +533,22 @@ def test_directed_weighted_shortest_simple_path():
 
 def test_weighted_shortest_simple_path_issue2427():
     G = nx.Graph()
-    G.add_edge("IN", "OUT", weight=2)
-    G.add_edge("IN", "A", weight=1)
-    G.add_edge("IN", "B", weight=2)
-    G.add_edge("B", "OUT", weight=2)
-    assert list(nx.shortest_simple_paths(G, "IN", "OUT", weight="weight")) == [
-        ["IN", "OUT"],
-        ["IN", "B", "OUT"],
+    G.add_edge(1, 2, weight=2)
+    G.add_edge(1, 3, weight=1)
+    G.add_edge(1, 4, weight=2)
+    G.add_edge(4, 2, weight=2)
+    assert list(nx.shortest_simple_paths(G, 1, 2, weight="weight")) == [
+        [1, 2],
+        [1, 4, 2],
     ]
     G = nx.Graph()
-    G.add_edge("IN", "OUT", weight=10)
-    G.add_edge("IN", "A", weight=1)
-    G.add_edge("IN", "B", weight=1)
-    G.add_edge("B", "OUT", weight=1)
-    assert list(nx.shortest_simple_paths(G, "IN", "OUT", weight="weight")) == [
-        ["IN", "B", "OUT"],
-        ["IN", "OUT"],
+    G.add_edge(1, 2, weight=10)
+    G.add_edge(1, 3, weight=1)
+    G.add_edge(1, 4, weight=1)
+    G.add_edge(4, 2, weight=1)
+    assert list(nx.shortest_simple_paths(G, 1, 2, weight="weight")) == [
+        [1, 4, 2],
+        [1, 2],
     ]
 
 

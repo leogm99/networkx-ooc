@@ -6,9 +6,6 @@ Bipartite Graph Algorithms
 import networkx as nx
 from networkx.algorithms.components import connected_components
 from networkx.exception import AmbiguousSolution
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntDict, IntFloatDict
 
 __all__ = [
     "is_bipartite",
@@ -65,11 +62,11 @@ def color(G):
     else:
         neighbors = G.neighbors
 
-    color = IntDict()
+    color = G.int_dict()
     for n in G:  # handle disconnected graphs
         if n in color or len(G[n]) == 0:  # skip isolates
             continue
-        queue = OutOfCoreList([n])
+        queue = G.int_list([n])
         color[n] = 1  # nodes seen with color (1 or 0)
         while len(queue) != 0:
             v = queue.pop()
@@ -140,7 +137,7 @@ def is_bipartite_node_set(G, nodes):
     For connected graphs the bipartite sets are unique.  This function handles
     disconnected graphs.
     """
-    S = OutOfCoreSet(nodes)
+    S = G.set_(nodes)
 
     if len(S) < len(nodes):
         # this should maybe just return False?
@@ -214,15 +211,15 @@ def sets(G, top_nodes=None):
     else:
         is_connected = nx.is_connected
     if top_nodes is not None:
-        X = OutOfCoreSet(top_nodes)
-        Y = OutOfCoreSet(G) - X
+        X = G.set_(top_nodes)
+        Y = G.set_(G) - X
     else:
         if not is_connected(G):
             msg = "Disconnected graph: Ambiguous solution for bipartite sets."
             raise nx.AmbiguousSolution(msg)
         c = color(G)
-        X = OutOfCoreSet()
-        Y = OutOfCoreSet()
+        X = G.set_()
+        Y = G.set_()
         for n, is_top in c.items():
             if is_top:
                 X.add(n)
@@ -328,12 +325,12 @@ def degrees(B, nodes, weight=None):
     --------
     color, density
     """
-    bottom = OutOfCoreSet(nodes)
-    top = OutOfCoreSet(B) - bottom
-    bottomD = IntFloatDict()
+    bottom = B.set_(nodes)
+    top = B.set_(B) - bottom
+    bottomD = B.int_float_dict()
     for k, v in B.degree(bottom, weight):
         bottomD[k] = v
-    topD = IntFloatDict()
+    topD = B.int_float_dict()
     for k, v in B.degree(top, weight):
         topD[k] = v
     return (topD, bottomD)

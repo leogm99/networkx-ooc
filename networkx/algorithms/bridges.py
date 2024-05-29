@@ -4,7 +4,6 @@ from itertools import chain
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = ["bridges", "has_bridges", "local_bridges"]
 
@@ -186,12 +185,12 @@ def local_bridges(G, with_span=True, weight=None):
     """
     if with_span is not True:
         for u, v in G.edges:
-            if not (OutOfCoreSet(G[u]) & OutOfCoreSet(G[v])):
+            if not (G.set_(G[u]) & G.set_(G[v])):
                 yield u, v
     else:
         wt = nx.weighted._weight_function(G, weight)
         for u, v in G.edges:
-            if not (OutOfCoreSet(G[u]) & OutOfCoreSet(G[v])):
+            if not (G.set_(G[u]) & G.set_(G[v])):
                 enodes = {u, v}
 
                 def hide_edge(n, nbr, d):

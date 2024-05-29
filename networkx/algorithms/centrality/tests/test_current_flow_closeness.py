@@ -1,3 +1,4 @@
+from networkx.algorithms.centrality.tests import app_mode
 import pytest
 
 pytest.importorskip("numpy")
@@ -23,6 +24,7 @@ class TestFlowClosenessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_star(self):
         """Closeness centrality: star"""
         G = nx.Graph()
@@ -32,6 +34,7 @@ class TestFlowClosenessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_current_flow_closeness_centrality_not_connected(self):
         G = nx.Graph()
         G.add_nodes_from([1, 2, 3])

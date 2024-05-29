@@ -6,6 +6,8 @@ from datetime import date, datetime, timedelta
 import networkx as nx
 from networkx.algorithms import isomorphism as iso
 
+from networkx.algorithms.tests import app_mode
+import pytest
 
 def provide_g1_edgelist():
     return [(0, 1), (0, 2), (1, 2), (2, 4), (1, 3), (3, 4), (4, 5)]
@@ -79,6 +81,7 @@ class TestTimeRespectingGraphMatcher:
         G2.add_edges_from([(0, 1), (1, 2), (2, 3)])
         return G2
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_timdelta_zero_timeRespecting_returnsTrue(self):
         G1 = self.provide_g1_topology()
         temporal_name = "date"
@@ -88,6 +91,7 @@ class TestTimeRespectingGraphMatcher:
         gm = iso.TimeRespectingGraphMatcher(G1, G2, temporal_name, d)
         assert gm.subgraph_is_isomorphic()
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_timdelta_zero_datetime_timeRespecting_returnsTrue(self):
         G1 = self.provide_g1_topology()
         temporal_name = "date"
@@ -97,6 +101,7 @@ class TestTimeRespectingGraphMatcher:
         gm = iso.TimeRespectingGraphMatcher(G1, G2, temporal_name, d)
         assert gm.subgraph_is_isomorphic()
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_attNameStrange_timdelta_zero_timeRespecting_returnsTrue(self):
         G1 = self.provide_g1_topology()
         temporal_name = "strange_name"
@@ -106,6 +111,7 @@ class TestTimeRespectingGraphMatcher:
         gm = iso.TimeRespectingGraphMatcher(G1, G2, temporal_name, d)
         assert gm.subgraph_is_isomorphic()
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_notTimeRespecting_returnsFalse(self):
         G1 = self.provide_g1_topology()
         temporal_name = "date"
@@ -115,6 +121,7 @@ class TestTimeRespectingGraphMatcher:
         gm = iso.TimeRespectingGraphMatcher(G1, G2, temporal_name, d)
         assert not gm.subgraph_is_isomorphic()
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_timdelta_one_config0_returns_no_embeddings(self):
         G1 = self.provide_g1_topology()
         temporal_name = "date"
@@ -125,6 +132,7 @@ class TestTimeRespectingGraphMatcher:
         count_match = len(list(gm.subgraph_isomorphisms_iter()))
         assert count_match == 0
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_timdelta_one_config1_returns_four_embedding(self):
         G1 = self.provide_g1_topology()
         temporal_name = "date"
@@ -135,6 +143,7 @@ class TestTimeRespectingGraphMatcher:
         count_match = len(list(gm.subgraph_isomorphisms_iter()))
         assert count_match == 4
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_timdelta_one_config2_returns_ten_embeddings(self):
         G1 = self.provide_g1_topology()
         temporal_name = "date"

@@ -1,6 +1,5 @@
 import networkx as nx
 from networkx.algorithms.approximation import min_weighted_vertex_cover
-from networkx import LazyGraph
 
 
 def is_cover(G, node_cover):
@@ -28,15 +27,12 @@ class TestMWVC:
         # create a simple star graph
         size = 50
         sg = nx.star_graph(size)
-        lazySg = LazyGraph()
-        for e in sg.edges:
-            lazySg.add_edge(*e)
-        cover = min_weighted_vertex_cover(lazySg)
+        cover = min_weighted_vertex_cover(sg)
         assert 1 == len(cover)
         assert is_cover(sg, cover)
 
     def test_weighted(self):
-        wg = LazyGraph()
+        wg = nx.Graph()
         wg.add_node(0, weight=10)
         wg.add_node(1, weight=1)
         wg.add_node(2, weight=1)
@@ -59,7 +55,7 @@ class TestMWVC:
         assert is_cover(wg, cover)
 
     def test_unweighted_self_loop(self):
-        slg = LazyGraph()
+        slg = nx.Graph()
         slg.add_node(0)
         slg.add_node(1)
         slg.add_node(2)

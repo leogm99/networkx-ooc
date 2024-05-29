@@ -169,7 +169,7 @@ def floyd_warshall_predecessor_and_distance(G, weight="weight"):
     return dict(pred), dict(dist)
 
 
-def reconstruct_path(source, target, predecessors):
+def reconstruct_path(source, target, predecessors, G=nx.empty_graph()):
     """Reconstruct a path from source to target using the predecessors
     dict as returned by floyd_warshall_predecessor_and_distance
 
@@ -205,11 +205,11 @@ def reconstruct_path(source, target, predecessors):
         return []
     prev = predecessors[source]
     curr = prev[target]
-    path = OutOfCoreList([target, curr])
+    path = G.int_list([target, curr])
     while curr != source:
         curr = prev[curr]
         path.append(curr)
-    return OutOfCoreList(reversed(path))
+    return G.int_list(reversed(path))
 
 
 @nx._dispatch(edge_attrs="weight")

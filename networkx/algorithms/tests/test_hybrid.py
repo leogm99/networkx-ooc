@@ -1,5 +1,6 @@
 import networkx as nx
-
+from networkx.algorithms.tests import app_mode
+import pytest
 
 def test_2d_grid_graph():
     # FC article claims 2d grid graph of size n is (3,3)-connected
@@ -10,7 +11,7 @@ def test_2d_grid_graph():
     (H, graphOK) = nx.kl_connected_subgraph(G, 5, 9, same_as_graph=True)
     assert not graphOK
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_small_graph():
     G = nx.Graph()
     G.add_edge(1, 2)

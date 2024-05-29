@@ -1,7 +1,6 @@
 """Unit tests for the :mod:`networkx.algorithms.bipartite.matching` module."""
 import itertools
 
-from networkx.classes.lazygraph import LazyGraph
 import pytest
 
 import networkx as nx
@@ -12,6 +11,7 @@ from networkx.algorithms.bipartite.matching import (
     minimum_weight_full_matching,
     to_vertex_cover,
 )
+from networkx.algorithms.bipartite.tests import app_mode
 
 
 class TestMatching:
@@ -34,51 +34,52 @@ class TestMatching:
         self.graph.add_nodes_from(range(12))
         self.graph.add_edges_from(edges)
 
-        # Example bipartite graph from issue 2127
-        G = nx.Graph()
-        G.add_nodes_from(
-            [
-                (1, "C"),
-                (1, "B"),
-                (0, "G"),
-                (1, "F"),
-                (1, "E"),
-                (0, "C"),
-                (1, "D"),
-                (1, "I"),
-                (0, "A"),
-                (0, "D"),
-                (0, "F"),
-                (0, "E"),
-                (0, "H"),
-                (1, "G"),
-                (1, "A"),
-                (0, "I"),
-                (0, "B"),
-                (1, "H"),
-            ]
-        )
-        G.add_edge((1, "C"), (0, "A"))
-        G.add_edge((1, "B"), (0, "A"))
-        G.add_edge((0, "G"), (1, "I"))
-        G.add_edge((0, "G"), (1, "H"))
-        G.add_edge((1, "F"), (0, "A"))
-        G.add_edge((1, "F"), (0, "C"))
-        G.add_edge((1, "F"), (0, "E"))
-        G.add_edge((1, "E"), (0, "A"))
-        G.add_edge((1, "E"), (0, "C"))
-        G.add_edge((0, "C"), (1, "D"))
-        G.add_edge((0, "C"), (1, "I"))
-        G.add_edge((0, "C"), (1, "G"))
-        G.add_edge((0, "C"), (1, "H"))
-        G.add_edge((1, "D"), (0, "A"))
-        G.add_edge((1, "I"), (0, "A"))
-        G.add_edge((1, "I"), (0, "E"))
-        G.add_edge((0, "A"), (1, "G"))
-        G.add_edge((0, "A"), (1, "H"))
-        G.add_edge((0, "E"), (1, "G"))
-        G.add_edge((0, "E"), (1, "H"))
-        self.disconnected_graph = G
+        if (app_mode != 'lazy'):
+            # Example bipartite graph from issue 2127
+            G = nx.Graph()
+            G.add_nodes_from(
+                [
+                    (1, "C"),
+                    (1, "B"),
+                    (0, "G"),
+                    (1, "F"),
+                    (1, "E"),
+                    (0, "C"),
+                    (1, "D"),
+                    (1, "I"),
+                    (0, "A"),
+                    (0, "D"),
+                    (0, "F"),
+                    (0, "E"),
+                    (0, "H"),
+                    (1, "G"),
+                    (1, "A"),
+                    (0, "I"),
+                    (0, "B"),
+                    (1, "H"),
+                ]
+            )
+            G.add_edge((1, "C"), (0, "A"))
+            G.add_edge((1, "B"), (0, "A"))
+            G.add_edge((0, "G"), (1, "I"))
+            G.add_edge((0, "G"), (1, "H"))
+            G.add_edge((1, "F"), (0, "A"))
+            G.add_edge((1, "F"), (0, "C"))
+            G.add_edge((1, "F"), (0, "E"))
+            G.add_edge((1, "E"), (0, "A"))
+            G.add_edge((1, "E"), (0, "C"))
+            G.add_edge((0, "C"), (1, "D"))
+            G.add_edge((0, "C"), (1, "I"))
+            G.add_edge((0, "C"), (1, "G"))
+            G.add_edge((0, "C"), (1, "H"))
+            G.add_edge((1, "D"), (0, "A"))
+            G.add_edge((1, "I"), (0, "A"))
+            G.add_edge((1, "I"), (0, "E"))
+            G.add_edge((0, "A"), (1, "G"))
+            G.add_edge((0, "A"), (1, "H"))
+            G.add_edge((0, "E"), (1, "G"))
+            G.add_edge((0, "E"), (1, "H"))
+            self.disconnected_graph = G
 
     def check_match(self, matching):
         """Asserts that the matching is what we expect from the bipartite graph
@@ -109,6 +110,7 @@ class TestMatching:
             assert u in vertices or v in vertices
         # TODO Assert that the vertices are the correct ones.
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_eppstein_matching(self):
         """Tests that David Eppstein's implementation of the Hopcroft--Karp
         algorithm produces a maximum cardinality matching.
@@ -137,14 +139,17 @@ class TestMatching:
         match = hopcroft_karp_matching(self.simple_graph)
         assert match == self.simple_solution
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_eppstein_matching_disconnected(self):
         with pytest.raises(nx.AmbiguousSolution):
             match = eppstein_matching(self.disconnected_graph)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_hopcroft_karp_matching_disconnected(self):
         with pytest.raises(nx.AmbiguousSolution):
             match = hopcroft_karp_matching(self.disconnected_graph)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_issue_2127(self):
         """Test from issue 2127"""
         # Build the example DAG
@@ -182,6 +187,7 @@ class TestMatching:
         for u, v in G.edges():
             assert u in vertex_cover or v in vertex_cover
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_vertex_cover_issue_3306(self):
         G = nx.Graph()
         edges = [(0, 2), (1, 0), (1, 1), (1, 2), (2, 2)]
@@ -192,6 +198,7 @@ class TestMatching:
         for u, v in G.edges():
             assert u in vertex_cover or v in vertex_cover
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_unorderable_nodes(self):
         a = object()
         b = object()
@@ -204,7 +211,7 @@ class TestMatching:
         for u, v in G.edges():
             assert u in vertex_cover or v in vertex_cover
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_eppstein_matching():
     """Test in accordance to issue #1927"""
     G = nx.Graph()
@@ -222,7 +229,7 @@ class TestMinimumWeightFullMatching:
         pytest.importorskip("scipy")
 
     def test_minimum_weight_full_matching_incomplete_graph(self):
-        B = LazyGraph()
+        B = nx.Graph()
         B.add_nodes_from([1, 2], bipartite=0)
         B.add_nodes_from([3, 4], bipartite=1)
         B.add_edge(1, 4, weight=100)
@@ -232,7 +239,7 @@ class TestMinimumWeightFullMatching:
         assert matching == {1: 4, 2: 3, 4: 1, 3: 2}
 
     def test_minimum_weight_full_matching_with_no_full_matching(self):
-        B = LazyGraph()
+        B = nx.Graph()
         B.add_nodes_from([1, 2, 3], bipartite=0)
         B.add_nodes_from([4, 5, 6], bipartite=1)
         B.add_edge(1, 4, weight=100)

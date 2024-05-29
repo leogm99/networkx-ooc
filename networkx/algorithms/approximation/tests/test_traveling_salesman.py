@@ -8,7 +8,9 @@ import networkx.algorithms.approximation as nx_app
 
 pairwise = nx.utils.pairwise
 
+from networkx.algorithms.approximation.tests import app_mode
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_christofides_hamiltonian():
     random.seed(42)
     G = nx.complete_graph(20)
@@ -32,7 +34,7 @@ def test_christofides_incomplete_graph():
     G.remove_edge(0, 1)
     pytest.raises(nx.NetworkXError, nx_app.christofides, G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_christofides_ignore_selfloops():
     G = nx.complete_graph(5)
     G.add_edge(3, 3)
@@ -130,7 +132,7 @@ def validate_symmetric_solution(soln, cost, exp_soln, exp_cost):
     assert soln == exp_soln or soln == exp_soln[::-1]
     assert cost == exp_cost
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestGreedyTSP(TestBase):
     def test_greedy(self):
         cycle = nx_app.greedy_tsp(self.DG, source="D")
@@ -170,7 +172,7 @@ class TestGreedyTSP(TestBase):
         cycle = nx_app.greedy_tsp(G)
         assert len(cycle) - 1 == len(G) == len(set(cycle))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestSimulatedAnnealingTSP(TestBase):
     tsp = staticmethod(nx_app.simulated_annealing_tsp)
 
@@ -267,7 +269,7 @@ class TestSimulatedAnnealingTSP(TestBase):
         print(cycle, cost)
         assert cost > self.DG_cost
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestThresholdAcceptingTSP(TestSimulatedAnnealingTSP):
     tsp = staticmethod(nx_app.threshold_accepting_tsp)
 
@@ -307,7 +309,7 @@ def test_TSP_method():
     print(path)
     assert path == [4, 3, 2, 1, 0, 8, 7, 6, 5]
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_TSP_unweighted():
     G = nx.cycle_graph(9)
     path = nx_app.traveling_salesman_problem(G, nodes=[3, 6], cycle=False)
@@ -316,7 +318,7 @@ def test_TSP_unweighted():
     cycle = nx_app.traveling_salesman_problem(G, nodes=[3, 6])
     assert cycle in ([3, 4, 5, 6, 5, 4, 3], [6, 5, 4, 3, 4, 5, 6])
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_TSP_weighted():
     G = nx.cycle_graph(9)
     G[0][1]["weight"] = 2
@@ -367,7 +369,7 @@ def test_TSP_weighted():
         tourpath = tsp(G, weight="weight", method=method, cycle=False)
         assert tourpath in expected_tourpaths
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_TSP_incomplete_graph_short_path():
     G = nx.cycle_graph(9)
     G.add_edges_from([(4, 9), (9, 10), (10, 11), (11, 0)])
@@ -383,7 +385,7 @@ def test_TSP_incomplete_graph_short_path():
     print(path)
     assert len(path) == 13 and len(set(path)) == 12
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_held_karp_ascent():
     """
     Test the Held-Karp relaxation with the ascent method
@@ -418,7 +420,7 @@ def test_held_karp_ascent():
     solution.add_edges_from(solution_edges)
     assert nx.utils.edges_equal(z_star.edges, solution.edges)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_ascent_fractional_solution():
     """
     Test the ascent method using a modified version of Figure 2 on page 1140
@@ -475,7 +477,7 @@ def test_ascent_fractional_solution():
         key: round(solution_z_star[key], 4) for key in solution_z_star
     }
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_ascent_method_asymmetric():
     """
     Tests the ascent method using a truly asymmetric graph for which the
@@ -510,7 +512,7 @@ def test_ascent_method_asymmetric():
     solution.add_edges_from(solution_edges)
     assert nx.utils.edges_equal(z_star.edges, solution.edges)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_ascent_method_asymmetric_2():
     """
     Tests the ascent method using a truly asymmetric graph for which the
@@ -704,6 +706,7 @@ def test_spanning_tree_distribution():
     assert {key: round(gamma[key], 4) for key in gamma} == solution_gamma
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_asadpour_tsp():
     """
     Test the complete asadpour tsp algorithm with the fractional, symmetric

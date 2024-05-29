@@ -1,3 +1,4 @@
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -224,6 +225,7 @@ class TestCliques:
         with pytest.deprecated_call():
             assert len(nx.cliques_containing_node(G)) == 11
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_make_clique_bipartite(self):
         G = self.G
         B = nx.make_clique_bipartite(G)
@@ -237,6 +239,7 @@ class TestCliques:
         H1 = nx.relabel_nodes(H1, {-v: v for v in range(1, 6)})
         assert sorted(H1) == [1, 2, 3, 4, 5]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_make_max_clique_graph(self):
         """Tests that the maximal clique graph is the same as the bipartite
         clique graph after being projected onto the nodes representing the
@@ -270,6 +273,7 @@ class TestCliques:
 
 
 class TestEnumerateAllCliques:
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_paper_figure_4(self):
         # Same graph as given in Fig. 4 of paper enumerate_all_cliques is
         # based on.

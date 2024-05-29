@@ -1,5 +1,6 @@
 import itertools as it
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -50,6 +51,7 @@ class TestPreCheck:
         G2 = nx.complete_graph(8)
         assert not vf2pp_is_isomorphic(G1, G2)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_different_degree_sequences1(self):
         G1 = nx.Graph([(0, 1), (0, 2), (1, 2), (1, 3), (0, 4)])
         G2 = nx.Graph([(0, 1), (0, 2), (1, 2), (1, 3), (0, 4), (2, 5)])
@@ -61,6 +63,7 @@ class TestPreCheck:
 
         assert vf2pp_is_isomorphic(G1, G2)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_different_degree_sequences2(self):
         G1 = nx.Graph(
             [
@@ -116,6 +119,7 @@ class TestPreCheck:
 
 
 class TestAllGraphTypesEdgeCases:
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     @pytest.mark.parametrize("graph_type", (nx.Graph, nx.MultiGraph, nx.DiGraph))
     def test_both_graphs_empty(self, graph_type):
         G = graph_type()
@@ -142,7 +146,7 @@ class TestAllGraphTypesEdgeCases:
         H = graph_type()
         assert vf2pp_isomorphism(G, H) is None
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 class TestGraphISOVF2pp:
     def test_custom_graph1_same_labels(self):
         G1 = nx.Graph()
@@ -930,6 +934,7 @@ class TestMultiGraphISOVF2pp:
         m = vf2pp_isomorphism(G1, G2, node_label="label")
         assert m
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_custom_multigraph3_same_labels(self):
         G1 = nx.MultiGraph()
 

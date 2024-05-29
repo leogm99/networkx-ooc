@@ -1,7 +1,6 @@
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for, py_random_state
 
-from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = ["randomized_partitioning", "one_exchange"]
@@ -42,7 +41,7 @@ def randomized_partitioning(G, seed=None, p=0.5, weight=None):
     partition : pair of node sets
         A partitioning of the nodes that defines a minimum cut.
     """
-    cut = OutOfCoreSet()
+    cut = G.set_()
     for node in G.nodes():
         if seed.random() < p:
             cut.add(node)
@@ -92,15 +91,15 @@ def one_exchange(G, initial_cut=None, seed=None, weight=None):
         A partitioning of the nodes that defines a maximum cut.
     """
     if initial_cut is None:
-        initial_cut = OutOfCoreSet()
+        initial_cut = G.set_()
         
     if not isinstance(initial_cut, set) and not isinstance(initial_cut, OutOfCoreSet):
-        cut = OutOfCoreSet(initial_cut)
+        cut = G.set_(initial_cut)
     else:
         cut = initial_cut
     current_cut_size = nx.algorithms.cut_size(G, cut, weight=weight)
     while True:
-        nodes = OutOfCoreList()
+        nodes = G.int_list()
         for n in G.nodes():
             nodes.append(n)
         # Shuffling the nodes ensures random tie-breaks in the following call to max
@@ -125,7 +124,7 @@ def one_exchange(G, initial_cut=None, seed=None, weight=None):
     return current_cut_size, partition
 
 def _remove_cut(G, cut):
-    s = OutOfCoreSet()
+    s = G.set_()
     for n in G.nodes():
         if n not in cut:
             s.add(n)

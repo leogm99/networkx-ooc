@@ -1,5 +1,6 @@
 from itertools import combinations
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -34,6 +35,7 @@ class TestGomoryHuTree:
             cutset.update((x, y) for y in nbrs if y in V)
         return cutset
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_default_flow_function_karate_club_graph(self):
         G = nx.karate_club_graph()
         nx.set_edge_attributes(G, 1, "capacity")
@@ -43,6 +45,7 @@ class TestGomoryHuTree:
             cut_value, edge = self.minimum_edge_weight(T, u, v)
             assert nx.minimum_cut_value(G, u, v) == cut_value
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_karate_club_graph(self):
         G = nx.karate_club_graph()
         nx.set_edge_attributes(G, 1, "capacity")
@@ -53,6 +56,7 @@ class TestGomoryHuTree:
                 cut_value, edge = self.minimum_edge_weight(T, u, v)
                 assert nx.minimum_cut_value(G, u, v) == cut_value
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_davis_southern_women_graph(self):
         G = nx.davis_southern_women_graph()
         nx.set_edge_attributes(G, 1, "capacity")
@@ -63,6 +67,7 @@ class TestGomoryHuTree:
                 cut_value, edge = self.minimum_edge_weight(T, u, v)
                 assert nx.minimum_cut_value(G, u, v) == cut_value
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_florentine_families_graph(self):
         G = nx.florentine_families_graph()
         nx.set_edge_attributes(G, 1, "capacity")
@@ -73,6 +78,7 @@ class TestGomoryHuTree:
                 cut_value, edge = self.minimum_edge_weight(T, u, v)
                 assert nx.minimum_cut_value(G, u, v) == cut_value
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     @pytest.mark.slow
     def test_les_miserables_graph_cutset(self):
         G = nx.les_miserables_graph()
@@ -84,6 +90,7 @@ class TestGomoryHuTree:
                 cut_value, edge = self.minimum_edge_weight(T, u, v)
                 assert nx.minimum_cut_value(G, u, v) == cut_value
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_karate_club_graph_cutset(self):
         G = nx.karate_club_graph()
         nx.set_edge_attributes(G, 1, "capacity")

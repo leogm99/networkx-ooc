@@ -7,6 +7,7 @@ Self-loops are allowed but multiple edges are not (see MultiGraph).
 
 For directed graphs see DiGraph and MultiDiGraph.
 """
+from collections import deque
 from copy import deepcopy
 from functools import cached_property
 
@@ -2026,3 +2027,51 @@ class Graph:
 
             bunch = bunch_iter(nbunch, self._adj)
         return bunch
+
+    def int_list(self, *args):
+        return list(*args)
+
+    def float_list(self, *args):
+        return list(*args)
+    
+    def tuple_list(self, *args):
+        return list(*args)
+
+    def set_(self, *args):
+        return set(*args)
+
+    def int_dict(self, *args):
+        return dict(*args)
+
+    def int_float_dict(self, *args):
+        return dict(*args)
+
+    def int_dict_of_lists(self):
+        return dict()
+    
+    def float_dict_of_lists(self):
+        return dict()
+    
+    def int_deque(self, *args):
+        return deque()
+
+    def float_deque(self, *args):
+        return deque()
+    
+    def tuple_int_dict_of_edges(self):
+        return dict()
+    
+    def tuple_tuple_dict_of_edges(self):
+        return dict()
+
+    def int_tuple_dict_of_edges(self):
+        return dict()
+    
+    def float_tuple_dict_of_edges(self):
+        return dict()
+
+    def int_float_tuple_dict_of_edges(self):
+        return dict()
+
+    def tuple_float_dict_of_edges(self):
+        return dict()

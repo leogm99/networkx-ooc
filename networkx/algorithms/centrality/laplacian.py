@@ -3,10 +3,6 @@ Laplacian centrality measures.
 """
 import networkx as nx
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict
-
 __all__ = ["laplacian_centrality"]
 
 
@@ -104,17 +100,17 @@ def laplacian_centrality(
         raise nx.NetworkXPointlessConcept("null graph has no centrality defined")
 
     if nodelist != None:
-        nodeset = OutOfCoreSet(G.nbunch_iter(nodelist))
+        nodeset = G.set_(G.nbunch_iter(nodelist))
         if len(nodeset) != len(nodelist):
             raise nx.NetworkXError("nodelist has duplicate nodes or nodes not in G")
-        nodes = OutOfCoreList()
+        nodes = G.int_list()
         for n in G:
             if n not in nodeset:
                 nodes.append(n)
         for n in nodelist:
             nodes.append(n)
     else:
-        nodelist = nodes = OutOfCoreList(G)
+        nodelist = nodes = G.int_list(G)
 
     if G.is_directed():
         lap_matrix = nx.directed_laplacian_matrix(G, nodes, weight, walk_type, alpha)
@@ -124,7 +120,7 @@ def laplacian_centrality(
     full_energy = np.power(sp.linalg.eigh(lap_matrix, eigvals_only=True), 2).sum()
 
     # calculate laplacian centrality
-    laplace_centralities_dict = IntFloatDict()
+    laplace_centralities_dict = G.int_float_dict()
     for i, node in enumerate(nodelist):
         # remove row and col i from lap_matrix
         all_but_i = list(np.arange(lap_matrix.shape[0]))

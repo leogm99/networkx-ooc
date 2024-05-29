@@ -84,7 +84,7 @@ def edge_boundary(G, nbunch1, nbunch2=None, data=False, keys=False, default=None
     the interest of speed and generality, that is not required here.
 
     """
-    nset1 = OutOfCoreSet()
+    nset1 = G.set_()
     for n in nbunch1:
         if n in G:
             nset1.add(n)
@@ -103,7 +103,7 @@ def edge_boundary(G, nbunch1, nbunch2=None, data=False, keys=False, default=None
     # an additional set and using the `in` operator.
     if nbunch2 is None:
         return (e for e in edges if (e[0] in nset1) ^ (e[1] in nset1))
-    nset2 = OutOfCoreSet(nbunch2)
+    nset2 = G.set_(nbunch2)
     return (
         e
         for e in edges
@@ -163,13 +163,13 @@ def node_boundary(G, nbunch1, nbunch2=None):
     the interest of speed and generality, that is not required here.
 
     """
-    nset1 = OutOfCoreSet()
+    nset1 = G.set_()
     for n in nbunch1:
         if n in G:
             nset1.add(n)
-    bdy = OutOfCoreSet(chain.from_iterable(G[v] for v in nset1)) - nset1
+    bdy = G.set_(chain.from_iterable(G[v] for v in nset1)) - nset1
     # If `nbunch2` is not specified, it is assumed to be the set
     # complement of `nbunch1`.
     if nbunch2 is not None:
-        bdy &= OutOfCoreSet(nbunch2)
+        bdy &= G.set_(nbunch2)
     return bdy

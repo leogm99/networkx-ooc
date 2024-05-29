@@ -2,6 +2,7 @@ import pytest
 
 import networkx as nx
 from networkx.generators import directed
+from networkx.algorithms.tests import app_mode
 
 # Unit tests for the :func:`~networkx.weisfeiler_lehman_graph_hash` function
 
@@ -61,7 +62,7 @@ def test_reversed():
 
     assert h != h_reversed
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic():
     """
     graph hashes should be invariant to node-relabeling (when the output is reindexed
@@ -78,7 +79,7 @@ def test_isomorphic():
 
         assert g1_hash == g2_hash
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_edge_attr():
     """
     Isomorphic graphs with differing edge attributes should yield different graph
@@ -119,7 +120,6 @@ def test_isomorphic_edge_attr():
         assert g1_hash_with_edge_attr1 == g2_hash_with_edge_attr1
         assert g1_hash_with_edge_attr2 == g2_hash_with_edge_attr2
 
-
 def test_missing_edge_attr():
     """
     If the 'edge_attr' argument is supplied but is missing from an edge in the graph,
@@ -129,7 +129,7 @@ def test_missing_edge_attr():
     G.add_edges_from([(1, 2, {"edge_attr1": "a"}), (1, 3, {})])
     pytest.raises(KeyError, nx.weisfeiler_lehman_graph_hash, G, edge_attr="edge_attr1")
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_node_attr():
     """
     Isomorphic graphs with differing node attributes should yield different graph
@@ -170,7 +170,7 @@ def test_isomorphic_node_attr():
         assert g1_hash_with_node_attr1 == g2_hash_with_node_attr1
         assert g1_hash_with_node_attr2 == g2_hash_with_node_attr2
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_missing_node_attr():
     """
     If the 'node_attr' argument is supplied but is missing from a node in the graph,
@@ -181,7 +181,7 @@ def test_missing_node_attr():
     G.add_edges_from([(1, 2), (2, 3), (3, 1), (1, 4)])
     pytest.raises(KeyError, nx.weisfeiler_lehman_graph_hash, G, node_attr="node_attr1")
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_edge_attr_and_node_attr():
     """
     Isomorphic graphs with differing node attributes should yield different graph
@@ -323,7 +323,7 @@ def test_reversed_subgraph_hash():
 
     assert h != h_reversed
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_subgraph_hash():
     """
     the subgraph hashes should be invariant to node-relabeling when the output is reindexed
@@ -340,7 +340,7 @@ def test_isomorphic_subgraph_hash():
 
         assert g1_subgraph_hashes == {-1 * k: v for k, v in g2_subgraph_hashes.items()}
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_edge_attr_subgraph_hash():
     """
     Isomorphic graphs with differing edge attributes should yield different subgraph
@@ -397,7 +397,7 @@ def test_missing_edge_attr_subgraph_hash():
         KeyError, nx.weisfeiler_lehman_subgraph_hashes, G, edge_attr="edge_attr1"
     )
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_node_attr_subgraph_hash():
     """
     Isomorphic graphs with differing node attributes should yield different subgraph
@@ -442,7 +442,7 @@ def test_isomorphic_node_attr_subgraph_hash():
             -1 * k: v for k, v in g2_hash_with_node_attr2.items()
         }
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_missing_node_attr_subgraph_hash():
     """
     If the 'node_attr' argument is supplied but is missing from a node in the graph,
@@ -455,7 +455,7 @@ def test_missing_node_attr_subgraph_hash():
         KeyError, nx.weisfeiler_lehman_subgraph_hashes, G, node_attr="node_attr1"
     )
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isomorphic_edge_attr_and_node_attr_subgraph_hash():
     """
     Isomorphic graphs with differing node attributes should yield different subgraph
@@ -533,7 +533,7 @@ def test_iteration_depth():
         assert is_subiteration(depth4, depth5)
         assert is_subiteration(depth3, depth5)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_iteration_depth_edge_attr():
     """
     All nodes should have the correct number of subgraph hashes in the output when
@@ -600,7 +600,7 @@ def test_iteration_depth_node_attr():
         assert is_subiteration(depth4, depth5)
         assert is_subiteration(depth3, depth5)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_iteration_depth_node_edge_attr():
     """
     All nodes should have the correct number of subgraph hashes in the output when

@@ -2,6 +2,7 @@
     Unit tests for degree centrality.
 """
 
+from networkx.algorithms.centrality.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -10,40 +11,34 @@ from networkx.classes.lazygraph import LazyGraph
 
 
 class TestDegreeCentrality:
-    @staticmethod
-    def _get_ooc_graph(G):
-        Lazy = LazyGraph()
-        for e in G.edges:
-            Lazy.add_edge(*e)
-        return Lazy
-
     def setup_method(self):
-        self.K = self._get_ooc_graph(nx.krackhardt_kite_graph())
-        self.P3 = self._get_ooc_graph(nx.path_graph(3))
-        self.K5 = self._get_ooc_graph(nx.complete_graph(5))
+        self.K = nx.krackhardt_kite_graph()
+        self.P3 = nx.path_graph(3)
+        self.K5 = nx.complete_graph(5)
 
-        F = nx.Graph()  # Florentine families
-        F.add_edge("Acciaiuoli", "Medici")
-        F.add_edge("Castellani", "Peruzzi")
-        F.add_edge("Castellani", "Strozzi")
-        F.add_edge("Castellani", "Barbadori")
-        F.add_edge("Medici", "Barbadori")
-        F.add_edge("Medici", "Ridolfi")
-        F.add_edge("Medici", "Tornabuoni")
-        F.add_edge("Medici", "Albizzi")
-        F.add_edge("Medici", "Salviati")
-        F.add_edge("Salviati", "Pazzi")
-        F.add_edge("Peruzzi", "Strozzi")
-        F.add_edge("Peruzzi", "Bischeri")
-        F.add_edge("Strozzi", "Ridolfi")
-        F.add_edge("Strozzi", "Bischeri")
-        F.add_edge("Ridolfi", "Tornabuoni")
-        F.add_edge("Tornabuoni", "Guadagni")
-        F.add_edge("Albizzi", "Ginori")
-        F.add_edge("Albizzi", "Guadagni")
-        F.add_edge("Bischeri", "Guadagni")
-        F.add_edge("Guadagni", "Lamberteschi")
-        self.F = F
+        if (app_mode != 'lazy'):
+            F = nx.Graph()  # Florentine families
+            F.add_edge("Acciaiuoli", "Medici")
+            F.add_edge("Castellani", "Peruzzi")
+            F.add_edge("Castellani", "Strozzi")
+            F.add_edge("Castellani", "Barbadori")
+            F.add_edge("Medici", "Barbadori")
+            F.add_edge("Medici", "Ridolfi")
+            F.add_edge("Medici", "Tornabuoni")
+            F.add_edge("Medici", "Albizzi")
+            F.add_edge("Medici", "Salviati")
+            F.add_edge("Salviati", "Pazzi")
+            F.add_edge("Peruzzi", "Strozzi")
+            F.add_edge("Peruzzi", "Bischeri")
+            F.add_edge("Strozzi", "Ridolfi")
+            F.add_edge("Strozzi", "Bischeri")
+            F.add_edge("Ridolfi", "Tornabuoni")
+            F.add_edge("Tornabuoni", "Guadagni")
+            F.add_edge("Albizzi", "Ginori")
+            F.add_edge("Albizzi", "Guadagni")
+            F.add_edge("Bischeri", "Guadagni")
+            F.add_edge("Guadagni", "Lamberteschi")
+            self.F = F
 
         G = nx.DiGraph()
         G.add_edge(0, 5)
@@ -85,29 +80,30 @@ class TestDegreeCentrality:
         for n, dc in d.items():
             assert exact[n] == pytest.approx(float(f"{dc:.3f}"), abs=1e-7)
 
-    # def test_degree_centrality_4(self):
-    #     d = nx.degree_centrality(self.F)
-    #     names = sorted(self.F.nodes())
-    #     dcs = [
-    #         0.071,
-    #         0.214,
-    #         0.143,
-    #         0.214,
-    #         0.214,
-    #         0.071,
-    #         0.286,
-    #         0.071,
-    #         0.429,
-    #         0.071,
-    #         0.214,
-    #         0.214,
-    #         0.143,
-    #         0.286,
-    #         0.214,
-    #     ]
-    #     exact = dict(zip(names, dcs))
-    #     for n, dc in d.items():
-    #         assert exact[n] == pytest.approx(float(f"{dc:.3f}"), abs=1e-7)
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    def test_degree_centrality_4(self):
+        d = nx.degree_centrality(self.F)
+        names = sorted(self.F.nodes())
+        dcs = [
+            0.071,
+            0.214,
+            0.143,
+            0.214,
+            0.214,
+            0.071,
+            0.286,
+            0.071,
+            0.429,
+            0.071,
+            0.214,
+            0.214,
+            0.143,
+            0.286,
+            0.214,
+        ]
+        exact = dict(zip(names, dcs))
+        for n, dc in d.items():
+            assert exact[n] == pytest.approx(float(f"{dc:.3f}"), abs=1e-7)
 
     def test_indegree_centrality(self):
         d = nx.in_degree_centrality(self.G)

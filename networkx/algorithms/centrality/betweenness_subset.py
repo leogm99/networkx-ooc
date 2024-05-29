@@ -10,10 +10,6 @@ from networkx.algorithms.centrality.betweenness import (
     _single_source_shortest_path_basic as shortest_path,
 )
 
-from networkx.structures.edges_dict import EdgesDict
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
-
 __all__ = [
     "betweenness_centrality_subset",
     "edge_betweenness_centrality_subset",
@@ -106,7 +102,7 @@ def betweenness_centrality_subset(G, sources, targets, normalized=False, weight=
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    b = IntFloatDict()
+    b = G.int_float_dict()
     for n in G:
         b[n] = 0.0
     for s in sources:
@@ -115,7 +111,7 @@ def betweenness_centrality_subset(G, sources, targets, normalized=False, weight=
             S, P, sigma, _ = shortest_path(G, s)
         else:  # use Dijkstra's algorithm
             S, P, sigma, _ = dijkstra(G, s, weight)
-        b = _accumulate_subset(b, S, P, sigma, s, targets)
+        b = _accumulate_subset(G, b, S, P, sigma, s, targets)
     b = _rescale(b, len(G), normalized=normalized, directed=G.is_directed())
     return b
 
@@ -190,7 +186,7 @@ def edge_betweenness_centrality_subset(
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    b = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    b = G.tuple_float_dict_of_edges()
     for e in G.edges():
         b[e] = 0.0
     for s in sources:
@@ -199,18 +195,18 @@ def edge_betweenness_centrality_subset(
             S, P, sigma, _ = shortest_path(G, s)
         else:  # use Dijkstra's algorithm
             S, P, sigma, _ = dijkstra(G, s, weight)
-        b = _accumulate_edges_subset(b, S, P, sigma, s, targets)
+        b = _accumulate_edges_subset(G, b, S, P, sigma, s, targets)
     b = _rescale_e(b, len(G), normalized=normalized, directed=G.is_directed())
     if G.is_multigraph():
         b = _add_edge_keys(G, b, weight=weight)
     return b
 
 
-def _accumulate_subset(betweenness, S, P, sigma, s, targets):
-    delta = IntFloatDict()
+def _accumulate_subset(G, betweenness, S, P, sigma, s, targets):
+    delta = G.int_float_dict()
     for n in S:
         delta[n] = 0.0
-    target_set = OutOfCoreSet(targets) - {s}
+    target_set = G.set_(targets) - {s}
     while S:
         w = S.pop()
         if w in target_set:
@@ -224,12 +220,12 @@ def _accumulate_subset(betweenness, S, P, sigma, s, targets):
     return betweenness
 
 
-def _accumulate_edges_subset(betweenness, S, P, sigma, s, targets):
+def _accumulate_edges_subset(G, betweenness, S, P, sigma, s, targets):
     """edge_betweenness_centrality_subset helper."""
-    delta = IntFloatDict()
+    delta = G.int_float_dict()
     for n in S:
         delta[n] = 0.0
-    target_set = OutOfCoreSet(targets)
+    target_set = G.set_(targets)
     while S:
         w = S.pop()
         for v in P[w]:
