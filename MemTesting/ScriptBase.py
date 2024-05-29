@@ -42,19 +42,10 @@ def main(n, p):
     if p == 7:
         approx.randomized_partitioning(G)
     if p == 8:
-        # nx.eccentricity(G)
-        pass
-    if p == 9:
-        # nx.barycenter(G)
-        pass
-    if p == 10:
         nx.center(G)
-    if p == 11:
+    if p == 9:
         approx.node_connectivity(G)
-    if p == 12:
-        # nx.single_source_bellman_ford(G, 1)
-        pass
-    if p == 13:
+    if p == 10:
         nx.single_source_dijkstra(G, 1)
     
     end_time = time.time()

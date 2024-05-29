@@ -35,22 +35,16 @@ def main(n, p):
     if p == 4:
         nx.eigenvector_centrality(G)
     if p == 5:
-        nx.percolation_centrality(G)
+        nx.predecessor(G, 1)
     if p == 6:
-        nx.harmonic_centrality(G)
+        approx.average_clustering(G)
     if p == 7:
-        nx.betweenness_centrality(G)
+        approx.randomized_partitioning(G)
     if p == 8:
-        nx.eccentricity(G)
-    if p == 9:
-        nx.barycenter(G)
-    if p == 10:
         nx.center(G)
-    if p == 11:
-        nx.node_connectivity(G)
-    if p == 12:
-        nx.average_clustering(G)
-    if p == 13:
+    if p == 9:
+        approx.node_connectivity(G)
+    if p == 10:
         nx.single_source_dijkstra(G, 1)
 
 
