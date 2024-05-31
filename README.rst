@@ -78,7 +78,7 @@ NetworkX OOC Implementation
 Install
 --------------
 
-To install the library, you need to run the follow the next steps:
+To install the library, you need to follow the next steps:
 
 1. Clone the project to your local computer:
 
@@ -100,7 +100,7 @@ To install the library, you need to run the follow the next steps:
     # Build and install networkx from source
     pip install -e .
 
-3. To run the tests, you need to run the following command:
+3. To run the tests, you can run the following command:
 
 .. code:: bash
 
