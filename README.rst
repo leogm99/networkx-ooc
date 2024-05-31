@@ -73,10 +73,10 @@ Released under the 3-Clause BSD license (see `LICENSE.txt`)::
    Pieter Swart <swart@lanl.gov>
 
 NetworkX OOC Implementation
-========
+================================
 
 Install
--------
+--------------
 
 To install the library, you need to run the follow the next steps:
 
@@ -112,9 +112,10 @@ Use
 -------
 
 The library have the possibility to run in Out-Of-Core mode or in a normal networkX mode. To run in OOC mode, you need to set the parameter `MODE=lazy` in the .env file at the root of the project.
+
 If you want to run in a normal networkX way, set the parameter `MODE=normal` in the .env file at the root of the project.
-We set this value at 'lazy' by default.
-The OOC mode is useful when you have a large graph that does not fit in memory.
+
+We set this value at 'lazy' by default. The OOC mode is useful when you have a large graph that does not fit in memory.
 
 Once you have set de virtualenv and installed the dependencies, you can import the lazyGraph class and use it as you would use the networkX Graph class:
 
@@ -146,7 +147,7 @@ Then, you can use the graph as you would use a normal networkX graph.
 
 
 Common Issues
--------
+--------------
 
 - _plyvel.IOError: Too many open files. To solve this issue, you can increase the number of open files by running the following command:
 
