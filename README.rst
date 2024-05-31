@@ -78,7 +78,35 @@ NetworkX OOC Implementation
 Install
 -------
 
-To install the library, you need to run the following command:... #todo
+To install the library, you need to run the follow the next steps:
+
+1. Clone the project to your local computer:
+
+.. code:: bash
+
+    $ git clone git@github.com:leogm99/networkx.git
+
+2. Next, you need to set up your build environment:
+
+.. code:: bash
+
+    # Create a virtualenv named ``networkx-dev`` that lives in the directory of
+    # the same name
+    python3 -m venv networkx-dev
+    # Activate it
+    source networkx-dev/bin/activate
+    # Install main development and runtime dependencies of networkx
+    pip install -r requirements/default.txt -r requirements/test.txt -r requirements/developer.txt -r requirements/ooc.txt
+    # Build and install networkx from source
+    pip install -e .
+
+3. To run the tests, you need to run the following command:
+
+.. code:: bash
+
+    $ pytest
+
+Its important to note that the tests are run in a lazy mode by default. If you want to run the tests in a normal mode, you need to set the parameter `MODE=normal` in the .env file at the root of the project.
 
 Use
 -------
@@ -87,6 +115,34 @@ The library have the possibility to run in Out-Of-Core mode or in a normal netwo
 If you want to run in a normal networkX way, set the parameter `MODE=normal` in the .env file at the root of the project.
 We set this value at 'lazy' by default.
 The OOC mode is useful when you have a large graph that does not fit in memory.
+
+Once you have set de virtualenv and installed the dependencies, you can import the lazyGraph class and use it as you would use the networkX Graph class:
+
+.. code:: python
+
+    from networkx import LazyGraph
+
+    G = LazyGraph()
+
+    G.add_edge(1, 2)
+    G.add_edge(2, 3)
+    G.add_edge(3, 4)
+
+    print(G.nodes)
+    print(G.edges)
+
+You can also construct a graph from a file:
+
+.. code:: python
+
+    from networkx import LazyGraph
+
+    G = LazyGraph.from_edgelist_file("path/to/your/file")
+
+    print(G.nodes)
+    print(G.edges)
+
+Then, you can use the graph as you would use a normal networkX graph.
 
 
 Common Issues
