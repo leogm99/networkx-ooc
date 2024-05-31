@@ -145,6 +145,12 @@ You can also construct a graph from a file:
 
 Then, you can use the graph as you would use a normal networkX graph.
 
+Its important to know that the LazyGraph nodes can be only integers, you will get an struct.error if you try to add a node that is from another type.
+
+Additionally, LazyGraph does not support the support the following methods: 
+- remove_node
+- remove_edge
+- copy
 
 Common Issues
 --------------
