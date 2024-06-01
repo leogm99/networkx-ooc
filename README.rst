@@ -157,6 +157,8 @@ Additionally, LazyGraph does not support the support the following methods:
 Common Issues
 --------------
 
+- struct.error: required argument is not an integer. This error occurs when you try to add a node that is not an integer. To solve this issue, you need to make sure that the nodes are integers.
+
 - _plyvel.IOError: Too many open files. To solve this issue, you can increase the number of open files by running the following command:
 
 .. code:: pycon
