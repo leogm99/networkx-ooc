@@ -14,9 +14,9 @@ def main(n, p):
     if n == 2:
         G = nx.read_edgelist('/home/grey/networkx/MemTesting/erdorRenyiMillon.txt', nodetype=int)
     if n == 3:
-        G = nx.read_edgelist('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
+        G = nx.read_edgelist('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', nodetype=int)
     if n == 4:
-        G = nx.read_edgelist('/home/grey/networkx/MemTesting/soc-LiveJournal1.txt')
+        G = nx.read_edgelist('/home/grey/networkx/MemTesting/soc-LiveJournal1.txt', nodetype=int)
     if n == 5:
         G = nx.read_edgelist('/home/grey/networkx/MemTesting/1912.edges')
 
@@ -31,6 +31,7 @@ def main(n, p):
         nx.multi_source_dijkstra_path_length(G, [1])
     if p == 2:
         nx.single_source_bellman_ford(G, 1)
+        # lento
     if p == 3:
         nx.degree_centrality(G)
     if p == 4:
@@ -43,8 +44,10 @@ def main(n, p):
         approx.randomized_partitioning(G)
     if p == 8:
         nx.center(G)
+        # lento
     if p == 9:
         approx.node_connectivity(G)
+        # lento
     if p == 10:
         nx.single_source_dijkstra(G, 1)
     
