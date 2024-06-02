@@ -2,9 +2,6 @@
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.edges_dict import EdgesDict
-from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
-
 __all__ = ["trophic_levels", "trophic_differences", "trophic_incoherence_parameter"]
 
 
@@ -69,7 +66,7 @@ def trophic_levels(G, weight="weight"):
         raise nx.NetworkXError(msg) from err
     y = n.sum(axis=1) + 1
 
-    levels = IntFloatDict()
+    levels = G.int_float_dict()
 
     # all nodes with in-degree zero have trophic level == 1
     zero_node_ids = (node_id for node_id, degree in G.in_degree if degree == 0)
@@ -113,7 +110,7 @@ def trophic_differences(G, weight="weight"):
         Munoz (2014) PNAS "Trophic coherence determines food-web stability"
     """
     levels = trophic_levels(G, weight=weight)
-    diffs = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    diffs = G.tuple_float_dict_of_edges()
     for u, v in G.edges:
         diffs[(u, v)] = levels[v] - levels[u]
     return diffs

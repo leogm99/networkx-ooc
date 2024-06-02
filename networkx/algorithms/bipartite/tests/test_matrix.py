@@ -1,7 +1,5 @@
 import pytest
 
-from networkx.classes.lazygraph import LazyGraph
-
 np = pytest.importorskip("numpy")
 sp = pytest.importorskip("scipy")
 sparse = pytest.importorskip("scipy.sparse")
@@ -14,7 +12,7 @@ from networkx.utils import edges_equal
 
 class TestBiadjacencyMatrix:
     def test_biadjacency_matrix_weight(self):
-        G = LazyGraph.from_graph_edges(nx.path_graph(5))
+        G = nx.path_graph(5)
         G.add_edge(0, 1, weight=2, other=4)
         X = [1, 3]
         Y = [0, 2, 4]
@@ -34,7 +32,7 @@ class TestBiadjacencyMatrix:
             assert M.shape[1] == bots[i]
 
     def test_biadjacency_matrix_order(self):
-        G = LazyGraph.from_graph_edges(nx.path_graph(5))
+        G = nx.path_graph(5)
         G.add_edge(0, 1, weight=2)
         X = [3, 1]
         Y = [4, 2, 0]
@@ -43,27 +41,27 @@ class TestBiadjacencyMatrix:
 
     def test_null_graph(self):
         with pytest.raises(nx.NetworkXError):
-            bipartite.biadjacency_matrix(LazyGraph(), [])
+            bipartite.biadjacency_matrix(nx.Graph(), [])
 
     def test_empty_graph(self):
         with pytest.raises(nx.NetworkXError):
-            bipartite.biadjacency_matrix(LazyGraph([(1, 0)]), [])
+            bipartite.biadjacency_matrix(nx.Graph([(1, 0)]), [])
 
     def test_duplicate_row(self):
         with pytest.raises(nx.NetworkXError):
-            bipartite.biadjacency_matrix(LazyGraph([(1, 0)]), [1, 1])
+            bipartite.biadjacency_matrix(nx.Graph([(1, 0)]), [1, 1])
 
     def test_duplicate_col(self):
         with pytest.raises(nx.NetworkXError):
-            bipartite.biadjacency_matrix(LazyGraph([(1, 0)]), [0], [1, 1])
+            bipartite.biadjacency_matrix(nx.Graph([(1, 0)]), [0], [1, 1])
 
     def test_format_keyword(self):
         with pytest.raises(nx.NetworkXError):
-            bipartite.biadjacency_matrix(LazyGraph([(1, 0)]), [0], format="foo")
+            bipartite.biadjacency_matrix(nx.Graph([(1, 0)]), [0], format="foo")
 
     def test_from_biadjacency_roundtrip(self):
         B1 = nx.path_graph(5)
-        LazyG = LazyGraph()
+        LazyG = nx.Graph()
         for e in B1.edges:
             LazyG.add_edge(*e)
 

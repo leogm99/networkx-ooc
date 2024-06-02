@@ -2,6 +2,7 @@
 # Test for k-cutsets
 import itertools
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -132,13 +133,13 @@ def _check_separating_sets(G):
             assert node_conn == len(cut)
             assert not nx.is_connected(nx.restricted_view(G, cut, []))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 @pytest.mark.slow
 def test_torrents_and_ferraro_graph():
     G = torrents_and_ferraro_graph()
     _check_separating_sets(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_example_1():
     G = graph_example_1()
     _check_separating_sets(G)
@@ -148,13 +149,13 @@ def test_random_gnp():
     G = nx.gnp_random_graph(100, 0.1, seed=42)
     _check_separating_sets(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_shell():
     constructor = [(20, 80, 0.8), (80, 180, 0.6)]
     G = nx.random_shell_graph(constructor, seed=42)
     _check_separating_sets(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support edge deletion")
 def test_configuration():
     deg_seq = nx.random_powerlaw_tree_sequence(100, tries=5, seed=72)
     G = nx.Graph(nx.configuration_model(deg_seq))

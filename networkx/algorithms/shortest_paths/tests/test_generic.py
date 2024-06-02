@@ -1,4 +1,3 @@
-from networkx.classes.lazygraph import LazyGraph
 import pytest
 
 import networkx as nx
@@ -25,7 +24,7 @@ class TestGenericPath:
         from networkx import convert_node_labels_to_integers as cnlti
 
         cls.grid = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
-        cls.cycle = LazyGraph.from_graph_edges(nx.cycle_graph(7))
+        cls.cycle = (nx.cycle_graph(7))
         cls.directed_cycle = nx.cycle_graph(7, create_using=nx.DiGraph())
         cls.neg_weights = nx.DiGraph()
         cls.neg_weights.add_edge(0, 1, weight=1)
@@ -69,18 +68,18 @@ class TestGenericPath:
 
     def test_shortest_path_target(self):
         answer = {0: [0, 1], 1: [1], 2: [2, 1]}
-        sp = nx.shortest_path(LazyGraph.from_graph_edges(nx.path_graph(3)), target=1)
+        sp = nx.shortest_path((nx.path_graph(3)), target=1)
         assert sp == answer
         # with weights
-        sp = nx.shortest_path(LazyGraph.from_graph_edges(nx.path_graph(3)), target=1, weight="weight")
+        sp = nx.shortest_path((nx.path_graph(3)), target=1, weight="weight")
         assert sp == answer
         # weights and method specified
         sp = nx.shortest_path(
-            LazyGraph.from_graph_edges(nx.path_graph(3)), target=1, weight="weight", method="dijkstra"
+            (nx.path_graph(3)), target=1, weight="weight", method="dijkstra"
         )
         assert sp == answer
         sp = nx.shortest_path(
-            LazyGraph.from_graph_edges(nx.path_graph(3)), target=1, weight="weight", method="bellman-ford"
+            (nx.path_graph(3)), target=1, weight="weight", method="bellman-ford"
         )
         assert sp == answer
 
@@ -112,18 +111,18 @@ class TestGenericPath:
 
     def test_shortest_path_length_target(self):
         answer = {0: 1, 1: 0, 2: 1}
-        sp = dict(nx.shortest_path_length(LazyGraph.from_graph_edges(nx.path_graph(3)), target=1))
+        sp = dict(nx.shortest_path_length((nx.path_graph(3)), target=1))
         assert sp == answer
         # with weights
-        sp = nx.shortest_path_length(LazyGraph.from_graph_edges(nx.path_graph(3)), target=1, weight="weight")
+        sp = nx.shortest_path_length((nx.path_graph(3)), target=1, weight="weight")
         assert sp == answer
         # weights and method specified
         sp = nx.shortest_path_length(
-            LazyGraph.from_graph_edges(nx.path_graph(3)), target=1, weight="weight", method="dijkstra"
+            (nx.path_graph(3)), target=1, weight="weight", method="dijkstra"
         )
         assert sp == answer
         sp = nx.shortest_path_length(
-            LazyGraph.from_graph_edges(nx.path_graph(3)), target=1, weight="weight", method="bellman-ford"
+            (nx.path_graph(3)), target=1, weight="weight", method="bellman-ford"
         )
         assert sp == answer
 
@@ -175,7 +174,7 @@ class TestGenericPath:
 
     def test_single_source_all_shortest_paths(self):
         cycle_ans = {0: [[0]], 1: [[0, 1]], 2: [[0, 1, 2], [0, 3, 2]], 3: [[0, 3]]}
-        ans = dict(nx.single_source_all_shortest_paths(LazyGraph.from_graph_edges(nx.cycle_graph(4)), 0))
+        ans = dict(nx.single_source_all_shortest_paths((nx.cycle_graph(4)), 0))
         assert sorted(ans[2]) == cycle_ans[2]
         ans = dict(nx.single_source_all_shortest_paths(self.grid, 1))
         grid_ans = [
@@ -188,12 +187,12 @@ class TestGenericPath:
         ]
         assert sorted(ans[11]) == grid_ans
         ans = dict(
-            nx.single_source_all_shortest_paths(LazyGraph.from_graph_edges(nx.cycle_graph(4)), 0, weight="weight")
+            nx.single_source_all_shortest_paths((nx.cycle_graph(4)), 0, weight="weight")
         )
         assert sorted(ans[2]) == cycle_ans[2]
         ans = dict(
             nx.single_source_all_shortest_paths(
-                LazyGraph.from_graph_edges(nx.cycle_graph(4)), 0, method="bellman-ford", weight="weight"
+                (nx.cycle_graph(4)), 0, method="bellman-ford", weight="weight"
             )
         )
         assert sorted(ans[2]) == cycle_ans[2]
@@ -257,12 +256,12 @@ class TestGenericPath:
         assert ans == dict(nx.all_pairs_bellman_ford_path_length(self.cycle))
 
     def test_all_pairs_all_shortest_paths(self):
-        ans = dict(nx.all_pairs_all_shortest_paths(LazyGraph.from_graph_edges(nx.cycle_graph(4))))
+        ans = dict(nx.all_pairs_all_shortest_paths((nx.cycle_graph(4))))
         assert sorted(ans[1][3]) == [[1, 0, 3], [1, 2, 3]]
-        ans = dict(nx.all_pairs_all_shortest_paths(LazyGraph.from_graph_edges(nx.cycle_graph(4))), weight="weight")
+        ans = dict(nx.all_pairs_all_shortest_paths((nx.cycle_graph(4))), weight="weight")
         assert sorted(ans[1][3]) == [[1, 0, 3], [1, 2, 3]]
         ans = dict(
-            nx.all_pairs_all_shortest_paths(LazyGraph.from_graph_edges(nx.cycle_graph(4))),
+            nx.all_pairs_all_shortest_paths((nx.cycle_graph(4))),
             method="bellman-ford",
             weight="weight",
         )
@@ -313,12 +312,12 @@ class TestGenericPath:
 
     def test_bad_method(self):
         with pytest.raises(ValueError):
-            G = LazyGraph.from_graph_edges(nx.path_graph(2))
+            G = (nx.path_graph(2))
             list(nx.all_shortest_paths(G, 0, 1, weight="weight", method="SPAM"))
 
     def test_single_source_all_shortest_paths_bad_method(self):
         with pytest.raises(ValueError):
-            G = LazyGraph.from_graph_edges(nx.path_graph(2))
+            G = (nx.path_graph(2))
             dict(
                 nx.single_source_all_shortest_paths(
                     G, 0, weight="weight", method="SPAM"
@@ -349,11 +348,11 @@ class TestGenericPath:
 
 class TestAverageShortestPathLength:
     def test_cycle_graph(self):
-        ans = nx.average_shortest_path_length(LazyGraph.from_graph_edges(nx.cycle_graph(7)))
+        ans = nx.average_shortest_path_length((nx.cycle_graph(7)))
         assert ans == pytest.approx(2, abs=1e-7)
 
     def test_path_graph(self):
-        ans = nx.average_shortest_path_length(LazyGraph.from_graph_edges(nx.path_graph(5)))
+        ans = nx.average_shortest_path_length((nx.path_graph(5)))
         assert ans == pytest.approx(2, abs=1e-7)
 
     def test_weighted(self):
@@ -417,7 +416,7 @@ class TestAverageShortestPathLength:
 
     def test_bad_method(self):
         with pytest.raises(ValueError):
-            G = LazyGraph.from_graph_edges(nx.path_graph(2))
+            G = (nx.path_graph(2))
             nx.average_shortest_path_length(G, weight="weight", method="SPAM")
 
 

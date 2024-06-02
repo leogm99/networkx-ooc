@@ -1,22 +1,18 @@
 from networkx.classes.graph import Graph
+from networkx.structures.edges_dict import EdgesDict
 from networkx.structures.lazy_adjacency_list import LazyAdjacencyList
 from networkx.structures.lazy_node_list import LazyNodeList
 from functools import cached_property
 from networkx.classes.reportviews import LazyDegreeView
 from networkx.classes.coreviews import LazyAdjacencyView
+from networkx.classes.lazygraph_serializer import LazyGraphSerializer
+from networkx.structures.out_of_core_deque import OutOfCoreDeque
+from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+from networkx.structures.out_of_core_list import OutOfCoreList
+from networkx.structures.out_of_core_set import OutOfCoreSet
+from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
 
-
-
-__all__ = ["LazyGraph", "NotSupportedForLazyGraph"]
-
-
-class NotSupportedForLazyGraph(BaseException):
-    def __init__(self, message):
-        super().__init__(message)
-
-
-def not_supported(*_, **__):
-    raise NotSupportedForLazyGraph("Method not supported")
+__all__ = ["LazyGraph"]
 
 
 class LazyGraph(Graph):
@@ -25,6 +21,11 @@ class LazyGraph(Graph):
     adjlist_inner_dict_factory = lambda _: None
 
     def __init__(self, incoming_graph_data=None, **attr):
+        node_len = attr.get('node_len', 1)
+        if node_len > 1:
+            self._serializer = LazyGraphSerializer(node_len=node_len)
+            self.node_dict_factory = lambda: LazyNodeList(serializer=self._serializer)
+            self.adjlist_outer_dict_factory = lambda: LazyAdjacencyList(serializer=self._serializer)
         super().__init__(incoming_graph_data, **attr)
 
     @staticmethod
@@ -108,3 +109,51 @@ class LazyGraph(Graph):
         for e in G.edges:
             LazyG.add_edge(*e)
         return LazyG
+
+    def int_list(self, *args):
+        return OutOfCoreList(*args)
+
+    def float_list(self, *args):
+        return OutOfCoreList(*args, value_primitive_type=PrimitiveType.FLOAT)
+    
+    def tuple_list(self, *args):
+        return OutOfCoreList(*args, value_primitive_type=PrimitiveType.EDGE)
+
+    def set_(self, *args):
+        return OutOfCoreSet(*args)
+
+    def int_dict(self, *args):
+        return IntDict(*args)
+
+    def int_float_dict(self, *args):
+        return IntFloatDict(*args)
+
+    def int_dict_of_lists(self):
+        return OutOfCoreDictOfLists()
+    
+    def float_dict_of_lists(self):
+        return OutOfCoreDictOfLists(PrimitiveType.FLOAT)
+
+    def int_deque(self, *args):
+        return OutOfCoreDeque(*args)
+
+    def float_deque(self, *args):
+        return OutOfCoreDeque(*args, IntFloatDict)
+    
+    def tuple_int_dict_of_edges(self):
+        return EdgesDict()
+    
+    def tuple_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.EDGE, PrimitiveType.EDGE)
+
+    def int_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.INTEGER, PrimitiveType.EDGE)
+    
+    def float_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.FLOAT, PrimitiveType.EDGE)
+    
+    def int_float_tuple_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.INTEGER, PrimitiveType.FEDGE)
+
+    def tuple_float_dict_of_edges(self):
+        return EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)

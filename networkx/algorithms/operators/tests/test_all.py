@@ -2,8 +2,9 @@ import pytest
 
 import networkx as nx
 from networkx.utils import edges_equal
+from networkx.algorithms.tests import app_mode
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_union_all_attributes():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -69,7 +70,7 @@ def test_intersection_all_different_node_sets():
     assert set(I.nodes()) == {1, 2, 3, 4}
     assert sorted(I.edges()) == [(2, 3)]
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_intersection_all_attributes():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -87,7 +88,7 @@ def test_intersection_all_attributes():
     assert set(gh.nodes()) == set(h.nodes())
     assert sorted(gh.edges()) == sorted(g.edges())
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_intersection_all_attributes_different_node_sets():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -247,7 +248,7 @@ def test_union_all_multigraph():
     assert set(GH) == set(G) | set(H)
     assert set(GH.edges(keys=True)) == set(G.edges(keys=True)) | set(H.edges(keys=True))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_input_output():
     l = [nx.Graph([(1, 2)]), nx.Graph([(3, 4)], awesome=True)]
     U = nx.disjoint_union_all(l)

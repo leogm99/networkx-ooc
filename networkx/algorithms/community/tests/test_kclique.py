@@ -1,10 +1,11 @@
 from itertools import combinations
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_overlapping_K5():
     G = nx.Graph()
     G.add_edges_from(combinations(range(5), 2))  # Add a five clique
@@ -14,7 +15,7 @@ def test_overlapping_K5():
     c = set(nx.community.k_clique_communities(G, 5))
     assert c == {frozenset(range(5)), frozenset(range(2, 7))}
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_isolated_K5():
     G = nx.Graph()
     G.add_edges_from(combinations(range(0, 5), 2))  # Add a five clique
@@ -31,11 +32,13 @@ class TestZacharyKarateClub:
         communities = set(nx.community.k_clique_communities(self.G, k))
         assert communities == expected
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_k2(self):
         # clique percolation with k=2 is just connected components
         expected = {frozenset(self.G)}
         self._check_communities(2, expected)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_k3(self):
         comm1 = [
             0,
@@ -69,6 +72,7 @@ class TestZacharyKarateClub:
         expected = {frozenset(comm1), frozenset(comm2), frozenset(comm3)}
         self._check_communities(3, expected)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_k4(self):
         expected = {
             frozenset([0, 1, 2, 3, 7, 13]),
@@ -77,6 +81,7 @@ class TestZacharyKarateClub:
         }
         self._check_communities(4, expected)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_k5(self):
         expected = {frozenset([0, 1, 2, 3, 7, 13])}
         self._check_communities(5, expected)

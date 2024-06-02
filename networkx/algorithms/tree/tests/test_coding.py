@@ -1,6 +1,7 @@
 """Unit tests for the :mod:`~networkx.algorithms.tree.coding` module."""
 from itertools import product
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -26,6 +27,7 @@ class TestPruferSequence:
         with pytest.raises(nx.NetworkXPointlessConcept):
             nx.to_prufer_sequence(nx.trivial_graph())
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_bad_integer_labels(self):
         with pytest.raises(KeyError):
             T = nx.Graph(nx.utils.pairwise("abc"))

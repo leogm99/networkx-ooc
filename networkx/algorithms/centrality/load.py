@@ -3,10 +3,6 @@ from operator import itemgetter
 
 import networkx as nx
 
-from networkx.structures.edges_dict import EdgesDict
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
-
 __all__ = ["load_centrality", "edge_load_centrality"]
 
 
@@ -71,7 +67,7 @@ def newman_betweenness_centrality(G, v=None, cutoff=None, normalized=True, weigh
                 return betweenness  # no normalization b=0 for all nodes
             betweenness *= 1.0 / ((order - 1) * (order - 2))
     else:
-        betweenness = IntFloatDict()
+        betweenness = G.int_float_dict()
         for n in G:
             betweenness[n] = 0.0
         for source in betweenness:
@@ -115,7 +111,7 @@ def _node_betweenness(G, source, cutoff=False, normalized=True, weight=None):
     onodes[:] = [vert for (l, vert) in onodes if l > 0]
 
     # initialize betweenness
-    between = IntFloatDict()
+    between = G.int_float_dict()
     for n in length:
         between[n] = 1.0
 
@@ -168,7 +164,7 @@ def edge_load_centrality(G, cutoff=False):
     which use that edge. Where more than one path is shortest
     the count is divided equally among paths.
     """
-    betweenness = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    betweenness = G.tuple_float_dict_of_edges()
     for u, v in G.edges():
         betweenness[(u, v)] = 0.0
         betweenness[(v, u)] = 0.0
@@ -185,11 +181,11 @@ def _edge_betweenness(G, source, nodes=None, cutoff=False):
     # get the predecessor data
     (pred, length) = nx.predecessor(G, source, cutoff=cutoff, return_seen=True)
     # order the nodes by path length
-    onodes = OutOfCoreList()
+    onodes = G.int_list()
     for n, d in sorted(length.items(), key=itemgetter(1)):
         onodes.append(n)
     # initialize betweenness, doesn't account for any edge weights
-    between = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    between = G.tuple_float_dict_of_edges()
     for u, v in G.edges(nodes):
         between[(u, v)] = 1.0
         between[(v, u)] = 1.0

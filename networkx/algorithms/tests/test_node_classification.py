@@ -1,3 +1,4 @@
+from networkx.algorithms.tests import app_mode
 import pytest
 
 pytest.importorskip("numpy")
@@ -63,7 +64,8 @@ class TestHarmonicFunction:
         predicted = node_classification.harmonic_function(G, label_name=label_name)
         for i in range(len(G)):
             assert predicted[i] == G.nodes[i][label_name]
-
+    
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_labeled_nodes_are_not_changed(self):
         G = nx.karate_club_graph()
         label_name = "club"

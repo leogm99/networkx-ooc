@@ -1,6 +1,7 @@
 import itertools as it
 import random
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -36,7 +37,7 @@ def tarjan_bridge_graph():
     G = nx.Graph(it.chain(*(pairwise(path) for path in ccs + bridges)))
     return G
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_weight_key():
     G = nx.Graph()
     G.add_nodes_from([1, 2, 3, 4, 5, 6, 7, 8, 9])
@@ -118,13 +119,13 @@ def test_clique_and_node():
         G.add_node(n + 1)
         _check_augmentations(G, max_k=MAX_EFFICIENT_K + 2)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_point_graph():
     G = nx.Graph()
     G.add_node(1)
     _check_augmentations(G, max_k=MAX_EFFICIENT_K + 2)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_edgeless_graph():
     G = nx.Graph()
     G.add_nodes_from([1, 2, 3, 4])
@@ -136,7 +137,7 @@ def test_invalid_k():
     pytest.raises(ValueError, list, k_edge_augmentation(G, k=-1))
     pytest.raises(ValueError, list, k_edge_augmentation(G, k=0))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_unfeasible():
     G = tarjan_bridge_graph()
     pytest.raises(nx.NetworkXUnfeasible, list, k_edge_augmentation(G, k=1, avail=[]))
@@ -155,7 +156,7 @@ def test_unfeasible():
 
     _check_augmentations(G, avail=[(7, 9)], max_k=MAX_EFFICIENT_K + 2)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_tarjan():
     G = tarjan_bridge_graph()
 
@@ -185,7 +186,7 @@ def test_tarjan():
 
     _check_augmentations(G, avail)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_configuration():
     # seeds = [2718183590, 2470619828, 1694705158, 3001036531, 2401251497]
     seeds = [1001, 1002, 1003, 1004]
@@ -195,7 +196,7 @@ def test_configuration():
         G.remove_edges_from(nx.selfloop_edges(G))
         _check_augmentations(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_shell():
     # seeds = [2057382236, 3331169846, 1840105863, 476020778, 2247498425]
     seeds = [18]
@@ -204,7 +205,7 @@ def test_shell():
         G = nx.random_shell_graph(constructor, seed=seed)
         _check_augmentations(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_karate():
     G = nx.karate_club_graph()
     _check_augmentations(G)
@@ -234,12 +235,12 @@ def test_barbell():
     G = nx.barbell_graph(5, 4)
     _check_augmentations(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_bridge():
     G = nx.Graph([(2393, 2257), (2393, 2685), (2685, 2257), (1758, 2257)])
     _check_augmentations(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_gnp_augmentation():
     rng = random.Random(0)
     G = nx.gnp_random_graph(30, 0.005, seed=0)

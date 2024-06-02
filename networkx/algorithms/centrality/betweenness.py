@@ -1,15 +1,8 @@
 """Betweenness centrality measures."""
-from collections import deque
 from heapq import heappop, heappush
 from itertools import count
 
 import networkx as nx
-from networkx.structures.edges_dict import EdgesDict
-from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
-from networkx.structures.out_of_core_dict import OutOfCoreDict
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import IntFloatDict, IntDict, PrimitiveType
-from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import py_random_state
 from networkx.utils.decorators import not_implemented_for
@@ -127,7 +120,7 @@ def betweenness_centrality(
        https://doi.org/10.2307/3033543
     """
     # betweenness = dict.fromkeys(G, 0.0)  # b[v]=0 for v in G
-    betweenness = IntFloatDict()
+    betweenness = G.int_float_dict()
     for v in G:
         betweenness[v] = 0.0
     if k is None:
@@ -142,9 +135,9 @@ def betweenness_centrality(
             S, P, sigma, _ = _single_source_dijkstra_path_basic(G, s, weight)
         # accumulation
         if endpoints:
-            betweenness, _ = _accumulate_endpoints(betweenness, S, P, sigma, s)
+            betweenness, _ = _accumulate_endpoints(G, betweenness, S, P, sigma, s)
         else:
-            betweenness, _ = _accumulate_basic(betweenness, S, P, sigma, s)
+            betweenness, _ = _accumulate_basic(G, betweenness, S, P, sigma, s)
     # rescaling
     betweenness = _rescale(
         betweenness,
@@ -227,13 +220,13 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
        Social Networks 30(2):136-145, 2008.
        https://doi.org/10.1016/j.socnet.2007.11.001
     """
-    betweenness = EdgesDict(PrimitiveType.EDGE, PrimitiveType.FLOAT)
+    betweenness = G.tuple_float_dict_of_edges()
     for e in G.edges():
         betweenness[e] = 0.0
     if k is None:
         nodes = G
     else:
-        nodes = seed.sample(OutOfCoreList(G.nodes()), k)
+        nodes = seed.sample(G.int_list(G.nodes()), k)
     for s in nodes:
         # single source shortest paths
         if weight is None:  # use BFS
@@ -241,7 +234,7 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
         else:  # use Dijkstra's algorithm
             S, P, sigma, _ = _single_source_dijkstra_path_basic(G, s, weight)
         # accumulation
-        betweenness = _accumulate_edges(betweenness, S, P, sigma, s)
+        betweenness = _accumulate_edges(G, betweenness, S, P, sigma, s)
     # rescaling
     betweenness = _rescale_e(
         betweenness, len(G), normalized=normalized, directed=G.is_directed()
@@ -255,17 +248,17 @@ def edge_betweenness_centrality(G, k=None, normalized=True, weight=None, seed=No
 
 
 def _single_source_shortest_path_basic(G, s):
-    S = OutOfCoreDeque()
-    P = OutOfCoreDictOfLists()
+    S = G.int_deque()
+    P = G.int_dict_of_lists()
     # sigma = dict.fromkeys(G, 0.0)  # sigma[v]=0 for v in G
-    sigma = IntFloatDict()
+    sigma = G.int_float_dict()
     for v in G:
         P[v] = []
         sigma[v] = 0.0
-    D = IntDict()
+    D = G.int_dict()
     sigma[s] = 1.0
     D[s] = 0
-    Q = OutOfCoreDeque()
+    Q = G.int_deque()
     Q.append(s)
     while Q:  # use BFS to find shortest paths
         v = Q.popleft()
@@ -286,18 +279,18 @@ def _single_source_shortest_path_basic(G, s):
 def _single_source_dijkstra_path_basic(G, s, weight):
     weight = _weight_function(G, weight)
     # modified from Eppstein
-    S = OutOfCoreList()
-    P = OutOfCoreDictOfLists()
+    S = G.int_list()
+    P = G.int_dict_of_lists()
     for v in G:
         P[v] = []
-    sigma = IntFloatDict()
+    sigma = G.int_float_dict()
     for v in G:
         sigma[v] = 0.0
-    D = IntDict()
+    D = G.int_dict()
     sigma[s] = 1.0
     push = heappush
     pop = heappop
-    seen = IntDict()
+    seen = G.int_dict()
     seen[s] = 0
     c = count()
     Q = []  # use Q as heap with (distance,node id) tuples
@@ -322,8 +315,8 @@ def _single_source_dijkstra_path_basic(G, s, weight):
     return S, P, sigma, D
 
 
-def _accumulate_basic(betweenness, S, P, sigma, s):
-    delta = IntFloatDict()
+def _accumulate_basic(G, betweenness, S, P, sigma, s):
+    delta = G.int_float_dict()
     for x in S:
         delta[x] = 0
     # delta = dict.fromkeys(S, 0)
@@ -337,9 +330,9 @@ def _accumulate_basic(betweenness, S, P, sigma, s):
     return betweenness, delta
 
 
-def _accumulate_endpoints(betweenness, S, P, sigma, s):
+def _accumulate_endpoints(G, betweenness, S, P, sigma, s):
     betweenness[s] += len(S) - 1
-    delta = IntFloatDict()
+    delta = G.int_float_dict()
     for n in S:
         delta[n] = 0
     while S:
@@ -352,8 +345,8 @@ def _accumulate_endpoints(betweenness, S, P, sigma, s):
     return betweenness, delta
 
 
-def _accumulate_edges(betweenness, S, P, sigma, s):
-    delta = IntFloatDict()
+def _accumulate_edges(G, betweenness, S, P, sigma, s):
+    delta = G.int_float_dict()
     for x in S:
         delta[x] = 0
     while S:

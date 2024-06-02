@@ -1,7 +1,6 @@
 import pytest
 
 import networkx as nx
-from networkx import LazyGraph
 
 def validate_grid_path(r, c, s, t, p):
     #assert isinstance(p, list)
@@ -26,7 +25,7 @@ class TestUnweightedPath:
         cls.grid = cnlti(nx.grid_2d_graph(4, 4), first_label=1, ordering="sorted")
         cls.cycle = nx.cycle_graph(7)
         cls.directed_cycle = nx.cycle_graph(7, create_using=nx.DiGraph())
-        cls.lazyCycleGraph = LazyGraph()
+        cls.lazyCycleGraph = nx.Graph()
         for e in cls.cycle.edges:
             cls.lazyCycleGraph.add_edge(*e)
 
@@ -116,7 +115,7 @@ class TestUnweightedPath:
         assert l[1][16] == 6
 
     def test_predecessor_path(self):
-        G = self._get_path_graph()
+        G = G = nx.path_graph(4)
         predecessor_paths = nx.predecessor(G, 0)
         paths = {0: [], 1: [0], 2: [1], 3: [2]}
         # assert nx.predecessor(G, 0) == {0: [], 1: [0], 2: [1], 3: [2]}
@@ -133,12 +132,12 @@ class TestUnweightedPath:
         assert pred[3] == [0]
 
     def test_predecessor_cutoff(self):
-        G = self._get_path_graph()
+        G = G = nx.path_graph(4)
         p = nx.predecessor(G, 0, 3)
         assert 4 not in p
 
     def test_predecessor_target(self):
-        G = self._get_path_graph()
+        G = G = nx.path_graph(4)
         p = nx.predecessor(G, 0, 3)
         assert p == [2]
         p = nx.predecessor(G, 0, 3, cutoff=2)
@@ -154,11 +153,3 @@ class TestUnweightedPath:
         source = 8
         with pytest.raises(nx.NodeNotFound, match=f"Source {source} not in G"):
             nx.predecessor(self.lazyCycleGraph, source)
-
-    @staticmethod
-    def _get_path_graph():
-        G = nx.path_graph(4)
-        LazyG = LazyGraph()
-        for e in G.edges:
-            LazyG.add_edge(*e)
-        return LazyG

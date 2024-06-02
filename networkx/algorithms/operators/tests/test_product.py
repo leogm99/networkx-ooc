@@ -1,3 +1,4 @@
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -41,7 +42,7 @@ def test_tensor_product_null():
     G = nx.tensor_product(P10, null)
     assert nx.is_isomorphic(G, null)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_tensor_product_size():
     P5 = nx.path_graph(5)
     K3 = nx.complete_graph(3)
@@ -52,7 +53,7 @@ def test_tensor_product_size():
     G = nx.tensor_product(K3, K5)
     assert nx.number_of_nodes(G) == 3 * 5
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_tensor_product_combinations():
     # basic smoke test, more realistic tests would be useful
     P5 = nx.path_graph(5)
@@ -69,7 +70,7 @@ def test_tensor_product_combinations():
     G = nx.tensor_product(nx.DiGraph(P5), nx.DiGraph(K3))
     assert nx.number_of_nodes(G) == 5 * 3
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_tensor_product_classic_result():
     K2 = nx.complete_graph(2)
     G = nx.petersen_graph()
@@ -84,7 +85,7 @@ def test_tensor_product_classic_result():
     G = nx.tensor_product(G, K2)
     assert nx.is_isomorphic(G, nx.cubical_graph())
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_tensor_product_random():
     G = nx.erdos_renyi_graph(10, 2 / 10.0)
     H = nx.erdos_renyi_graph(10, 2 / 10.0)
@@ -159,7 +160,7 @@ def test_cartesian_product_null():
     G = nx.cartesian_product(P10, null)
     assert nx.is_isomorphic(G, null)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_cartesian_product_size():
     # order(GXH)=order(G)*order(H)
     K5 = nx.complete_graph(5)
@@ -176,7 +177,7 @@ def test_cartesian_product_size():
         K3
     ) + nx.number_of_edges(K3) * nx.number_of_nodes(K5)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_cartesian_product_classic():
     # test some classic product graphs
     P2 = nx.path_graph(2)
@@ -190,7 +191,7 @@ def test_cartesian_product_classic():
     G = nx.cartesian_product(P3, P3)
     assert nx.is_isomorphic(G, nx.grid_2d_graph(3, 3))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_cartesian_product_random():
     G = nx.erdos_renyi_graph(10, 2 / 10.0)
     H = nx.erdos_renyi_graph(10, 2 / 10.0)
@@ -205,7 +206,7 @@ def test_cartesian_product_random():
             else:
                 assert not GH.has_edge((u_G, u_H), (v_G, v_H))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_lexicographic_product_raises():
     with pytest.raises(nx.NetworkXError):
         P = nx.lexicographic_product(nx.DiGraph(), nx.Graph())
@@ -243,7 +244,7 @@ def test_lexicographic_product_null():
     G = nx.lexicographic_product(P10, null)
     assert nx.is_isomorphic(G, null)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_lexicographic_product_size():
     K5 = nx.complete_graph(5)
     P5 = nx.path_graph(5)
@@ -253,7 +254,7 @@ def test_lexicographic_product_size():
     G = nx.lexicographic_product(K3, K5)
     assert nx.number_of_nodes(G) == 3 * 5
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_lexicographic_product_combinations():
     P5 = nx.path_graph(5)
     K3 = nx.complete_graph(3)
@@ -268,7 +269,7 @@ def test_lexicographic_product_combinations():
 
     # No classic easily found classic results for lexicographic product
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_lexicographic_product_random():
     G = nx.erdos_renyi_graph(10, 2 / 10.0)
     H = nx.erdos_renyi_graph(10, 2 / 10.0)
@@ -319,7 +320,7 @@ def test_strong_product_null():
     G = nx.strong_product(P10, null)
     assert nx.is_isomorphic(G, null)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_strong_product_size():
     K5 = nx.complete_graph(5)
     P5 = nx.path_graph(5)
@@ -329,7 +330,7 @@ def test_strong_product_size():
     G = nx.strong_product(K3, K5)
     assert nx.number_of_nodes(G) == 3 * 5
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_strong_product_combinations():
     P5 = nx.path_graph(5)
     K3 = nx.complete_graph(3)
@@ -344,7 +345,7 @@ def test_strong_product_combinations():
 
     # No classic easily found classic results for strong product
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_strong_product_random():
     G = nx.erdos_renyi_graph(10, 2 / 10.0)
     H = nx.erdos_renyi_graph(10, 2 / 10.0)
@@ -417,7 +418,7 @@ def test_rooted_product_raises():
     with pytest.raises(nx.NetworkXError):
         nx.rooted_product(nx.Graph(), nx.path_graph(2), 10)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_rooted_product():
     G = nx.cycle_graph(5)
     H = nx.Graph()
@@ -426,7 +427,7 @@ def test_rooted_product():
     assert len(R) == len(G) * len(H)
     assert R.size() == G.size() + len(G) * H.size()
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_corona_product():
     G = nx.cycle_graph(3)
     H = nx.path_graph(2)

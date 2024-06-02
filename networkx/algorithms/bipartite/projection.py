@@ -13,7 +13,7 @@ __all__ = [
 
 
 @nx._dispatch(graphs="B", preserve_node_attrs=True, preserve_graph_attrs=True)
-def projected_graph(B, nodes, multigraph=False, lazy=False):
+def projected_graph(B, nodes, multigraph=False):
     r"""Returns the projection of B onto one of its node sets.
 
     Returns the graph G that is the projection of the bipartite graph B
@@ -97,14 +97,11 @@ def projected_graph(B, nodes, multigraph=False, lazy=False):
         if multigraph:
             G = nx.MultiGraph()
         else:
-            if lazy:
-                G = nx.LazyGraph()
-            else:
-                G = nx.Graph()
+            G = nx.Graph()
     G.graph.update(B.graph)
     G.add_nodes_from((n, B.nodes[n]) for n in nodes)
     for u in nodes:
-        nbrs2 = nx.OutOfCoreSet()
+        nbrs2 = G.set_()
         for nbr in B[u]:
             for v in B[nbr]:
                 if v != u:
@@ -112,9 +109,9 @@ def projected_graph(B, nodes, multigraph=False, lazy=False):
         if multigraph:
             for n in nbrs2:
                 if directed:
-                    links = nx.OutOfCoreSet(B[u]) & nx.OutOfCoreSet(B.pred[n])
+                    links = G.set_(B[u]) & G.set_(B.pred[n])
                 else:
-                    links = nx.OutOfCoreSet(B[u]) & nx.OutOfCoreSet(B[n])
+                    links = G.set_(B[u]) & G.set_(B[n])
                 for l in links:
                     if not G.has_edge(u, n, l):
                         G.add_edge(u, n, key=l)
@@ -125,7 +122,7 @@ def projected_graph(B, nodes, multigraph=False, lazy=False):
 
 @not_implemented_for("multigraph")
 @nx._dispatch(graphs="B")
-def weighted_projected_graph(B, nodes, ratio=False, lazy=False):
+def weighted_projected_graph(B, nodes, ratio=False):
     r"""Returns a weighted projection of B onto one of its node sets.
 
     The weighted projected graph is the projection of the bipartite
@@ -199,10 +196,7 @@ def weighted_projected_graph(B, nodes, ratio=False, lazy=False):
         G = nx.DiGraph()
     else:
         pred = B.adj
-        if lazy:
-            G = nx.LazyGraph()
-        else:
-            G = nx.Graph()
+        G = nx.Graph()
     G.graph.update(B.graph)
     G.add_nodes_from((n, B.nodes[n]) for n in nodes)
     n_top = len(B) - len(nodes)
@@ -214,14 +208,14 @@ def weighted_projected_graph(B, nodes, ratio=False, lazy=False):
         )
 
     for u in nodes:
-        unbrs = nx.OutOfCoreSet(B[u])
-        nbrs2 = nx.OutOfCoreSet()
+        unbrs = G.set_(B[u])
+        nbrs2 = G.set_()
         for nbr in unbrs:
             for n in B[nbr]:
                 if n != u:
                     nbrs2.add(n)
         for v in nbrs2:
-            vnbrs = nx.OutOfCoreSet(pred[v])
+            vnbrs = G.set_(pred[v])
             common = unbrs & vnbrs
             if not ratio:
                 weight = len(common)
@@ -233,7 +227,7 @@ def weighted_projected_graph(B, nodes, ratio=False, lazy=False):
 
 @not_implemented_for("multigraph")
 @nx._dispatch(graphs="B")
-def collaboration_weighted_projected_graph(B, nodes, lazy=False):
+def collaboration_weighted_projected_graph(B, nodes):
     r"""Newman's weighted projection of B onto one of its node sets.
 
     The collaboration weighted projection is the projection of the
@@ -312,21 +306,18 @@ def collaboration_weighted_projected_graph(B, nodes, lazy=False):
         G = nx.DiGraph()
     else:
         pred = B.adj
-        if lazy:
-            G = nx.LazyGraph()
-        else:
-            G = nx.Graph()
+        G = nx.Graph()
     G.graph.update(B.graph)
     G.add_nodes_from((n, B.nodes[n]) for n in nodes)
     for u in nodes:
-        unbrs = nx.OutOfCoreSet(B[u])
-        nbrs2 = nx.OutOfCoreSet()
+        unbrs = G.set_(B[u])
+        nbrs2 = G.set_()
         for nbr in unbrs:
             for n in B[nbr]:
                 if n != u:
                     nbrs2.add(n)
         for v in nbrs2:
-            vnbrs = nx.OutOfCoreSet(pred[v])
+            vnbrs = G.set_(pred[v])
             def common_degree():
                 for n in unbrs & vnbrs:
                     yield len(B[n])
@@ -337,7 +328,7 @@ def collaboration_weighted_projected_graph(B, nodes, lazy=False):
 
 @not_implemented_for("multigraph")
 @nx._dispatch(graphs="B")
-def overlap_weighted_projected_graph(B, nodes, jaccard=True, lazy=False):
+def overlap_weighted_projected_graph(B, nodes, jaccard=True):
     r"""Overlap weighted projection of B onto one of its node sets.
 
     The overlap weighted projection is the projection of the bipartite
@@ -419,21 +410,18 @@ def overlap_weighted_projected_graph(B, nodes, jaccard=True, lazy=False):
         G = nx.DiGraph()
     else:
         pred = B.adj
-        if lazy:
-            G = nx.LazyGraph()
-        else:
-            G = nx.Graph()
+        G = nx.Graph()
     G.graph.update(B.graph)
     G.add_nodes_from((n, B.nodes[n]) for n in nodes)
     for u in nodes:
-        unbrs = nx.OutOfCoreSet(B[u])
-        nbrs2 = nx.OutOfCoreSet()
+        unbrs = G.set_(B[u])
+        nbrs2 = G.set_()
         for nbr in unbrs:
             for n in B[nbr]:
                 if n != u:
                     nbrs2.add(n)
         for v in nbrs2:
-            vnbrs = nx.OutOfCoreSet(pred[v])
+            vnbrs = G.set_(pred[v])
             if jaccard:
                 wt = len(unbrs & vnbrs) / len(unbrs | vnbrs)
             else:
@@ -444,7 +432,7 @@ def overlap_weighted_projected_graph(B, nodes, jaccard=True, lazy=False):
 
 @not_implemented_for("multigraph")
 @nx._dispatch(graphs="B", preserve_all_attrs=True)
-def generic_weighted_projected_graph(B, nodes, weight_function=None, lazy=False):
+def generic_weighted_projected_graph(B, nodes, weight_function=None):
     r"""Weighted projection of B with a user-specified weight function.
 
     The bipartite network B is projected on to the specified nodes
@@ -541,21 +529,18 @@ def generic_weighted_projected_graph(B, nodes, weight_function=None, lazy=False)
         G = nx.DiGraph()
     else:
         pred = B.adj
-        if lazy:
-            G = nx.LazyGraph()
-        else:
-            G = nx.Graph()
+        G = nx.Graph()
     if weight_function is None:
 
         def weight_function(G, u, v):
             # Notice that we use set(pred[v]) for handling the directed case.
-            return len(nx.OutOfCoreSet(G[u]) & nx.OutOfCoreSet(pred[v]))
+            return len(G.set_(G[u]) & G.set_(pred[v]))
 
     G.graph.update(B.graph)
     G.add_nodes_from((n, B.nodes[n]) for n in nodes)
     for u in nodes:
-        nbrs2 = nx.OutOfCoreSet()
-        for nbr in nx.OutOfCoreSet(B[u]):
+        nbrs2 = G.set_()
+        for nbr in G.set_(B[u]):
             for n in B[nbr]:
                 if n != u:
                     nbrs2.add(n)

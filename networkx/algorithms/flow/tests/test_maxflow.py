@@ -1,5 +1,6 @@
 """Maximum flow algorithms test suite.
 """
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -89,6 +90,7 @@ def compare_flows_and_cuts(G, s, t, solnFlows, solnValue, capacity="capacity"):
 
 
 class TestMaxflowMinCutCommon:
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_graph1(self):
         # Trivial undirected graph
         G = nx.Graph()
@@ -98,6 +100,7 @@ class TestMaxflowMinCutCommon:
 
         compare_flows_and_cuts(G, 1, 2, solnFlows, 1.0)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_graph2(self):
         # A more complex undirected graph
         # adapted from https://web.archive.org/web/20220815055650/https://www.topcoder.com/thrive/articles/Maximum%20Flow:%20Part%20One
@@ -316,6 +319,7 @@ class TestMaxflowMinCutCommon:
         for flow_func in all_funcs:
             pytest.raises(nx.NetworkXUnbounded, flow_func, G, "s", "t")
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_graph_infcap_edges(self):
         # Undirected graph with infinite capacity edges
         G = nx.Graph()
@@ -353,6 +357,7 @@ class TestMaxflowMinCutCommon:
         }
         compare_flows_and_cuts(G, "s", "t", flowSoln, 4)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_disconnected(self):
         G = nx.Graph()
         G.add_weighted_edges_from([(0, 1, 1), (1, 2, 1), (2, 3, 1)], weight="capacity")
@@ -361,6 +366,7 @@ class TestMaxflowMinCutCommon:
         flowSoln = {0: {}, 2: {3: 0}, 3: {2: 0}}
         compare_flows_and_cuts(G, 0, 3, flowSoln, 0)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support edge deletion")
     def test_source_target_not_in_graph(self):
         G = nx.Graph()
         G.add_weighted_edges_from([(0, 1, 1), (1, 2, 1), (2, 3, 1)], weight="capacity")

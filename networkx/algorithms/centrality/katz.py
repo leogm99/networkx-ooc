@@ -4,9 +4,6 @@ import math
 import networkx as nx
 from networkx.utils import not_implemented_for
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import IntFloatDict, PrimitiveType
 
 __all__ = ["katz_centrality", "katz_centrality_numpy"]
 
@@ -156,7 +153,7 @@ def katz_centrality(
 
     if nstart is None:
         # choose starting vector with entries of 0
-        x = IntFloatDict()
+        x = G.int_float_dict()
         for n in G:
             x[n] = 0
     else:
@@ -164,12 +161,12 @@ def katz_centrality(
 
     try:
         fBeta = float(beta)
-        b = IntFloatDict()
+        b = G.int_float_dict()
         for v in G:
             b[v] = fBeta
     except (TypeError, ValueError, AttributeError) as err:
         b = beta
-        if set(beta) != OutOfCoreSet(G):
+        if set(beta) != G.set_(G):
             raise nx.NetworkXError(
                 "beta dictionary " "must have a value for every node"
             ) from err
@@ -177,7 +174,7 @@ def katz_centrality(
     # make up to max_iter iterations
     for _ in range(max_iter):
         xlast = x
-        x = IntFloatDict()
+        x = G.int_float_dict()
         for n in xlast:
             x[n] = 0
 
@@ -323,12 +320,12 @@ def katz_centrality_numpy(G, alpha=0.1, beta=1.0, normalized=True, weight=None):
     if len(G) == 0:
         return {}
     try:
-        nodelist = OutOfCoreList(beta.keys())
-        if OutOfCoreSet(nodelist) != OutOfCoreSet(G):
+        nodelist = G.int_list(beta.keys())
+        if G.set_(nodelist) != G.set_(G):
             raise nx.NetworkXError("beta dictionary must have a value for every node")
-        b = np.array(OutOfCoreList(beta.values(), value_primitive_type=PrimitiveType.FLOAT), dtype=float)
+        b = np.array(G.float_list(beta.values()), dtype=float)
     except AttributeError:
-        nodelist = OutOfCoreList(G)
+        nodelist = G.int_list(G)
         try:
             b = np.ones((len(nodelist), 1)) * beta
         except (TypeError, ValueError, AttributeError) as err:
@@ -341,7 +338,7 @@ def katz_centrality_numpy(G, alpha=0.1, beta=1.0, normalized=True, weight=None):
     # Normalize: rely on truediv to cast to float
     norm = np.sign(sum(centrality)) * np.linalg.norm(centrality) if normalized else 1
 
-    r = IntFloatDict()
+    r = G.int_float_dict()
     for k, v in zip(nodelist, centrality / norm):
         r[k] = v
     return r

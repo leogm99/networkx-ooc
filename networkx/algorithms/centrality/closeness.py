@@ -7,8 +7,6 @@ import networkx as nx
 from networkx.exception import NetworkXError
 from networkx.utils.decorators import not_implemented_for
 
-from networkx.structures.primitive_dicts import IntFloatDict
-
 __all__ = ["closeness_centrality", "incremental_closeness_centrality"]
 
 
@@ -120,7 +118,7 @@ def closeness_centrality(G, u=None, distance=None, wf_improved=True):
         nodes = G.nodes
     else:
         nodes = [u]
-    closeness_dict = IntFloatDict()
+    closeness_dict = G.int_float_dict()
     for n in nodes:
         sp = path_length(G, n)
         totsp = sum(sp.values())

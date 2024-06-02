@@ -8,9 +8,6 @@ import warnings
 
 import networkx as nx
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-from networkx.structures.primitive_dicts import PrimitiveType
 
 __all__ = [
     "shortest_path",
@@ -161,7 +158,7 @@ def shortest_path(G, source=None, target=None, weight=None, method="dijkstra"):
                 paths = nx.single_source_bellman_ford_path(G, target, weight=weight)
             # Now flip the paths so they go from a source to the target.
             for target in paths:
-                paths[target] = OutOfCoreList(reversed(paths[target]))
+                paths[target] = G.int_list(reversed(paths[target]))
     else:
         if target is None:
             # Find paths to all nodes accessible from the source.
@@ -518,7 +515,7 @@ def all_shortest_paths(G, source, target, weight=None, method="dijkstra"):
     else:
         raise ValueError(f"method not supported: {method}")
 
-    return _build_paths_from_predecessors({source}, target, pred)
+    return _build_paths_from_predecessors(G, {source}, target, pred)
 
 
 @nx._dispatch(edge_attrs="weight")
@@ -592,7 +589,7 @@ def single_source_all_shortest_paths(G, source, weight=None, method="dijkstra"):
         raise ValueError(f"method not supported: {method}")
     for n in G:
         try:
-            yield n, _build_paths_from_predecessors({source}, n, pred)
+            yield n, _build_paths_from_predecessors(G, {source}, n, pred)
         except nx.NetworkXNoPath:
             pass
 
@@ -656,7 +653,7 @@ def all_pairs_all_shortest_paths(G, weight=None, method="dijkstra"):
         )
 
 
-def _build_paths_from_predecessors(sources, target, pred):
+def _build_paths_from_predecessors(G, sources, target, pred):
     """Compute all simple paths to target, given the predecessors found in
     pred, terminating when any source in sources is found.
 
@@ -699,16 +696,16 @@ def _build_paths_from_predecessors(sources, target, pred):
     if target not in pred:
         raise nx.NetworkXNoPath(f"Target {target} cannot be reached from given sources")
 
-    seen = OutOfCoreSet({target})
+    seen = G.set_({target})
     # stack = [(target, 0)]
-    stack = OutOfCoreList(value_primitive_type=PrimitiveType.EDGE)
+    stack = G.tuple_list()
     stack.append((target, 0))
     top = 0
     while top >= 0:
         node, i = stack[top]
         if node in sources:
             # yield [p for p, n in reversed(stack[: top + 1])]
-            r = OutOfCoreList()
+            r = G.int_list()
             for p, n in reversed(stack[: top + 1]):
                 r.append(p)
             yield r

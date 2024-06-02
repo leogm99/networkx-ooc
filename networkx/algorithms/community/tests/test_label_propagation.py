@@ -1,5 +1,6 @@
 from itertools import chain, combinations
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -22,7 +23,7 @@ def test_iterator_vs_iterable():
         assert community == {"a"}
     pytest.raises(TypeError, next, nx.community.label_propagation_communities(G))
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_one_node():
     test = nx.Graph()
     test.add_node("a")
@@ -34,7 +35,7 @@ def test_one_node():
     result = {frozenset(c) for c in communities}
     assert result == ground_truth
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_unconnected_communities():
     test = nx.Graph()
     # community 1
@@ -53,7 +54,7 @@ def test_unconnected_communities():
     result = {frozenset(c) for c in communities}
     assert result == ground_truth
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_connected_communities():
     test = nx.Graph()
     # community 1
@@ -138,12 +139,14 @@ class TestAsynLpaCommunities:
         ground_truth = {frozenset([0])}
         self._check_communities(G, ground_truth)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_simple_communities(self):
         # This graph is the disjoint union of two triangles.
         G = nx.Graph(["ab", "ac", "bc", "de", "df", "fe"])
         ground_truth = {frozenset("abc"), frozenset("def")}
         self._check_communities(G, ground_truth)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_seed_argument(self):
         G = nx.Graph(["ab", "ac", "bc", "de", "df", "fe"])
         ground_truth = {frozenset("abc"), frozenset("def")}
@@ -197,6 +200,7 @@ class TestFastLabelPropagationCommunities:
         truth = {frozenset(G)}
         self._check_communities(G, truth)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_disjoin_cliques(self):
         G = nx.Graph(["ab", "AB", "AC", "BC", "12", "13", "14", "23", "24", "34"])
         truth = {frozenset("ab"), frozenset("ABC"), frozenset("1234")}

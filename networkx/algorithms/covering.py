@@ -6,8 +6,6 @@ from itertools import chain
 import networkx as nx
 from networkx.utils import arbitrary_element, not_implemented_for
 
-from networkx.structures.out_of_core_set import OutOfCoreSet
-
 __all__ = ["min_edge_cover", "is_edge_cover"]
 
 
@@ -74,7 +72,7 @@ def min_edge_cover(G, matching_algorithm=None):
     :func:`~networkx.algorithms.bipartite.matching.hopcraft_karp_matching`
     """
     if len(G) == 0:
-        return OutOfCoreSet()
+        return G.set_()
     if nx.number_of_isolates(G) > 0:
         # ``min_cover`` does not exist as there is an isolated node
         raise nx.NetworkXException(
@@ -86,13 +84,13 @@ def min_edge_cover(G, matching_algorithm=None):
     # ``min_cover`` is superset of ``maximum_matching``
     try:
         # bipartite matching algs return dict so convert if needed
-        min_cover = OutOfCoreSet((i for i in maximum_matching.items()))
+        min_cover = G.set_((i for i in maximum_matching.items()))
         bipartite_cover = True
     except AttributeError:
         min_cover = maximum_matching
         bipartite_cover = False
     # iterate for uncovered nodes
-    uncovered_nodes = OutOfCoreSet(G) - OutOfCoreSet((v for u, v in min_cover)) - OutOfCoreSet((u for u, v in min_cover))
+    uncovered_nodes = G.set_(G) - G.set_((v for u, v in min_cover)) - G.set_((u for u, v in min_cover))
     for v in uncovered_nodes:
         # Since `v` is uncovered, each edge incident to `v` will join it
         # with a covered node (otherwise, if there were an edge joining

@@ -2,6 +2,7 @@
 Tests for second order centrality.
 """
 
+from networkx.algorithms.centrality.tests import app_mode
 import pytest
 
 pytest.importorskip("numpy")
@@ -15,7 +16,7 @@ def test_empty():
         G = nx.empty_graph()
         nx.second_order_centrality(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_non_connected():
     with pytest.raises(nx.NetworkXException):
         G = nx.Graph()
@@ -30,7 +31,7 @@ def test_non_negative_edge_weights():
         G.add_edge(0, 1, weight=-1)
         nx.second_order_centrality(G)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_weight_attribute():
     G = nx.Graph()
     G.add_weighted_edges_from([(0, 1, 1.0), (1, 2, 3.5)], weight="w")
@@ -40,7 +41,7 @@ def test_weight_attribute():
     for n in sorted(G):
         assert b[n] == pytest.approx(expected[n], abs=1e-2)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_one_node_graph():
     """Second order centrality: single node"""
     G = nx.Graph()

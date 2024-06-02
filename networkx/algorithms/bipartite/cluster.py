@@ -123,16 +123,16 @@ def latapy_clustering(G, nodes=None, mode="dot"):
     if nodes is None:
         nodes = G
     #ccs = {}
-    ccs = IntFloatDict()
+    ccs = G.int_float_dict()
     for v in nodes:
         cc = 0.0
-        common_neighbors = OutOfCoreSet()
+        common_neighbors = G.set_()
         for neighbor in G[v]:
             for u in G[neighbor]:
                 common_neighbors.add(u)
         nbrs2 = common_neighbors - {v}
         for u in nbrs2:
-            cc += cc_func(OutOfCoreSet(G[u]), OutOfCoreSet(G[v]))
+            cc += cc_func(G.set_(G[u]), G.set_(G[v]))
         if cc > 0.0:  # len(nbrs2)>0
             cc /= len(nbrs2)
         ccs[v] = cc
@@ -273,7 +273,7 @@ def _four_cycles(G):
     cycles = 0
     for v in G:
         for u, w in itertools.combinations(G[v], 2):
-            cycles += len((OutOfCoreSet(G[u]) & OutOfCoreSet(G[w])) - {v})
+            cycles += len((G.set_(G[u]) & G.set_(G[w])) - {v})
     return cycles / 4
 
 
@@ -281,8 +281,8 @@ def _threepaths(G):
     paths = 0
     for v in G:
         for u in G[v]:
-            for w in OutOfCoreSet(G[u]) - {v}:
-                paths += len(OutOfCoreSet(G[w]) - {v, u})
+            for w in G.set_(G[u]) - {v}:
+                paths += len(G.set_(G[w]) - {v, u})
     # Divide by two because we count each three path twice
     # one for each possible starting point
     return paths / 2

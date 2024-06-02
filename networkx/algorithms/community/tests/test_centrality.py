@@ -6,6 +6,8 @@ from operator import itemgetter
 
 import networkx as nx
 
+from networkx.algorithms.tests import app_mode
+import pytest
 
 def set_of_sets(iterable):
     return set(map(frozenset, iterable))
@@ -69,6 +71,7 @@ class TestGirvanNewman:
         )
         validate_communities(communities[2], [{0}, {1}, {2}, {3}])
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_most_valuable_edge(self):
         G = nx.Graph()
         G.add_weighted_edges_from([(0, 1, 3), (1, 2, 2), (2, 3, 1)])

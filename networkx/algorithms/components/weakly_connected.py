@@ -2,9 +2,6 @@
 import networkx as nx
 from networkx.utils.decorators import not_implemented_for
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.out_of_core_set import OutOfCoreSet
-
 __all__ = [
     "number_weakly_connected_components",
     "weakly_connected_components",
@@ -60,10 +57,10 @@ def weakly_connected_components(G):
     For directed graphs only.
 
     """
-    seen = OutOfCoreSet()
+    seen = G.set_()
     for v in G:
         if v not in seen:
-            c = OutOfCoreSet(_plain_bfs(G, v))
+            c = G.set_(_plain_bfs(G, v))
             seen.update(c)
             yield c
 
@@ -177,13 +174,13 @@ def _plain_bfs(G, source):
     n = len(G)
     Gsucc = G._succ
     Gpred = G._pred
-    seen = OutOfCoreSet({source})
-    nextlevel = OutOfCoreList([source])
+    seen = G.set_({source})
+    nextlevel = G.int_list([source])
 
     yield source
     while nextlevel:
         thislevel = nextlevel
-        nextlevel = OutOfCoreList()
+        nextlevel = G.int_list()
         for v in thislevel:
             for w in Gsucc[v]:
                 if w not in seen:

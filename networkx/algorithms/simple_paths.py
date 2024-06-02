@@ -4,7 +4,7 @@ from itertools import count
 import networkx as nx
 from networkx.algorithms.shortest_paths.weighted import _weight_function
 from networkx.utils import not_implemented_for, pairwise
-from networkx.structures.out_of_core_list import OutOfCoreList
+
 from networkx.structures.out_of_core_set import OutOfCoreSet
 
 __all__ = [
@@ -86,7 +86,7 @@ def is_simple_path(G, nodes):
         return False
 
     # If the list contains repeated nodes, then it's not a simple path
-    if len(OutOfCoreSet(nodes)) != len(nodes):
+    if len(G.set_(nodes)) != len(nodes):
         return False
 
     # Test that each adjacent pair of nodes is adjacent.
@@ -247,10 +247,10 @@ def all_simple_paths(G, source, target, cutoff=None):
     if source not in G:
         raise nx.NodeNotFound(f"source node {source} not in graph")
     if target in G:
-        targets = OutOfCoreSet({target})
+        targets = G.set_({target})
     else:
         try:
-            targets = OutOfCoreSet(target)
+            targets = G.set_(target)
         except TypeError as err:
             raise nx.NodeNotFound(f"target node {target} not in graph") from err
     if source in targets:
@@ -270,7 +270,7 @@ def _empty_generator():
 
 
 def _all_simple_paths_graph(G, source, targets, cutoff):
-    visited = OutOfCoreList([source])
+    visited = G.int_list([source])
     stack = [iter(G[source])]
     while stack:
         children = stack[-1]
@@ -284,19 +284,19 @@ def _all_simple_paths_graph(G, source, targets, cutoff):
             if child in targets:
                 yield visited + [child]
             visited.append(child)
-            if targets - visited:  # expand stack until find all targets
+            if targets - G.set_(visited):  # expand stack until find all targets
                 stack.append(iter(G[child]))
             else:
                 visited.pop()  # maybe other ways to child
         else:  # len(visited) == cutoff:
-            for target in (targets & (OutOfCoreSet(children) | {child})) - visited:
+            for target in (targets & (G.set_(children) | {child})) - G.set_(visited):
                 yield visited + [target]
             stack.pop()
             visited.pop()
 
 
 def _all_simple_paths_multigraph(G, source, targets, cutoff):
-    visited = OutOfCoreList([source])
+    visited = G.int_list([source])
     stack = [(v for u, v in G.edges(source))]
     while stack:
         children = stack[-1]
@@ -310,13 +310,13 @@ def _all_simple_paths_multigraph(G, source, targets, cutoff):
             if child in targets:
                 yield visited + [child]
             visited.append(child)
-            if targets - visited:
+            if targets - G.set_(visited):
                 stack.append((v for u, v in G.edges(child)))
             else:
                 visited.pop()
         else:  # len(visited) == cutoff:
-            for target in targets - visited:
-                count = (OutOfCoreList(children) + [child]).count(target)
+            for target in targets - G.set_(visited):
+                count = (G.int_list(children) + [child]).count(target)
                 for i in range(count):
                     yield visited + [target]
             stack.pop()
@@ -398,10 +398,10 @@ def all_simple_edge_paths(G, source, target, cutoff=None):
     if source not in G:
         raise nx.NodeNotFound("source node %s not in graph" % source)
     if target in G:
-        targets = OutOfCoreSet({target})
+        targets = G.set_({target})
     else:
         try:
-            targets = OutOfCoreSet(target)
+            targets = G.set_(target)
         except TypeError:
             raise nx.NodeNotFound("target node %s not in graph" % target)
     if source in targets:

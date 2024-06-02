@@ -1,5 +1,6 @@
 from itertools import chain
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -30,7 +31,7 @@ def _test_stoer_wagner(G, answer, weight="weight"):
     assert cut_value == answer
     _check_partition(G, cut_value, partition, weight)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_graph1():
     G = nx.Graph()
     G.add_edge("x", "a", weight=3)
@@ -43,7 +44,7 @@ def test_graph1():
     G.add_edge("e", "y", weight=3)
     _test_stoer_wagner(G, 4)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_graph2():
     G = nx.Graph()
     G.add_edge("x", "a")
@@ -56,7 +57,7 @@ def test_graph2():
     G.add_edge("e", "y")
     _test_stoer_wagner(G, 2)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_graph3():
     # Source:
     # Stoer, M. and Wagner, F. (1997). "A simple min-cut algorithm". Journal of
@@ -77,6 +78,7 @@ def test_graph3():
     _test_stoer_wagner(G, 4)
 
 
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support edge deletion")
 def test_weight_name():
     G = nx.Graph()
     G.add_edge(1, 2, weight=1, cost=8)
@@ -84,7 +86,7 @@ def test_weight_name():
     G.add_edge(2, 3, cost=4)
     _test_stoer_wagner(G, 6, weight="cost")
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_exceptions():
     G = nx.Graph()
     pytest.raises(nx.NetworkXError, nx.stoer_wagner, G)

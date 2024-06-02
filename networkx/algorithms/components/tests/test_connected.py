@@ -1,3 +1,4 @@
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -63,6 +64,7 @@ class TestConnected:
 
     # This additionally tests the @nx._dispatch mechanism, treating
     # nx.connected_components as if it were a re-implementation from another package
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     @pytest.mark.parametrize("wrapper", [lambda x: x, dispatch_interface.convert])
     def test_connected_components(self, wrapper):
         cc = nx.connected_components
@@ -94,6 +96,7 @@ class TestConnected:
         C = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16}
         assert ncc(G, 1) == C
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_is_connected(self):
         assert nx.is_connected(self.grid)
         G = nx.Graph()

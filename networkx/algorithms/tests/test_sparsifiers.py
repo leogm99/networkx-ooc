@@ -3,6 +3,7 @@ import pytest
 
 import networkx as nx
 from networkx.utils import py_random_state
+from networkx.algorithms.tests import app_mode
 
 _seed = 2
 
@@ -95,7 +96,7 @@ def test_spanner_weighted_complete_graph():
     spanner = nx.spanner(G, 10, weight="weight", seed=_seed)
     _test_spanner(G, spanner, 10, weight="weight")
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_spanner_unweighted_gnp_graph():
     """Test spanner construction on an unweighted gnp graph."""
     G = nx.gnp_random_graph(20, 0.4, seed=_seed)
@@ -106,7 +107,7 @@ def test_spanner_unweighted_gnp_graph():
     spanner = nx.spanner(G, 10, seed=_seed)
     _test_spanner(G, spanner, 10)
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_spanner_weighted_gnp_graph():
     """Test spanner construction on an weighted gnp graph."""
     G = nx.gnp_random_graph(20, 0.4, seed=_seed)

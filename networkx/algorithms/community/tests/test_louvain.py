@@ -1,5 +1,7 @@
 import networkx as nx
 
+from networkx.algorithms.tests import app_mode
+import pytest
 
 def test_modularity_increase():
     G = nx.LFR_benchmark_graph(
@@ -11,7 +13,7 @@ def test_modularity_increase():
 
     assert nx.community.modularity(G, partition) > mod
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_valid_partition():
     G = nx.LFR_benchmark_graph(
         250, 3, 1.5, 0.009, average_degree=5, min_community=20, seed=10
@@ -101,7 +103,7 @@ def test_directed_partition():
     assert G_partition == G_expected_partition
     assert H_partition == H_expected_partition
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_none_weight_param():
     G = nx.karate_club_graph()
     nx.set_edge_attributes(
@@ -123,7 +125,7 @@ def test_none_weight_param():
     assert part != partition3
     assert partition2 != partition3
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_quality():
     G = nx.LFR_benchmark_graph(
         250, 3, 1.5, 0.009, average_degree=5, min_community=20, seed=10
@@ -147,7 +149,7 @@ def test_quality():
     assert quality3 >= 0.65
     assert quality4 >= 0.65
 
-
+@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
 def test_multigraph():
     G = nx.karate_club_graph()
     H = nx.MultiGraph(G)

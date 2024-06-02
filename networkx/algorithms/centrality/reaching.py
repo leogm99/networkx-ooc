@@ -3,9 +3,6 @@
 import networkx as nx
 from networkx.utils import pairwise
 
-from networkx.structures.out_of_core_list import OutOfCoreList
-from networkx.structures.primitive_dicts import PrimitiveType
-
 __all__ = ["global_reaching_centrality", "local_reaching_centrality"]
 
 
@@ -117,7 +114,7 @@ def global_reaching_centrality(G, weight=None, normalized=True):
     #     centrality(G, node, paths=paths, weight=weight, normalized=normalized)
     #     for node, paths in shortest_paths.items()
     # ]
-    lrc = OutOfCoreList(value_primitive_type=PrimitiveType.FLOAT)
+    lrc = G.float_list()
     for node, paths in shortest_paths.items():
         lrc.append(centrality(G, node, paths=paths, weight=weight, normalized=normalized))
 

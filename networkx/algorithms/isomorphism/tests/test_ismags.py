@@ -2,6 +2,7 @@
     Tests for ISMAGS isomorphism algorithm.
 """
 
+from networkx.algorithms.tests import app_mode
 import pytest
 
 import networkx as nx
@@ -50,6 +51,7 @@ class TestSelfIsomorphism:
         ([], [(0, 1), (1, 2), (1, 4), (2, 3), (3, 5), (3, 6)]),
     ]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_self_isomorphism(self):
         """
         For some small, symmetric graphs, make sure that 1) they are isomorphic
@@ -69,6 +71,7 @@ class TestSelfIsomorphism:
                 {n: n for n in graph.nodes}
             ]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_edgecase_self_isomorphism(self):
         """
         This edgecase is one of the cases in which it is hard to find all
@@ -87,6 +90,7 @@ class TestSelfIsomorphism:
         ismags_answer = list(ismags.find_isomorphisms(True))
         assert ismags_answer == [{n: n for n in graph.nodes}]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_directed_self_isomorphism(self):
         """
         For some small, directed, symmetric graphs, make sure that 1) they are
@@ -121,6 +125,7 @@ class TestSubgraphIsomorphism:
             {n: n for n in g1.nodes}
         ]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_isomorphism2(self):
         g1 = nx.Graph()
         nx.add_path(g1, range(3))
@@ -147,6 +152,7 @@ class TestSubgraphIsomorphism:
             expected_symmetric + expected_asymmetric
         )
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_labeled_nodes(self):
         g1 = nx.Graph()
         nx.add_cycle(g1, range(3))
@@ -165,6 +171,7 @@ class TestSubgraphIsomorphism:
             expected_symmetric + expected_asymmetric
         )
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_labeled_edges(self):
         g1 = nx.Graph()
         nx.add_cycle(g1, range(3))
@@ -219,6 +226,7 @@ class TestWikipediaExample:
         [4, 8],
     ]
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_graph(self):
         g1 = nx.Graph()
         g2 = nx.Graph()

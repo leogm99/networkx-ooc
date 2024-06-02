@@ -3,6 +3,7 @@ import pytest
 np = pytest.importorskip("numpy")
 pytest.importorskip("scipy")
 
+from networkx.algorithms.tests import app_mode
 
 import networkx as nx
 from networkx.algorithms.assortativity.correlation import attribute_ac
@@ -15,6 +16,7 @@ class TestDegreeMixingCorrelation(BaseTestDegreeMixing):
         r = nx.degree_assortativity_coefficient(self.P4)
         np.testing.assert_almost_equal(r, -1.0 / 2, decimal=4)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_degree_assortativity_node_kwargs(self):
         G = nx.Graph()
         edges = [(0, 1), (0, 3), (1, 2), (1, 3), (1, 4), (5, 9), (9, 0)]
@@ -54,6 +56,7 @@ class TestDegreeMixingCorrelation(BaseTestDegreeMixing):
         r = nx.degree_pearson_correlation_coefficient(self.M)
         np.testing.assert_almost_equal(r, -1.0 / 7.0, decimal=4)
 
+    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
     def test_degree_assortativity_weighted(self):
         r = nx.degree_assortativity_coefficient(self.W, weight="weight")
         np.testing.assert_almost_equal(r, -0.1429, decimal=4)
