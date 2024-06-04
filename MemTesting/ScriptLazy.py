@@ -1,6 +1,7 @@
 import sys
 import networkx as nx
 import time
+from networkx.algorithms import approximation as approx
 
 def main(n, p):
     # TODO: change path
