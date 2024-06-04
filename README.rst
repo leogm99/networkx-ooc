@@ -153,6 +153,23 @@ Additionally, LazyGraph does not support the support the following methods:
 #. remove_edge
 #. copy
 
+If you want to use the OOC Structs without a LazyGraph, you can import the following classes:
+
+.. code:: python
+    from networkx.structures.edges_dict import EdgesDict
+    from networkx.structures.out_of_core_deque import OutOfCoreDeque
+    from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
+    from networkx.structures.out_of_core_list import OutOfCoreList
+    from networkx.structures.out_of_core_set import OutOfCoreSet
+    from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
+
+    oocIntDict = IntDict()
+    oocIntFloatDict = IntFloatDict()
+    oocList = OutOfCoreList()
+    oocSet = OutOfCoreSet()
+    oocDeque = OutOfCoreDeque()
+    oocDictOfLists = OutOfCoreDictOfLists()
+    oocEdgesDict = EdgesDict()
 
 Common Issues
 --------------
