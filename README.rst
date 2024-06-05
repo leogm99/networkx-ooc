@@ -172,6 +172,13 @@ If you want to use the OOC Structs without a LazyGraph, you can import the follo
     oocDictOfLists = OutOfCoreDictOfLists()
     oocEdgesDict = EdgesDict()
 
+Implemented Algorithms
+----------------------------
+
+To see the full out of core implemented algorithms list, you can check the following file: `Implemented_algorithms.md <Implemented_algorithms.md>`_.
+
+
+
 Common Issues
 --------------
 
