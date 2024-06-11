@@ -89,14 +89,21 @@ def run_and_monitor_script(script_path, output_dir, n, p):
     time.sleep(1)
 
 if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print("Usage: python monitoring_script.py <script_to_run.py>")
-        sys.exit(1)
+    # if len(sys.argv) != 2:
+    #     print("Usage: python monitoring_script.py <script_to_run.py>")
+    #     sys.exit(1)
 
     os.environ['TMPDIR'] = '/home/grey/networkx/MemTesting/DB'
-    script_to_run = sys.argv[1]
-    for n in [3, 4, 3, 4, 0, 1, 2]:
-        for p in [1, 3, 4, 5, 6, 7, 10]:
-            output_dir = f'newResults/{script_to_run}_n_{n}_p_{p}/'
-            os.makedirs(output_dir, exist_ok=True)
-            run_and_monitor_script(script_to_run, output_dir, n, p)
+    for script_to_run in  ["ScriptLazy.py", "ScriptBase.py"]:
+        for n in [0, 1, 2, 3, 4]:
+            for p in [0, 0, 0, 0, 0]:
+                output_dir = f'newResults/{script_to_run}_n_{n}_p_{p}/'
+                os.makedirs(output_dir, exist_ok=True)
+                run_and_monitor_script(script_to_run, output_dir, n, p)
+
+    for script_to_run in  ["ScriptLazy.py"]:
+        for n in [3, 4, 3, 4, 3, 4]:
+            for p in [5]:
+                output_dir = f'newResults/{script_to_run}_n_{n}_p_{p}/'
+                os.makedirs(output_dir, exist_ok=True)
+                run_and_monitor_script(script_to_run, output_dir, n, p)
