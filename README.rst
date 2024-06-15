@@ -45,12 +45,6 @@ Its important to note that the tests are run in a lazy mode by default. If you w
 Use
 -------
 
-The library have the possibility to run in Out-Of-Core mode or in a normal networkX mode. To run in OOC mode, you need to set the parameter `MODE=lazy` in the .env file at the root of the project.
-
-If you want to run in a normal networkX way, set the parameter `MODE=normal` in the .env file at the root of the project.
-
-We set this value at 'lazy' by default. The OOC mode is useful when you have a large graph that does not fit in memory.
-
 Once you have set de virtualenv and installed the dependencies, you can import the lazyGraph class and use it as you would use the networkX Graph class:
 
 .. code:: python
@@ -87,6 +81,26 @@ Additionally, LazyGraph does not support the support the following methods:
 #. remove_edge
 #. copy
 
+
+The library works on ooc mode if you use a LazyGraph as attribute to the algorithmm, and normal mode if you use a NX Graph as attribute to the algorithm.
+
+If you want to use the library in a normal networkx way, you only need to make an instance of the original NX Graph class, an then you can use the algorithm as you would use in a normal networkX graph, using this graph as attribute to algorithm:
+
+.. code:: python
+
+    import networkx as nx
+    from networkx import LazyGraph
+
+    G = nx.Graph()
+    G.add_edge(1, 2)
+    LazyG = LazyGraph()
+    LazyG.add_edge(1, 2)
+
+    nx.shortest_path(G, 1, 2) # This will run in normal mode
+    nx.shortest_path(LazyG, 1, 2) # This will run in ooc mode
+
+
+
 If you want to use the OOC Structs without a LazyGraph, you can import the following classes:
 
 .. code:: python
@@ -111,6 +125,7 @@ Implemented Algorithms
 
 To see the full out of core implemented algorithms list, you can check the following file: `Implemented_algorithms.md <Implemented_algorithms.md>`_.
 
+The rest of the algorithms can work with a LazyGraph as an attribute, if they do not use the functions not implemented for the LazyGraph, but they will not use the OOC Structs.
 
 Common Issues
 --------------
