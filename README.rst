@@ -82,7 +82,7 @@ Additionally, LazyGraph does not support the support the following methods:
 #. copy
 
 
-The library works on ooc mode if you use a LazyGraph as attribute to the algorithmm, and normal mode if you use a NX Graph as attribute to the algorithm.
+The library works in ooc mode if you use a LazyGraph as an algorithms attribute, and in normal mode if you use an NX Graph as an algorithms attribute.
 
 If you want to use the library in a normal networkx way, you only need to make an instance of the original NX Graph class, an then you can use the algorithm as you would use in a normal networkX graph, using this graph as attribute to algorithm:
 
