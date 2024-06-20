@@ -36,7 +36,7 @@ def raises(exception):
     return inner
 
 
-class TestLazyGraph(BaseAttrGraphTester):
+class TestOutOfCoreGraph(BaseAttrGraphTester):
     def setup_method(self):
         self.Graph = nx.OutOfCoreGraph
         adj = LazyAdjacencyList()
