@@ -322,7 +322,7 @@ class TestWeightedDistance:
         assert set(nx.center(self.G, usebounds=True, weight=self.weight_fn)) == result
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestResistanceDistance:
     @classmethod
     def setup_class(cls):
@@ -418,7 +418,7 @@ class TestBarycenter:
         del sp[0][1]
         pytest.raises(nx.NetworkXNoPath, nx.barycenter, K_5, sp=sp)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_trees(self):
         """The barycenter of a tree is a single vertex or an edge.
 
@@ -434,7 +434,7 @@ class TestBarycenter:
                 assert len(b) == 1
                 assert b.size() == 0
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_this_one_specific_tree(self):
         """Test the tree pictured at the bottom of [West01]_, p. 78."""
         g = nx.Graph(

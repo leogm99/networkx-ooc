@@ -65,7 +65,7 @@ class TestHarmonicFunction:
         for i in range(len(G)):
             assert predicted[i] == G.nodes[i][label_name]
     
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_labeled_nodes_are_not_changed(self):
         G = nx.karate_club_graph()
         label_name = "club"

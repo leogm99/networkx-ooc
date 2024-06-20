@@ -44,7 +44,7 @@ class TestBFS:
         assert list(edges_asc) == [(0, 1), (0, 2), (1, 3), (1, 4), (2, 5)]
         assert list(edges_desc) == [(0, 2), (0, 1), (2, 5), (1, 4), (1, 3)]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_bfs_tree_isolates(self):
         G = nx.Graph()
         G.add_node(1)
@@ -63,7 +63,7 @@ class TestBFS:
         assert dict(enumerate(nx.bfs_layers(self.G, sources=[0]))) == expected
         assert dict(enumerate(nx.bfs_layers(self.G, sources=0))) == expected
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_bfs_layers_missing_source(self):
         with pytest.raises(nx.NetworkXError):
             next(nx.bfs_layers(self.G, sources="abc"))
@@ -74,7 +74,7 @@ class TestBFS:
         for distance, descendants in enumerate([{0}, {1}, {2, 3}, {4}]):
             assert nx.descendants_at_distance(self.G, 0, distance) == descendants
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_descendants_at_distance_missing_source(self):
         with pytest.raises(nx.NetworkXError):
             nx.descendants_at_distance(self.G, "abc", 0)

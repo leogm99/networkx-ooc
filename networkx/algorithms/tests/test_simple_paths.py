@@ -243,7 +243,7 @@ def test_cutoff_zero():
     assert [list(p) for p in paths] == []
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+@pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
 def test_source_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
@@ -251,7 +251,7 @@ def test_source_missing():
         list(nx.all_simple_paths(nx.MultiGraph(G), 0, 3))
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+@pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
 def test_target_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
@@ -434,14 +434,14 @@ def test_edge_cutoff_zero():
     paths = nx.all_simple_edge_paths(nx.MultiGraph(nx.complete_graph(4)), 0, 3, cutoff=0)
     assert [list(p) for p in paths] == []
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+@pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
 def test_edge_source_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()
         nx.add_path(G, [1, 2, 3])
         list(nx.all_simple_edge_paths(nx.MultiGraph(G), 0, 3))
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+@pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
 def test_edge_target_missing():
     with pytest.raises(nx.NodeNotFound):
         G = nx.Graph()

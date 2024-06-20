@@ -90,11 +90,11 @@ class TestLRPlanarity:
         ]
         self.check_graph(nx.Graph(e), is_planar=True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_k3_3(self):
         self.check_graph(nx.complete_bipartite_graph(3, 3), is_planar=False)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_k5(self):
         self.check_graph(nx.complete_graph(5), is_planar=False)
 
@@ -102,7 +102,7 @@ class TestLRPlanarity:
         e = [(1, 2), (2, 3), (3, 1), (4, 5), (5, 6), (6, 4)]
         self.check_graph(nx.Graph(e), is_planar=True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_multiple_components_non_planar(self):
         G = nx.complete_graph(5)
         # add another planar component to the non planar component
@@ -110,7 +110,7 @@ class TestLRPlanarity:
         G.add_edges_from([(6, 7), (7, 8), (8, 6)])
         self.check_graph(G, is_planar=False)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_non_planar_with_selfloop(self):
         G = nx.complete_graph(5)
         # add self loops
@@ -118,7 +118,7 @@ class TestLRPlanarity:
             G.add_edge(i, i)
         self.check_graph(G, is_planar=False)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_non_planar1(self):
         # tests a graph that has no subgraph directly isomorph to K5 or K3_3
         e = [
@@ -141,7 +141,7 @@ class TestLRPlanarity:
         G = nx.Graph(e)
         self.check_graph(G, is_planar=True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_comp(self):
         # test multiple component graph
         e = [(1, 2), (3, 4)]
@@ -187,7 +187,7 @@ class TestLRPlanarity:
         G = nx.MultiGraph([(1, 2), (1, 2), (1, 2), (1, 2), (2, 3), (3, 1)])
         self.check_graph(G, is_planar=True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_non_planar_multigraph(self):
         G = nx.MultiGraph(nx.complete_graph(5))
         G.add_edges_from([(1, 2)] * 5)
@@ -197,14 +197,14 @@ class TestLRPlanarity:
         G = nx.DiGraph([(1, 2), (2, 3), (2, 4), (4, 1), (4, 2), (1, 4), (3, 2)])
         self.check_graph(G, is_planar=True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_non_planar_digraph(self):
         G = nx.DiGraph(nx.complete_graph(5))
         G.remove_edge(1, 2)
         G.remove_edge(4, 1)
         self.check_graph(G, is_planar=False)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_single_component(self):
         # Test a graph with only a single node
         G = nx.Graph()
@@ -228,7 +228,7 @@ class TestLRPlanarity:
         )
         self.check_graph(G, is_planar=True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_graph2(self):
         G = nx.Graph(
             [
@@ -253,7 +253,7 @@ class TestLRPlanarity:
         )
         self.check_graph(G, is_planar=False)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_graph3(self):
         G = nx.Graph(
             [

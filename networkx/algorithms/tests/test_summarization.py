@@ -189,7 +189,7 @@ class TestUnDirectedDedensification:
                 compressed_graph.add_edge(source, target)
         return compressed_graph
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_dedensify_edges(self):
         """
         Verifies that dedensify produced correct compressor nodes and the
@@ -206,7 +206,7 @@ class TestUnDirectedDedensification:
             assert has_compressed_edge == verified_has_compressed_edge
         assert len(c_nodes) == len(self.c_nodes)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_dedensify_edge_count(self):
         """
         Verifies that dedensify produced the correct number of edges in an
@@ -240,7 +240,7 @@ class AbstractSNAP:
     def build_summary_graph(self):
         pass
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_summary_graph(self):
         original_graph = self.build_original_graph()
         summary_graph = self.build_summary_graph()
@@ -268,7 +268,7 @@ class AbstractSNAP:
 class TestSNAPNoEdgeTypes(AbstractSNAP):
     relationship_attributes = ()
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_summary_graph(self):
         original_graph = self.build_original_graph()
         summary_graph = self.build_summary_graph()

@@ -84,7 +84,7 @@ class TestGeneratorsBipartite:
         for n1, n2 in [([1, 2], 3), (3, [1, 2]), ([1,2,3], [2,3,4])]:
             pytest.raises(nx.NetworkXError, complete_bipartite_graph, n1, n2)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_configuration_model(self):
         aseq = []
         bseq = []
@@ -142,7 +142,7 @@ class TestGeneratorsBipartite:
             create_using=nx.MultiDiGraph,
         )
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_havel_hakimi_graph(self):
         aseq = []
         bseq = []
@@ -194,7 +194,7 @@ class TestGeneratorsBipartite:
             create_using=nx.MultiDiGraph,
         )
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_reverse_havel_hakimi_graph(self):
         aseq = []
         bseq = []
@@ -259,7 +259,7 @@ class TestGeneratorsBipartite:
             create_using=nx.MultiDiGraph,
         )
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_alternating_havel_hakimi_graph(self):
         aseq = []
         bseq = []

@@ -21,7 +21,7 @@ def test_modularity_communities(func):
     expected = {john_a, overlap, mr_hi}
     assert set(func(G, weight=None)) == expected
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 @pytest.mark.parametrize(
     "func", (greedy_modularity_communities, naive_greedy_modularity_communities)
 )

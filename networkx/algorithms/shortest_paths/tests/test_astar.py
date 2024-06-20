@@ -182,7 +182,7 @@ class TestAStar:
         assert nx.astar_path(C, 0, 3) == [0, 1, 2, 3]
         assert nx.dijkstra_path(C, 0, 4) == [0, 6, 5, 4]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_unorderable_nodes(self):
         """Tests that A* accommodates nodes that are not orderable.
 
@@ -197,7 +197,7 @@ class TestAStar:
         path = nx.astar_path(G, nodes[0], nodes[2])
         assert len(path) == 3
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_astar_NetworkXNoPath(self):
         """Tests that exception is raised when there exists no
         path between source and target"""

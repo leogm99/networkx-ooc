@@ -16,7 +16,7 @@ class TestDegreeCentrality:
         self.P3 = nx.path_graph(3)
         self.K5 = nx.complete_graph(5)
 
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             F = nx.Graph()  # Florentine families
             F.add_edge("Acciaiuoli", "Medici")
             F.add_edge("Castellani", "Peruzzi")
@@ -80,7 +80,7 @@ class TestDegreeCentrality:
         for n, dc in d.items():
             assert exact[n] == pytest.approx(float(f"{dc:.3f}"), abs=1e-7)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_degree_centrality_4(self):
         d = nx.degree_centrality(self.F)
         names = sorted(self.F.nodes())

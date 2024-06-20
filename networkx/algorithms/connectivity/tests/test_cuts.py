@@ -42,7 +42,7 @@ def test_articulation_points():
             assert len(cut) == 1, errmsg
             assert cut.pop() in set(nx.articulation_points(G)), errmsg
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_brandes_erlebach_book():
     # Figure 1 chapter 7: Connectivity
     # http://www.informatik.uni-augsburg.de/thi/personen/kammer/Graph_Connectivity.pdf

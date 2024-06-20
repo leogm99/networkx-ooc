@@ -35,7 +35,7 @@ def is_clique(G, nodes):
     n = len(H)
     return H.number_of_edges() == n * (n - 1) // 2
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestCliqueRemoval:
     """Unit tests for the
     :func:`~networkx.algorithms.approximation.clique_removal` function.
@@ -62,7 +62,7 @@ class TestCliqueRemoval:
         assert is_independent_set(G, independent_set)
         assert all(is_clique(G, clique) for clique in cliques)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestMaxClique:
     """Unit tests for the :func:`networkx.algorithms.approximation.max_clique`
     function.
@@ -105,13 +105,13 @@ def test_large_clique_size():
 
 
     assert large_clique_size(G) == 9
-    if (app_mode != 'lazy'):
+    if (app_mode != 'ooc'):
         G.remove_node(5)
         assert large_clique_size(G) == 8
         G.remove_edge(2, 3)
         assert large_clique_size(G) == 7    
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_independent_set():
     # smoke test
     G = nx.Graph()

@@ -44,39 +44,39 @@ class TestTreeRecognition:
 
         cls.NF1 = nx.compose(cls.T6, cls.N6)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_null_tree(self):
         with pytest.raises(nx.NetworkXPointlessConcept):
             nx.is_tree(self.graph())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_null_tree2(self):
         with pytest.raises(nx.NetworkXPointlessConcept):
             nx.is_tree(self.multigraph())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_null_forest(self):
         with pytest.raises(nx.NetworkXPointlessConcept):
             nx.is_forest(self.graph())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_null_forest2(self):
         with pytest.raises(nx.NetworkXPointlessConcept):
             nx.is_forest(self.multigraph())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_is_tree(self):
         assert nx.is_tree(self.T2)
         assert nx.is_tree(self.T3)
         assert nx.is_tree(self.T5)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_is_not_tree(self):
         assert not nx.is_tree(self.N4)
         assert not nx.is_tree(self.N5)
         assert not nx.is_tree(self.N6)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_is_forest(self):
         assert nx.is_forest(self.T2)
         assert nx.is_forest(self.T3)
@@ -84,7 +84,7 @@ class TestTreeRecognition:
         assert nx.is_forest(self.F1)
         assert nx.is_forest(self.N5)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_is_not_forest(self):
         assert not nx.is_forest(self.N4)
         assert not nx.is_forest(self.N6)

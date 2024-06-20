@@ -46,7 +46,7 @@ class TestNodeOrdering:
         gparams = _GraphParameters(G1, G2, None, None, None, None, None)
         assert len(set(_matching_order(gparams))) == 0
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_single_node(self):
         G1 = nx.Graph()
         G2 = nx.Graph()
@@ -75,7 +75,7 @@ class TestNodeOrdering:
         m = _matching_order(gparams)
         assert m == [1]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_matching_order(self):
         labels = [
             "blue",
@@ -137,7 +137,7 @@ class TestNodeOrdering:
         expected = [9, 11, 10, 13, 12, 1, 2, 4, 0, 3, 6, 5, 7, 8]
         assert _matching_order(gparams) == expected
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_matching_order_all_branches(self):
         G1 = nx.Graph(
             [(0, 1), (0, 2), (0, 3), (0, 4), (1, 2), (1, 3), (1, 4), (2, 4), (3, 4)]
@@ -175,7 +175,7 @@ class TestNodeOrdering:
         expected = [0, 4, 1, 3, 2, 5]
         assert _matching_order(gparams) == expected
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestGraphCandidateSelection:
     G1_edges = [
         (1, 2),
@@ -963,7 +963,7 @@ class TestDiGraphCandidateSelection:
         assert _find_candidates(u, gparams, sparams, g1_degree) == {4}
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestGraphISOFeasibility:
     def test_const_covered_neighbors(self):
         G1 = nx.Graph([(0, 1), (1, 2), (3, 0), (3, 2)])
@@ -2809,10 +2809,10 @@ class TestGraphTinoutUpdating:
     G1 = nx.Graph()
     G1.add_edges_from(edges)
     G1.add_node(0)
-    if (app_mode != "lazy"):
+    if (app_mode != 'ooc'):
         G2 = nx.relabel_nodes(G1, mapping=mapped)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_updating(self):
         G2_degree = dict(self.G2.degree)
         gparams, sparams = _initialize_parameters(self.G1, self.G2, G2_degree)
@@ -2868,7 +2868,7 @@ class TestGraphTinoutUpdating:
         assert T1_tilde == set()
         assert T2_tilde == set()
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_restoring(self):
         m = {0: "x", 3: "c", 4: "d", 5: "e", 6: "f"}
         m_rev = {"x": 0, "c": 3, "d": 4, "e": 5, "f": 6}
@@ -2961,10 +2961,10 @@ class TestDiGraphTinoutUpdating:
     }
     G1 = nx.DiGraph(edges)
     G1.add_node(0)
-    if (app_mode != "lazy"):
+    if (app_mode != 'ooc'):
         G2 = nx.relabel_nodes(G1, mapping=mapped)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_updating(self):
         G2_degree = {
             n: (in_degree, out_degree)
@@ -3035,7 +3035,7 @@ class TestDiGraphTinoutUpdating:
         assert T1_tilde == set()
         assert T2_tilde == set()
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_restoring(self):
         m = {0: "x", 3: "c", 4: "d", 5: "e", 6: "f"}
         m_rev = {"x": 0, "c": 3, "d": 4, "e": 5, "f": 6}

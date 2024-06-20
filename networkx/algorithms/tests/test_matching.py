@@ -50,7 +50,7 @@ class TestMaxWeightMatching:
             matching_dict_to_set({1: 2, 2: 1}),
         )
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_path(self):
         G = nx.Graph()
         G.add_edge(1, 2, weight=5)
@@ -139,7 +139,7 @@ class TestMaxWeightMatching:
         assert edges_equal(nx.max_weight_matching(G), answer)
         assert edges_equal(nx.min_weight_matching(G), answer)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_s_t_blossom(self):
         """Create S-blossom, relabel as T-blossom, use for augmentation:"""
         G = nx.Graph()

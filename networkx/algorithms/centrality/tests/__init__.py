@@ -8,7 +8,7 @@ import os
 load_dotenv()
 app_mode = os.getenv('MODE')
 print(f"App mode: {app_mode}")
-if (app_mode == 'lazy'):
+if (app_mode == 'ooc'):
     nx.Graph = OutOfCoreGraph
 
 __all__ = ['app_mode']

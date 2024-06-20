@@ -11,7 +11,7 @@ rng = 42
 
 from networkx.algorithms.approximation.tests import app_mode
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_reference():
     G = nx.connected_watts_strogatz_graph(50, 6, 0.1, seed=rng)
     Gr = random_reference(G, niter=1, seed=rng)
@@ -27,7 +27,7 @@ def test_random_reference():
     H = nx.Graph(((0, 1), (2, 3)))
     Hl = random_reference(H, niter=1, seed=rng)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_lattice_reference():
     G = nx.connected_watts_strogatz_graph(50, 6, 1, seed=rng)
     Gl = lattice_reference(G, niter=1, seed=rng)
@@ -41,7 +41,7 @@ def test_lattice_reference():
     H = nx.Graph(((0, 1), (2, 3)))
     Hl = lattice_reference(H, niter=1)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_sigma():
     Gs = nx.connected_watts_strogatz_graph(50, 6, 0.1, seed=rng)
     Gr = nx.connected_watts_strogatz_graph(50, 6, 1, seed=rng)
@@ -49,7 +49,7 @@ def test_sigma():
     sigmar = sigma(Gr, niter=1, nrand=2, seed=rng)
     assert sigmar < sigmas
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_omega():
     Gl = nx.connected_watts_strogatz_graph(50, 6, 0, seed=rng)
     Gr = nx.connected_watts_strogatz_graph(50, 6, 1, seed=rng)

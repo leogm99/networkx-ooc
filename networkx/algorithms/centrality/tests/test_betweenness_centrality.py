@@ -123,7 +123,7 @@ class TestBetweennessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_florentine_families_graph(self):
         """Betweenness centrality: Florentine families graph"""
         G = nx.florentine_families_graph()
@@ -149,7 +149,7 @@ class TestBetweennessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_les_miserables_graph(self):
         """Betweenness centrality: Les Miserables graph"""
         G = nx.les_miserables_graph()
@@ -361,7 +361,7 @@ class TestWeightedBetweennessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_florentine_families_graph(self):
         """Weighted betweenness centrality:
         Florentine families graph"""
@@ -388,7 +388,7 @@ class TestWeightedBetweennessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_les_miserables_graph(self):
         """Weighted betweenness centrality: Les Miserables graph"""
         G = nx.les_miserables_graph()
@@ -519,7 +519,7 @@ class TestWeightedBetweennessCentrality:
         for n in sorted(G):
             assert b[n] == pytest.approx(b_answer[n], abs=1e-7)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_G3(self):
         """Weighted betweenness centrality: G3"""
         G = nx.MultiGraph(weighted_G())

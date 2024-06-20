@@ -61,7 +61,7 @@ def test_average_path_graph():
     assert bipartite.average_clustering(G, mode="max") == 0.5
     assert bipartite.average_clustering(G, mode="min") == 1
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_ra_clustering_davis():
     G = nx.davis_southern_women_graph()
     cc4 = round(bipartite.robins_alexander_clustering(G), 3)

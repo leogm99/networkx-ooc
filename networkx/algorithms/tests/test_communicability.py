@@ -26,7 +26,7 @@ class TestCommunicability:
             for k2 in val:
                 assert answer[k1][k2] == pytest.approx(result[k1][k2], abs=1e-7)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_communicability2(self):
         answer_orig = {
             ("1", "1"): 1.6445956054135658,

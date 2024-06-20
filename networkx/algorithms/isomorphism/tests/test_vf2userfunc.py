@@ -10,7 +10,7 @@ import pytest
 import networkx as nx
 import networkx.algorithms.isomorphism as iso
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_simple():
     # 16 simple tests
     w = "weight"
@@ -73,7 +73,7 @@ def test_weightkey():
     g2.add_edge("C", "D")
     assert nx.is_isomorphic(g1, g2, edge_match=em)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestNodeMatch_Graph:
     def setup_method(self):
         self.g1 = nx.Graph()

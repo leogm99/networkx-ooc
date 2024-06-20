@@ -14,7 +14,7 @@ class TestBipartiteCentrality:
 
         cls.C4 = nx.cycle_graph(4)
 
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             cls.davis = nx.davis_southern_women_graph()
             cls.top_nodes = [
                 n for n, d in cls.davis.nodes(data=True) if d["bipartite"] == 0
@@ -80,7 +80,7 @@ class TestBipartiteCentrality:
         for key in c:
             assert round(c[key], 6) == round(answer[key], 6)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_davis_degree_centrality(self):
         G = self.davis
         deg = bipartite.degree_centrality(G, self.top_nodes)
@@ -121,7 +121,7 @@ class TestBipartiteCentrality:
         for node, value in answer.items():
             assert value == pytest.approx(deg[node], abs=1e-2)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_davis_betweenness_centrality(self):
         G = self.davis
         bet = bipartite.betweenness_centrality(G, self.top_nodes)
@@ -162,7 +162,7 @@ class TestBipartiteCentrality:
         for node, value in answer.items():
             assert value == pytest.approx(bet[node], abs=1e-2)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_davis_closeness_centrality(self):
         G = self.davis
         clos = bipartite.closeness_centrality(G, self.top_nodes)

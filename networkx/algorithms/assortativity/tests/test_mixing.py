@@ -31,7 +31,7 @@ class TestDegreeMixingDict(BaseTestDegreeMixing):
         d_result = {1: {2: 1}, 2: {1: 1, 3: 3}, 3: {2: 3}}
         assert d == d_result
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_degree_mixing_dict_weighted(self):
         d = nx.degree_mixing_dict(self.W, weight="weight")
         d_result = {0.5: {1.5: 1}, 1.5: {1.5: 6, 0.5: 1}}
@@ -74,7 +74,7 @@ class TestDegreeMixingMatrix(BaseTestDegreeMixing):
         a = nx.degree_mixing_matrix(self.M)
         np.testing.assert_equal(a, a_result / a_result.sum())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_degree_mixing_matrix_selfloop(self):
         # fmt: off
         a_result = np.array([[2]])
@@ -84,7 +84,7 @@ class TestDegreeMixingMatrix(BaseTestDegreeMixing):
         a = nx.degree_mixing_matrix(self.S)
         np.testing.assert_equal(a, a_result / a_result.sum())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_degree_mixing_matrix_weighted(self):
         a_result = np.array([[0.0, 1.0], [1.0, 6.0]])
         a = nx.degree_mixing_matrix(self.W, weight="weight", normalized=False)
@@ -92,7 +92,7 @@ class TestDegreeMixingMatrix(BaseTestDegreeMixing):
         a = nx.degree_mixing_matrix(self.W, weight="weight")
         np.testing.assert_equal(a, a_result / float(a_result.sum()))
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_degree_mixing_matrix_mapping(self):
         a_result = np.array([[6.0, 1.0], [1.0, 0.0]])
         mapping = {0.5: 1, 1.5: 0}

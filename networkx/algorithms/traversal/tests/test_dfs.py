@@ -57,7 +57,7 @@ class TestDFS:
         edges = nx.dfs_edges(self.D)
         assert list(edges) == [(0, 1), (2, 3)]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_dfs_labeled_edges(self):
         edges = list(nx.dfs_labeled_edges(self.G, source=0))
         forward = [(u, v) for (u, v, d) in edges if d == "forward"]

@@ -141,7 +141,7 @@ def test_laplacian_centrality_K5():
     for n, dc in d.items():
         assert exact[n] == pytest.approx(dc, abs=1e-7)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+@pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
 def test_laplacian_centrality_FF():
     FF = nx.florentine_families_graph()
     d = nx.laplacian_centrality(FF)

@@ -5,7 +5,7 @@ import networkx as nx
 
 
 class TestImmediateDominators:
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_exceptions(self):
         G = nx.Graph()
         G.add_node(0)
@@ -82,7 +82,7 @@ class TestImmediateDominators:
 
 
 class TestDominanceFrontiers:
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_exceptions(self):
         G = nx.Graph()
         G.add_node(0)

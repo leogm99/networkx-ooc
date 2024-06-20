@@ -49,7 +49,7 @@ class TestPercolationCentrality:
         for n, k in p_answer.items():
             assert p[n] == pytest.approx(k, abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_converge_to_betweenness(self):
         """percolation centrality: should converge to betweenness
         centrality when all nodes are percolated the same"""

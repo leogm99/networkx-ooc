@@ -323,7 +323,7 @@ class TestDAG:
         assert descendants(G, 3) == set()
         pytest.raises(nx.NetworkXError, descendants, G, 8)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_transitive_closure(self):
         G = nx.DiGraph([(1, 2), (2, 3), (3, 4)])
         solution = [(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)]
@@ -364,7 +364,7 @@ class TestDAG:
         with pytest.raises(nx.NetworkXError):
             nx.transitive_closure(G, reflexive="wrong input")
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_reflexive_transitive_closure(self):
         G = nx.DiGraph([(1, 2), (2, 3), (3, 4)])
         solution = [(1, 2), (1, 3), (1, 4), (2, 3), (2, 4), (3, 4)]
@@ -625,7 +625,7 @@ def test_is_aperiodic_raise():
     G = nx.Graph()
     pytest.raises(nx.NetworkXError, nx.is_aperiodic, G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_is_aperiodic_bipartite():
     # Bipartite graph
     G = nx.DiGraph(nx.davis_southern_women_graph())

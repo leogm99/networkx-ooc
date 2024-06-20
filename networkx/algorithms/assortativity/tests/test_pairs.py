@@ -75,13 +75,13 @@ class TestDegreeMixingXY(BaseTestDegreeMixing):
         )
         assert xy == xy_result
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_node_degree_xy_selfloop(self):
         xy = sorted(nx.node_degree_xy(self.S))
         xy_result = sorted([(2, 2), (2, 2)])
         assert xy == xy_result
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_node_degree_xy_weighted(self):
         G = nx.Graph()
         G.add_edge(1, 2, weight=7)

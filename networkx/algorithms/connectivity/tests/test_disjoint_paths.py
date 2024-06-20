@@ -44,7 +44,7 @@ def are_node_disjoint_paths(G, paths):
         return True
     return False
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_graph_from_pr_2053():
     G = nx.Graph()
     G.add_edges_from(
@@ -79,7 +79,7 @@ def test_graph_from_pr_2053():
         assert are_node_disjoint_paths(G, node_paths), errmsg
         assert nx.node_connectivity(G, "A", "Z") == len(node_paths), errmsg
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_florentine_families():
     G = nx.florentine_families_graph()
     for flow_func in flow_funcs:
