@@ -2,7 +2,7 @@ import pickle
 import struct
 
 
-class LazyGraphSerializer:
+class OutOfCoreGraphSerializer:
     def __init__(self, node_len: int = 1, format_='l'):
         assert node_len >= 1, "Node length must be greater than or equal to 1"
         self._node_len = node_len

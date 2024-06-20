@@ -32,7 +32,7 @@ from dotenv import load_dotenv
 load_dotenv()
 app_mode = os.getenv('MODE')
 if app_mode == 'lazy':
-    Graph = LazyGraph
+    Graph = OutOfCoreGraph
 
 from networkx import convert
 from networkx.convert import *

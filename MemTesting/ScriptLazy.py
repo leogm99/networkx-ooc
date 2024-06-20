@@ -5,7 +5,7 @@ def main():
     # TODO: change path
     # start_time = time.time()
     # G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/1912.edges')
-    G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
+    G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
     # G = nx.read_edgelist("", delimiter="\t")
 
     # G = nx.read_edgelist("1912.edges", delimiter=" ")

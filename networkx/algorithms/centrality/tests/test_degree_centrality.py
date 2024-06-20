@@ -7,7 +7,7 @@ import pytest
 
 import networkx as nx
 
-from networkx.classes.lazygraph import LazyGraph
+from networkx.classes.out_of_core_graph import OutOfCoreGraph
 
 
 class TestDegreeCentrality:

@@ -1,10 +1,10 @@
 from typing import MutableMapping
 
-from networkx.classes.lazygraph_serializer import LazyGraphSerializer
+from networkx.classes.out_of_core_graph_serializer import OutOfCoreGraphSerializer
 
 
 class LazyNode(MutableMapping):
-    def __init__(self, node, store, serializer: LazyGraphSerializer):
+    def __init__(self, node, store, serializer: OutOfCoreGraphSerializer):
         self._node = serializer.serialize_node(node)
         self._store = store
         self._serializer = serializer

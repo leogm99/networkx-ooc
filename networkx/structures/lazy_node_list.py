@@ -1,13 +1,13 @@
 from collections.abc import MutableMapping
 
-from networkx.classes.lazygraph_serializer import LazyGraphSerializer
+from networkx.classes.out_of_core_graph_serializer import OutOfCoreGraphSerializer
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 from networkx.structures.lazy_node import LazyNode
 from typing import Hashable
 
 
 class LazyNodeList(MutableMapping):
-    def __init__(self, serializer=LazyGraphSerializer(), enable_attrs: bool = False):
+    def __init__(self, serializer=OutOfCoreGraphSerializer(), enable_attrs: bool = False):
         self._serializer = serializer
         self._inner = OutOfCoreDict()
         self._enable_attrs = enable_attrs
