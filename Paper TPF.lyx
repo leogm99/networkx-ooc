@@ -1,0 +1,1524 @@
+#LyX 2.3 created this file. For more info see http://www.lyx.org/
+\lyxformat 544
+\begin_document
+\begin_header
+\save_transient_properties true
+\origin unavailable
+\textclass article
+\begin_preamble
+\usepackage{array}
+\usepackage{pdfcolparallel}
+\end_preamble
+\use_default_options true
+\maintain_unincluded_children false
+\language english
+\language_package default
+\inputencoding auto
+\fontencoding global
+\font_roman "default" "default"
+\font_sans "default" "default"
+\font_typewriter "default" "default"
+\font_math "auto" "auto"
+\font_default_family default
+\use_non_tex_fonts false
+\font_sc false
+\font_osf false
+\font_sf_scale 100 100
+\font_tt_scale 100 100
+\use_microtype false
+\use_dash_ligatures true
+\graphics default
+\default_output_format default
+\output_sync 0
+\bibtex_command default
+\index_command default
+\paperfontsize default
+\spacing single
+\use_hyperref false
+\papersize default
+\use_geometry true
+\use_package amsmath 1
+\use_package amssymb 1
+\use_package cancel 1
+\use_package esint 1
+\use_package mathdots 1
+\use_package mathtools 1
+\use_package mhchem 1
+\use_package stackrel 1
+\use_package stmaryrd 1
+\use_package undertilde 1
+\cite_engine basic
+\cite_engine_type default
+\biblio_style plain
+\use_bibtopic false
+\use_indices false
+\paperorientation portrait
+\suppress_date false
+\justification true
+\use_refstyle 1
+\use_minted 0
+\index Index
+\shortcut idx
+\color #008000
+\end_index
+\leftmargin 2cm
+\topmargin 2cm
+\rightmargin 2cm
+\bottommargin 2cm
+\secnumdepth 3
+\tocdepth 3
+\paragraph_separation indent
+\paragraph_indentation default
+\is_math_indent 0
+\math_numbering_side default
+\quotes_style english
+\dynamic_quotes 0
+\papercolumns 1
+\papersides 1
+\paperpagestyle default
+\tracking_changes false
+\output_changes false
+\html_math_output 0
+\html_css_as_file 0
+\html_be_strict false
+\end_header
+
+\begin_body
+
+\begin_layout Title
+
+\series bold
+\size larger
+NetworkX-OOC: An Out Of Core implementation for NetworkX
+\end_layout
+
+\begin_layout Author
+Leonardo Giampieri, Joaquin Hojman, Francisco Vazquez
+\end_layout
+
+\begin_layout Section
+Abstract
+\end_layout
+
+\begin_layout Standard
+En el presente trabajo, analizamos las limitaciones de la biblioteca NetworkX
+ de Python en el contexto del análisis de grafos de gran tamaño.
+ Identificamos que NetworkX enfrenta serias restricciones en cuanto a la
+ carga y procesamiento de grafos grandes debido a que trabaja usando únicamente
+ memoria ram.
+ Para superar estas limitaciones, desarrollamos una serie de estructuras
+ out-of-core que almacenan datos en disco y emulan el funcionamiento de
+ las estructuras en memoria de Python, modificamos los algoritmos de NetworkX
+ para integrar estas nuevas estructuras, y creamos una clase de Grafo out-of-cor
+e capaz de manejar grafos de gran tamaño almacenando sus diversas partes
+ en disco.
+ Esta solución permite que grafos que excedan la memoria principal de una
+ máquina puedan ser cargados y analizados, eliminando la limitación de memoria.
+ Los experimentos demuestran que nuestro enfoque cumple con éxito el objetivo
+ de procesar grafos de gran tamaño, usando notablemente menos memoria que
+ la versión original de NetworkX.
+ Sin embargo, observamos un aumento significativo en el tiempo de ejecución
+ debido a los múltiples accesos en disco, una área que podría ser mejorada
+ en investigaciones futuras.
+ Nuestra implementación es compatible hacia atrás, permitiendo a los usuarios
+ de NetworkX aprovechar las nuevas capacidades sin cambiar significativamente
+ su código.
+\end_layout
+
+\begin_layout Section
+Introducción
+\end_layout
+
+\begin_layout Standard
+En el contexto del análisis de grafos, NetworkX 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-1"
+literal "false"
+
+\end_inset
+
+ ha emergido como una de las bibliotecas más utilizadas y versátiles para
+ Python.
+ Su popularidad radica en su facilidad de uso y su amplia gama de algoritmos
+ y herramientas que permiten analizar y comprender las relaciones y estructuras
+ en los datos interconectados.
+ Sin embargo, a medida que las aplicaciones del análisis de grafos se expanden
+ para abordar conjuntos de datos más grandes y complejos, NetworkX se encuentra
+ con ciertas limitaciones relacionadas con la carga y el manejo de grafos
+ de gran tamaño.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Este tipo de análisis generalmente requiere hardware dedicado, como GPUs,
+ debido a su intenso nivel de cómputo.
+ Además, es necesario contar con ingenieros especializados en programar
+ dicho hardware, lo que complica su ejecución para aquellos que no disponen
+ de las herramientas y conocimientos necesarios.
+ Esta barrera técnica y económica restringe el acceso a técnicas avanzadas
+ de análisis de redes a un grupo limitado de profesionales y organizaciones
+ con recursos significativos.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+El presente trabajo tiene como objetivo democratizar el análisis de redes,
+ abriendo la puerta a un análisis de redes más accesible e inclusivo, permitiend
+o a un mayor número de profesionales y organizaciones beneficiarse de estas
+ avanzadas técnicas sin enfrentar las barreras tradicionales.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Proponemos la creación de una nueva clase de Grafo Out Of Core en NetworkX
+ que sea capaz de gestionar grafos de gran tamaño, permitiendo su almacenamiento
+ y acceso por partes en el disco.
+ Esto permitirá que los grafos que excedan la memoria principal de una máquina
+ puedan ser cargados y analizados de manera eficiente, evitando la limitación
+ de la memoria.
+ Para soportar esta nueva clase, se modificará la implementación interna
+ de los algoritmos existentes, reemplazando las estructuras en memoria por
+ implementaciones de las mismas que funcionen out-of-core, manteniendo las
+ prácticas y convenciones de nomenclatura establecidas en NetworkX, de modo
+ que los usuarios existentes puedan aprovechar las nuevas capacidades sin
+ tener que realizar cambios significativos en su código.
+\end_layout
+
+\begin_layout Section
+Diseño
+\end_layout
+
+\begin_layout Standard
+Para lograr que los algoritmos de NetworkX funcionen de forma totalmente
+ out-of-core, es necesario reemplazar las estructuras que carguen datos
+ en memoria por una versión de las mismas que guarde los datos en disco,
+ es decir, estructuras out-of-core.
+ 
+\end_layout
+
+\begin_layout Subsection
+Out Of Core Dict
+\end_layout
+
+\begin_layout Standard
+La principal estructura de la cual nuestra implementación depende es un
+ OutOfCoreDict, una estructura que wrappea al key value store de LevelDB
+ y proporciona una interfaz similar a un diccionario de Python (MutableMapping).
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Esta estructura permite manejar más datos de los que caben en memoria.
+ Se utiliza un buffer en memoria de un tamaño predeterminado que permite
+ optimizar las cargas en bulk a disco.
+ Esta interfaz acepta claves y valores en bytes arbitrarios.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+La clase OutOfCoreDict implementa todos los métodos de un diccionario normal
+ de python, pudiendo reemplazar a éste en los algoritmos donde haga falta.
+ Debido a que plyvel únicamente guarda bytes, se implementaron diversas
+ interfaces del OutOfCoreDict, cada una con la posibilidad de convertir
+ tipos de datos a bytes y guardarlos en plyvel.
+ Estas forman la base de varias estructuras que son utilizadas por los algoritmo
+s OOC.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+OutOfCoreDict
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+class
+\color inherit
+ OutOfCoreDict(MutableMapping):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+def __setitem__(self, key, value):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+self._wb[key] = value
+\end_layout
+
+\begin_layout LyX-Code
+if len(self._wb) > 4000:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+self._flush_write_batch()
+\end_layout
+
+\end_deeper
+\end_deeper
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+def __getitem__(self, key):
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+value = self._wb.get(key)
+\end_layout
+
+\begin_layout LyX-Code
+if value is not None:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+return value
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+data = self._inner.get(key, fill_cache=False)
+\end_layout
+
+\begin_layout LyX-Code
+if data is None:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+raise KeyError(key)
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+return data
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+def __init__(self) -> None:
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+self._temp = tempfile.TemporaryDirectory()
+\end_layout
+
+\begin_layout LyX-Code
+self._inner = plyvel.DB(
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+f"{self._temp.name}",
+\end_layout
+
+\begin_layout LyX-Code
+create_if_missing=True,
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+)
+\end_layout
+
+\begin_layout LyX-Code
+self._wb = {}
+\end_layout
+
+\end_deeper
+\end_deeper
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Experimentos 
+\end_layout
+
+\begin_layout Subsection
+Grafos utilizados 
+\end_layout
+
+\begin_layout Standard
+Para el análisis de resultados utilizamos 5 grafos distintos.
+ Inicialmente obtuvimos 2 datasets basados en redes sociales existentes,
+ para tener casos de uso basados en datos reales.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Luego, generamos 3 grafos de distinto tamaño utilizando el modelo de Erdős–Rényi
+ y NetworkX, con probabilidad de agregar una arista de 
+\begin_inset Formula 
+\begin{equation}
+\frac{2*Log(N)}{N}
+\end{equation}
+
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+siendo N la cantidad de nodos del grafo.
+ Esto nos garantiza una única componente conexa 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-17"
+literal "false"
+
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Se utilizó el modelo de Erdős–Rényi debido a que garantiza una estructura
+ similar a una red social, de forma que las 5 redes tienen estructuras similares
+, y también para tener redes de menor tamaño que nos faciliten el testeo.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="3">
+<features islongtable="true" longtabularalignment="center">
+<column alignment="center" valignment="top" width="0pt">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Detalles
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Source
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000 nodes / 92.412 edges 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Erdős–Rényi model 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-18"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000 nodes / 1.150.875 edges 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Erdős–Rényi model 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-19"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 nodes / 13.819.815 edges
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Erdős–Rényi model 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-20"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803 nodes / 30.622.564 edges
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Pokec social network 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-21"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571 nodes / 68.993.773 edges 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+LiveJournal social network 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-22"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Toma de métricas y herramientas
+\end_layout
+
+\begin_layout Standard
+Para recolectar las métricas de la ejecución utilizamos un script para automatiz
+ar el proceso.
+ Se midió el consumo de memoria RAM, la cantidad de operaciones input/output
+ a disco del programa bajo test leyendo de /proc y el uso de swap, con soporte
+ de la library psutil 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-23"
+literal "false"
+
+\end_inset
+
+.
+ Se utilizó un intervalo de sampleo de 10ms.
+\end_layout
+
+\begin_layout Subsubsection
+Medición de swap 
+\end_layout
+
+\begin_layout Standard
+El swap se midió a nivel global del sistema, lo cual introdujo ruido inesperado
+ a las métricas que fuimos tomando.
+ Hemos encontrado casos donde aparece swap donde no debería aparecer, ya
+ sea en corridas con networkX normal o ooc.
+ Cómo estamos midiendo la memoria ram utilizada, podemos decir que nunca
+ se llegó al límite de la memoria disponible en el sistema.
+ También, tenemos corridas del mismo algoritmo donde no aparece swap, donde
+ aparece swap al principio y donde aparece swap al final.
+ Este comportamiento aleatorio nos permite deducir que el swap medido es
+ parte del ruido inherente del sistema y no de los algoritmos que estamos
+ analizando.
+ 
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-1"
+
+\end_inset
+
+NetworkX: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://networkx.org/"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-2"
+
+\end_inset
+
+Plyvel: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://plyvel.readthedocs.io/ "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-3"
+
+\end_inset
+
+LevelDB: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://github.com/google/leveldb"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-10"
+
+\end_inset
+
+mmap: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.python.org/3/library/mmap.html "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-11"
+
+\end_inset
+
+NetworkX OOC: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://github.com/leogm99/networkx "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-12"
+
+\end_inset
+
+Pyroaring: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://pypi.org/project/pyroaring/ "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-13"
+
+\end_inset
+
+Small World: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/Small-world_network "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-14"
+
+\end_inset
+
+Struct: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.python.org/3/library/struct.html "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-15"
+
+\end_inset
+
+Pickle: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.python.org/3/library/pickle.html "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-16"
+
+\end_inset
+
+Predecessor (unweighted) algorithm: 
+\begin_inset CommandInset href
+LatexCommand href
+name "NetworkxX algorithms documentation "
+target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/shortest_paths/unweighted.html#predecessor"
+literal "false"
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-17"
+
+\end_inset
+
+Erdös-Rényi model properties: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Wikipedia Erdös-Rényi"
+target "https://en.wikipedia.org/wiki/Erd%C5%91s%E2%80%93R%C3%A9nyi_model#Properties_of_G(n,_p) "
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-18"
+
+\end_inset
+
+Erdös-Rényi Graph Ten: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Google Drive Erdös-Rényi Graph Ten"
+target "https://drive.google.com/file/d/1MfFPxCC3shNwHajYW5IIfLJIMQQh3J0C/view?usp=sharing"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-19"
+
+\end_inset
+
+Erdös-Rényi Graph Hundred: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Google Drive Erdös-Rényi Graph Hundred"
+target "https://drive.google.com/file/d/1IZtlEiK5gonF0QWB1rkFmh_jSf7__uTM/view?usp=sharing "
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-20"
+
+\end_inset
+
+Erdös-Rényi Graph Million: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Google Drive Erdös-Rényi Graph Million"
+target "https://drive.google.com/file/d/1fXZBZ9xS8RcxMxACAQJlUEAyZ81DZgF8/view?usp=sharing "
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-21"
+
+\end_inset
+
+Stanford Large Network Dataset Collection - Pokec social network: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://snap.stanford.edu/data/soc-Pokec.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-22"
+
+\end_inset
+
+Stanford Large Network Dataset Collection - LiveJournal social network:
+ 
+\begin_inset CommandInset href
+LatexCommand href
+target "http://snap.stanford.edu/data/soc-LiveJournal1.html "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-23"
+
+\end_inset
+
+psutil: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://pypi.org/project/psutil/ "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-24"
+
+\end_inset
+
+strace: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://strace.io/ "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section*
+APÉNDICE A: Algoritmos implementados 
+\end_layout
+
+\begin_layout Standard
+Se listan a continuación las familias de algoritmos y sus subcategorías
+ que tienen algoritmos implementados de forma totalmente out-of-core.
+ Para ver el detalle de cuáles algoritmos se implementaron para cada categoría/s
+ubcategoría, vea el detalle en la lista referenciada en el readme del proyecto,
+ en nuestro repositorio 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-11"
+literal "false"
+
+\end_inset
+
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset ERT
+status open
+
+\begin_layout Plain Layout
+
+
+\backslash
+begin{Parallel}{0.45
+\backslash
+textwidth}{0.45
+\backslash
+textwidth}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+ParallelLText{
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{Algorithms: }
+\backslash
+newline
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{1.
+ Approximation}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+begin{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item MaxCut
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Clustering
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Vertex Cover 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Connectivity
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+end{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{2.
+ Bipartite}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+begin{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Basic
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Clustering
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Redundancy 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Centrality
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Matrix
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Covering
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Matching 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Projections
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Generators
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+end{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{3.
+ Boundary}
+\backslash
+newline
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{4.
+ Bridges}
+\backslash
+newline
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{5.
+ Centrality}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+begin{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Betweeness
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Degree
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Eigenvector  
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Closeness
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item (Shortest Path) Betweenness 
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+end{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+ParallelRText{
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+begin{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item VoteRank 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Harmonic Centrality 
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Reaching
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Laplacian
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+item Load
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Percolation
+\end_layout
+
+\begin_layout Plain Layout
+
+		
+\backslash
+item Trophic
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item Group Centrality
+\end_layout
+
+\begin_layout Plain Layout
+
+	
+\backslash
+end{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{6.
+ Components}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+begin{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item connected
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item weakly connected
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+end{itemize} 
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{7.
+ Cuts}
+\backslash
+newline
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{8.
+ Distance Measures}
+\backslash
+newline
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{9.
+ Simple path}
+\backslash
+newline
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+textbf{10.
+ Shortest path}
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+begin{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item unweighted
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item weighted
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item generic
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item dense
+\end_layout
+
+\begin_layout Plain Layout
+
+        
+\backslash
+item astar
+\end_layout
+
+\begin_layout Plain Layout
+
+    
+\backslash
+end{itemize}
+\end_layout
+
+\begin_layout Plain Layout
+
+}
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+ParallelPar
+\end_layout
+
+\begin_layout Plain Layout
+
+
+\backslash
+end{Parallel}
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_body
+\end_document
