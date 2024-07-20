@@ -18,7 +18,7 @@ def run_and_monitor_script(script_path, output_dir, n, p):
     os.makedirs(output_dir, exist_ok=True)
 
     script_name = os.path.basename(script_path)
-    
+
     memory_file_name = f"memoryResults.txt"
     memoryOutput_path = os.path.join(output_dir, memory_file_name)
 
@@ -30,7 +30,7 @@ def run_and_monitor_script(script_path, output_dir, n, p):
 
     swap_file_name = f"swapResults.txt"
     swapOutput_path = os.path.join(output_dir, swap_file_name)
-    
+
     stdoutFile = open(f"{output_dir}/output.txt", 'x')
 
     process = subprocess.Popen(['python', script_path, f"{n}", f"{p}"], stdout=stdoutFile, stderr=stdoutFile)
@@ -93,7 +93,7 @@ if __name__ == '__main__':
     #     print("Usage: python monitoring_script.py <script_to_run.py>")
     #     sys.exit(1)
 
-    os.environ['TMPDIR'] = '/home/grey/networkx/MemTesting/DB'
+    os.environ['OOC_DICT_TMPDIR'] = '/home/grey/networkx/MemTesting/DB'
     for script_to_run in  ["ScriptLazy.py", "ScriptBase.py"]:
         for n in [0, 1, 2, 3, 4]:
             for p in [0, 0, 0, 0, 0]:
