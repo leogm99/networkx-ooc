@@ -1,12 +1,28 @@
-import pickle
-import struct
+from os import path, getenv, mkdir
 import tempfile
 from collections.abc import MutableMapping
 
 import plyvel
 
+DB_DIR = getenv(key='OOC_DICT_TMPDIR', default='./db')
+
 
 class OutOfCoreDict(MutableMapping):
+    def __init__(self, dir_=DB_DIR) -> None:
+        if not path.isdir(dir_):
+            mkdir(dir_)
+        self._temp = tempfile.TemporaryDirectory(dir=dir_)
+        self._inner = plyvel.DB(
+            f"{self._temp.name}",
+            create_if_missing=True,
+        )
+        self._dir = dir_
+        self._wb = {}
+
+    @property
+    def dir(self):
+        return self._dir
+
     def __setitem__(self, key, value):
         # self._wb.put(key, value)
         self._wb[key] = value
@@ -29,14 +45,6 @@ class OutOfCoreDict(MutableMapping):
         if data is None:
             raise KeyError(key)
         return data
-
-    def __init__(self) -> None:
-        self._temp = tempfile.TemporaryDirectory()
-        self._inner = plyvel.DB(
-            f"{self._temp.name}",
-            create_if_missing=True,
-        )
-        self._wb = {}
 
     def __len__(self):
         self._flush_write_batch()

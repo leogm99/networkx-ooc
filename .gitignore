@@ -58,3 +58,5 @@ networkx.egg-info/
 networkx-dev/
 
 newResults/
+
+**/db/**

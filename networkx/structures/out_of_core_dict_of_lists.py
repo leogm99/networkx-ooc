@@ -177,7 +177,8 @@ class OutOfCoreDictOfLists(OutOfCoreDict):
         return str({k for k in self})
 
     def _get_new_path(self):
-        fd, path = tempfile.mkstemp()
+        dir_ = self.dir
+        fd, path = tempfile.mkstemp(dir=dir_)
         os.close(fd)
         return path
 

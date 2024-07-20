@@ -120,6 +120,10 @@ If you want to use the OOC Structs without a LazyGraph, you can import the follo
     oocDictOfLists = OutOfCoreDictOfLists()
     oocEdgesDict = EdgesDict()
 
+
+NetworkX OOC needs a directory to store  the graph data. By default, the directory is set to `./db`,
+but you can change it by setting the `OOC_DICT_TMPDIR` environment variable to whichever path you like.
+
 Implemented Algorithms
 ----------------------------
 
