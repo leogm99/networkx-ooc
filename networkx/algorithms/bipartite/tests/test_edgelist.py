@@ -12,7 +12,7 @@ import networkx as nx
 from networkx.algorithms import bipartite
 from networkx.utils import edges_equal, graphs_equal, nodes_equal
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestEdgelist:
     @classmethod
     def setup_class(cls):

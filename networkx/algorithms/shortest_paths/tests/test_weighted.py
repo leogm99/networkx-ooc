@@ -91,7 +91,7 @@ class WeightedTestBase:
                 [7, 0, 1],
             ]
         )
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             self.MXG4 = nx.MultiGraph(self.XG4)
             self.MXG4.add_edge(0, 1, weight=3)
         self.G = nx.DiGraph()  # no weights
@@ -147,7 +147,7 @@ class TestWeightedPath(WeightedTestBase):
         assert nx.dijkstra_path_length(self.XG3, 0, 3) == 15
         validate_path(self.XG4, 0, 2, 4, nx.dijkstra_path(self.XG4, 0, 2))
         assert nx.dijkstra_path_length(self.XG4, 0, 2) == 4
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             validate_path(self.MXG4, 0, 2, 4, nx.dijkstra_path(self.MXG4, 0, 2))
         validate_path(
             self.G, 1, 4, 2, nx.single_source_dijkstra(self.G, 1, 4)[1]
@@ -314,7 +314,7 @@ class TestWeightedPath(WeightedTestBase):
         (P, D) = nx.dijkstra_predecessor_and_distance(XG, 1, cutoff=8)
         assert 4 not in D
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_single_source_dijkstra_path_length(self):
         pl = nx.single_source_dijkstra_path_length
         assert dict(pl(self.MXG4, 0))[2] == 4
@@ -756,7 +756,7 @@ class TestBellmanFordAndGoldbergRadzik(WeightedTestBase):
         P, D = nx.goldberg_radzik(self.MXG, 1)
         assert P[4] == 2
         assert D[4] == 9
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             assert nx.bellman_ford_path(self.MXG4, 0, 2) == [0, 1, 2]
             assert nx.bellman_ford_path_length(self.MXG4, 0, 2) == 4
             path = nx.single_source_bellman_ford_path(self.MXG4, 0)
@@ -955,7 +955,7 @@ class TestJohnsonAlgorithm(WeightedTestBase):
             2: {3: [2, 3], 2: [2]},
         }
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_unweighted_graph(self):
         G = nx.Graph()
         G.add_edges_from([(1, 0), (2, 1)])
@@ -990,6 +990,6 @@ class TestJohnsonAlgorithm(WeightedTestBase):
         validate_path(self.XG3, 0, 3, 15,path [0][3])
         path = dict(nx.johnson(self.XG4))
         validate_path(self.XG4, 0, 2, 4, path[0][2])
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             path = dict(nx.johnson(self.MXG4))
             validate_path(self.MXG4, 0, 2, 4, path[0][2])

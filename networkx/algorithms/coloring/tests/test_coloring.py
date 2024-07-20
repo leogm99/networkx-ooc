@@ -30,7 +30,7 @@ INTERCHANGE_INVALID = ["independent_set", "saturation_largest_first", "DSATUR"]
 
 
 class TestColoring:
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_basic_cases(self):
         def check_basic_case(graph_func, n_nodes, strategy, interchange):
             graph = graph_func()
@@ -47,7 +47,7 @@ class TestColoring:
                     if strategy not in INTERCHANGE_INVALID:
                         check_basic_case(graph_func, n_nodes, strategy, True)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_special_cases(self):
         def check_special_case(strategy, graph_func, interchange, colors):
             graph = graph_func()
@@ -119,7 +119,7 @@ class TestColoring:
         assert is_coloring(G, coloring)
         assert not is_equitable(G, coloring)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_num_colors(self):
         G = nx.Graph()
         G.add_edges_from([(0, 1), (0, 2), (0, 3)])

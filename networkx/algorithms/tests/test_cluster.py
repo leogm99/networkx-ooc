@@ -190,7 +190,7 @@ class TestWeightedClustering:
         global np
         np = pytest.importorskip("numpy")
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_clustering(self):
         G = nx.Graph()
         assert list(nx.clustering(G, weight="weight").values()) == []
@@ -277,7 +277,7 @@ class TestClustering:
     def setup_class(cls):
         pytest.importorskip("numpy")
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_clustering(self):
         G = nx.Graph()
         assert list(nx.clustering(G).values()) == []
@@ -368,7 +368,7 @@ class TestTransitivity:
 
 
 class TestSquareClustering:
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_clustering(self):
         G = nx.Graph()
         assert list(nx.square_clustering(G).values()) == []
@@ -422,7 +422,7 @@ class TestSquareClustering:
         G = nx.complete_graph(5)
         assert list(nx.square_clustering(G).values()) == [1, 1, 1, 1, 1]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_bipartite_k5(self):
         G = nx.complete_bipartite_graph(5, 5)
         assert list(nx.square_clustering(G).values()) == [1, 1, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -469,13 +469,13 @@ class TestAverageClustering:
     def setup_class(cls):
         pytest.importorskip("numpy")
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_empty(self):
         G = nx.Graph()
         with pytest.raises(ZeroDivisionError):
             nx.average_clustering(G)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_average_clustering(self):
         G = nx.cycle_graph(3)
         G.add_edge(2, 3)
@@ -523,7 +523,7 @@ class TestDirectedAverageClustering:
 
 
 class TestGeneralizedDegree:
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_generalized_degree(self):
         G = nx.Graph()
         assert nx.generalized_degree(G) == {}

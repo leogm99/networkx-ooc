@@ -7,17 +7,17 @@ def main(n, p):
     # TODO: change path
     start_time = time.time()
     if n == 0:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiTen.txt')
+        G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiTen.txt')
     if n == 1:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiHunderd.txt', ' ')
+        G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiHunderd.txt', ' ')
     if n == 2:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiMillon.txt', ' ')
+        G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/erdorRenyiMillon.txt', ' ')
     if n == 3:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
+        G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-pokec-relationships.txt', '\t')
     if n == 4:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-LiveJournal1.txt')
+        G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/soc-LiveJournal1.txt')
     if n == 5:
-        G = nx.LazyGraph.from_edgelist_file('/home/grey/networkx/MemTesting/1912.edges')
+        G = nx.OutOfCoreGraph.from_edgelist_file('/home/grey/networkx/MemTesting/1912.edges')
 
 
     graphTime = time.time()

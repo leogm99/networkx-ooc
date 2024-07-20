@@ -193,7 +193,7 @@ class TestGeneratorThreshold:
         ws = [s / 12 for s in [6, 6, 5, 7, 4, 4, 4, 8, 3, 9, 2, 10, 1, 11]]
         assert sum(abs(c - d) for c, d in zip(wseq, ws)) < 1e-14
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_finding_routines(self):
         G = nx.Graph({1: [2], 2: [3], 3: [4], 4: [5], 5: [6]})
         G.add_edge(2, 4)

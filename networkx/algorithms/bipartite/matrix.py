@@ -8,7 +8,7 @@ import itertools
 import networkx as nx
 from networkx.convert_matrix import _generate_weighted_edges
 
-from networkx.classes.lazygraph import LazyGraph
+from networkx.classes.out_of_core_graph import OutOfCoreGraph
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.primitive_dicts import IntDict, PrimitiveType
 

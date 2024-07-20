@@ -1,13 +1,13 @@
 import typing
 from collections.abc import Mapping
 
-from networkx.classes.lazygraph_serializer import LazyGraphSerializer
+from networkx.classes.out_of_core_graph_serializer import OutOfCoreGraphSerializer
 from networkx.structures.lazy_edge import LazyEdge
 from networkx.structures.out_of_core_dict import OutOfCoreDict
 
 
 class LazyAdjacencyList(Mapping):
-    def __init__(self, serializer=LazyGraphSerializer()):
+    def __init__(self, serializer=OutOfCoreGraphSerializer()):
         self._serializer = serializer
         self._inner = OutOfCoreDict()
 

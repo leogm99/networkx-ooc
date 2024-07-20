@@ -5,7 +5,7 @@ import pytest
 
 import networkx as nx
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestBridges:
     """Unit tests for the bridge-finding function."""
 
@@ -56,7 +56,7 @@ class TestBridges:
         assert list(nx.bridges(G)) == [(2, 3)]
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 class TestHasBridges:
     """Unit tests for the has bridges function."""
 

@@ -5,7 +5,7 @@ import networkx as nx
 from networkx import Graph, NetworkXError
 from networkx.algorithms.community import asyn_fluidc
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_exceptions():
     test = Graph()
     test.add_node("a")
@@ -15,7 +15,7 @@ def test_exceptions():
     test.add_node("b")
     pytest.raises(NetworkXError, asyn_fluidc, test, 1)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_single_node():
     test = Graph()
 
@@ -28,7 +28,7 @@ def test_single_node():
     result = {frozenset(c) for c in communities}
     assert result == ground_truth
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_two_nodes():
     test = Graph()
 
@@ -41,7 +41,7 @@ def test_two_nodes():
     result = {frozenset(c) for c in communities}
     assert result == ground_truth
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_two_clique_communities():
     test = Graph()
 
@@ -65,7 +65,7 @@ def test_two_clique_communities():
     result = {frozenset(c) for c in communities}
     assert result == ground_truth
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_five_clique_ring():
     test = Graph()
 

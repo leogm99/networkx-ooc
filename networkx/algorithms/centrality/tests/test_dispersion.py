@@ -67,7 +67,7 @@ class TestDispersion:
         assert disp_G_h == {3: 0, 6: 0, 8: 0, 9: 0, 11: 4}
         assert disp_G_h_normalized == {3: 0.0, 6: 0.0, 8: 0.0, 9: 0.0, 11: 1.0}
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_impossible_things(self):
         G = nx.karate_club_graph()
         disp = nx.dispersion(G)

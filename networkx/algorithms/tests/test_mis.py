@@ -22,7 +22,7 @@ def test_K5(graph):
     assert all(nx.maximal_independent_set(graph, [n]) == [n] for n in graph)
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_exceptions():
     """Bad input should raise exception."""
     G = nx.florentine_families_graph()
@@ -33,7 +33,7 @@ def test_exceptions():
     # MaximalIndependentSet is not implemented for directed graphs
     pytest.raises(nx.NetworkXNotImplemented, nx.maximal_independent_set, nx.DiGraph(G))
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_florentine_family():
     G = nx.florentine_families_graph()
     indep = nx.maximal_independent_set(G, ["Medici", "Bischeri"])
@@ -53,7 +53,7 @@ def test_bipartite():
     assert sorted(indep) == list(range(12))
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_graphs():
     """Generate 5 random graphs of different types and sizes and
     make sure that all sets are independent and maximal."""

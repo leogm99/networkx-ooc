@@ -93,7 +93,7 @@ def _check_connectivity(G, k_components):
 
 
 @pytest.mark.slow
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_torrents_and_ferraro_graph():
     G = torrents_and_ferraro_graph()
     result = nx.k_components(G)
@@ -110,7 +110,7 @@ def test_torrents_and_ferraro_graph():
 
 
 @pytest.mark.slow
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_gnp():
     G = nx.gnp_random_graph(50, 0.2, seed=42)
     result = nx.k_components(G)
@@ -118,7 +118,7 @@ def test_random_gnp():
 
 
 @pytest.mark.slow
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_shell():
     constructor = [(20, 80, 0.8), (80, 180, 0.6)]
     G = nx.random_shell_graph(constructor, seed=42)
@@ -126,7 +126,7 @@ def test_shell():
     _check_connectivity(G, result)
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_configuration():
     deg_seq = nx.random_powerlaw_tree_sequence(100, tries=5, seed=72)
     G = nx.Graph(nx.configuration_model(deg_seq))
@@ -135,14 +135,14 @@ def test_configuration():
     _check_connectivity(G, result)
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_karate():
     G = nx.karate_club_graph()
     result = nx.k_components(G)
     _check_connectivity(G, result)
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_karate_component_number():
     karate_k_num = {
         0: 4,
@@ -186,14 +186,14 @@ def test_karate_component_number():
     assert karate_k_num == k_num
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_davis_southern_women():
     G = nx.davis_southern_women_graph()
     result = nx.k_components(G)
     _check_connectivity(G, result)
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_davis_southern_women_detail_3_and_4():
     solution = {
         3: [
@@ -266,7 +266,7 @@ def test_davis_southern_women_detail_3_and_4():
             assert component in solution[k]
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_set_consolidation_rosettacode():
     # Tests from http://rosettacode.org/wiki/Set_consolidation
     def list_of_sets_equal(result, solution):

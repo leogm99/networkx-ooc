@@ -27,7 +27,7 @@ class TestPruferSequence:
         with pytest.raises(nx.NetworkXPointlessConcept):
             nx.to_prufer_sequence(nx.trivial_graph())
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_bad_integer_labels(self):
         with pytest.raises(KeyError):
             T = nx.Graph(nx.utils.pairwise("abc"))

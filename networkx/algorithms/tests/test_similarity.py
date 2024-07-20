@@ -361,7 +361,7 @@ class TestSimilarity:
         assert graph_edit_distance(G2, G1) == 5
 
     # by https://github.com/jfbeaumont
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testCopy(self):
         G = nx.Graph()
         G.add_node("A", label="A")
@@ -371,7 +371,7 @@ class TestSimilarity:
             graph_edit_distance(G, G.copy(), node_match=nmatch, edge_match=ematch) == 0
         )
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testSame(self):
         G1 = nx.Graph()
         G1.add_node(1, label="A")
@@ -383,7 +383,7 @@ class TestSimilarity:
         G2.add_edge(1, 2, label="a-b")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 0
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testOneEdgeLabelDiff(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -395,7 +395,7 @@ class TestSimilarity:
         G2.add_edge("A", "B", label="bad")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testOneNodeLabelDiff(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -407,7 +407,7 @@ class TestSimilarity:
         G2.add_edge("A", "B", label="a-b")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testOneExtraNode(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -420,7 +420,7 @@ class TestSimilarity:
         G2.add_node("C", label="C")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testOneExtraEdge(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -436,7 +436,7 @@ class TestSimilarity:
         G2.add_edge("A", "C", label="a-c")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 1
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testOneExtraNodeAndEdge(self):
         G1 = nx.Graph()
         G1.add_node("A", label="A")
@@ -450,7 +450,7 @@ class TestSimilarity:
         G2.add_edge("A", "C", label="a-c")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 2
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testGraph1(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -463,7 +463,7 @@ class TestSimilarity:
         G2.add_edge("D", "E", label="d-e")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 3
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testGraph2(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -478,7 +478,7 @@ class TestSimilarity:
         G2.add_edge("C", "E", label="c-e")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 4
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testGraph3(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -497,7 +497,7 @@ class TestSimilarity:
         G2.add_edge("E", "B", label="e-b")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 12
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testGraph4(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -510,7 +510,7 @@ class TestSimilarity:
         G2.add_edge("C", "D", label="c-d")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 2
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testGraph4_a(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -523,7 +523,7 @@ class TestSimilarity:
         G2.add_edge("A", "D", label="a-d")
         assert graph_edit_distance(G1, G2, node_match=nmatch, edge_match=ematch) == 2
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def testGraph4_b(self):
         G1 = getCanonical()
         G2 = nx.Graph()
@@ -871,7 +871,7 @@ class TestSimilarity:
         assert expected_paths == list(paths)
         assert expected_map == index_map
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_generate_random_paths_weighted(self):
         np.random.seed(42)
 
@@ -913,7 +913,7 @@ class TestSimilarity:
         assert expected_paths == list(paths)
         assert expected_map == index_map
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_symmetry_with_custom_matching(self):
         print("G2 is edge (a,b) and G3 is edge (a,a)")
         print("but node order for G2 is (a,b) while for G3 it is (b,a)")

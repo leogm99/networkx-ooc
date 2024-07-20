@@ -36,7 +36,7 @@ class TestVoteRankCentrality:
         assert [] == nx.voterank(G)
 
     # Graph unit test
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_voterank_centrality_2(self):
         G = nx.florentine_families_graph()
         d = nx.voterank(G, 4)

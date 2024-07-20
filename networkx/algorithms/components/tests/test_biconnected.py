@@ -122,7 +122,7 @@ def test_biconnected_components1():
     ]
     assert_components_edges_equal(comps, answer)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_biconnected_components2():
     G = nx.Graph()
     nx.add_cycle(G, "ABC")
@@ -147,7 +147,7 @@ def test_biconnected_components2():
     ]
     assert_components_edges_equal(comps, answer)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_biconnected_davis():
     D = nx.davis_southern_women_graph()
     bcc = list(nx.biconnected_components(D))[0]

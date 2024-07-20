@@ -3,7 +3,7 @@ import networkx.algorithms.approximation as apxa
 import pytest
 from networkx.algorithms.approximation.tests import app_mode
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_ramsey():
     # this should only find the complete graph
     graph = nx.complete_graph(10)

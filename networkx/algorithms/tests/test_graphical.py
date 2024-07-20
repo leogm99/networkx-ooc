@@ -47,7 +47,7 @@ class TestAtlas:
 
         cls.GAG = atlas.graph_atlas_g()
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_atlas(self):
         for graph in self.GAG:
             deg = (d for n, d in graph.degree())

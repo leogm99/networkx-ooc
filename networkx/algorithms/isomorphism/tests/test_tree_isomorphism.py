@@ -52,7 +52,7 @@ def check_isomorphism(t1, t2, isomorphism):
 
     return sorted(edges_1) == sorted(edges_2)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_hardcoded():
     print("hardcoded test")
 
@@ -208,7 +208,7 @@ def positive_single_tree(t1):
 # k = 13 takes about 2.86 seconds to run on my laptop
 # larger values run slow down significantly
 # as the number of trees grows rapidly
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_positive(maxk=14):
     print("positive test")
 
@@ -223,7 +223,7 @@ def test_positive(maxk=14):
 
 # test the trivial case of a single node in each tree
 # note that nonisomorphic_trees doesn't work for k = 1
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_trivial():
     print("trivial test")
 
@@ -245,7 +245,7 @@ def test_trivial():
 
 # test another trivial case where the two graphs have
 # different numbers of nodes
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_trivial_2():
     print("trivial test 2")
 
@@ -273,7 +273,7 @@ def test_trivial_2():
 # k = 11 takes about 4.76 seconds to run on my laptop
 # larger values run slow down significantly
 # as the number of trees grows rapidly
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_negative(maxk=11):
     print("negative test")
 

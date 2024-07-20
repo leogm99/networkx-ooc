@@ -166,7 +166,7 @@ def test_not_implemented():
     with pytest.raises(nx.NetworkXNotImplemented):
         next(bridge_components(nx.DiGraph()))
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_general_k_edge_subgraph_quick_return():
     # tests quick return optimization
     G = nx.Graph()
@@ -187,7 +187,7 @@ def test_general_k_edge_subgraph_quick_return():
 # Undirected tests
 # ----------------
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_gnp():
     # seeds = [1550709854, 1309423156, 4208992358, 2785630813, 1915069929]
     seeds = [12, 13]
@@ -196,7 +196,7 @@ def test_random_gnp():
         G = nx.gnp_random_graph(20, 0.2, seed=seed)
         _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_configuration():
     # seeds = [2718183590, 2470619828, 1694705158, 3001036531, 2401251497]
     seeds = [14, 15]
@@ -206,7 +206,7 @@ def test_configuration():
         G.remove_edges_from(nx.selfloop_edges(G))
         _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_shell():
     # seeds = [2057382236, 3331169846, 1840105863, 476020778, 2247498425]
     seeds = [20]
@@ -215,12 +215,12 @@ def test_shell():
         G = nx.random_shell_graph(constructor, seed=seed)
         _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_karate():
     G = nx.karate_club_graph()
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_tarjan_bridge():
     # graph from tarjan paper
     # RE Tarjan - "A note on finding the bridges of a graph"
@@ -238,7 +238,7 @@ def test_tarjan_bridge():
     G = nx.Graph(it.chain(*(pairwise(path) for path in ccs + bridges)))
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_bridge_cc():
     # define 2-connected components and bridges
     cc2 = [(1, 2, 4, 3, 1, 4), (8, 9, 10, 8), (11, 12, 13, 11)]
@@ -251,7 +251,7 @@ def test_bridge_cc():
     assert bridge_ccs == target_ccs
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_undirected_aux_graph():
     # Graph similar to the one in
     # http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0136264
@@ -293,7 +293,7 @@ def test_undirected_aux_graph():
 
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_local_subgraph_difference():
     paths = [
         (11, 12, 13, 14, 11, 13, 14, 12),  # first 4-clique
@@ -320,7 +320,7 @@ def test_local_subgraph_difference():
     local_target = fset([{101}, {102}, {103}, {104}, {11, 12, 13, 14, 21, 22, 23, 24}])
     assert local_ccs == local_target
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_local_subgraph_difference_directed():
     dipaths = [(1, 2, 3, 4, 1), (1, 3, 1)]
     G = nx.DiGraph(it.chain(*[pairwise(path) for path in dipaths]))
@@ -336,7 +336,7 @@ def test_local_subgraph_difference_directed():
 
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_triangles():
     paths = [
         (11, 12, 13, 11),  # first 3-clique
@@ -354,7 +354,7 @@ def test_triangles():
 
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_four_clique():
     paths = [
         (11, 12, 13, 14, 11, 13, 14, 12),  # first 4-clique
@@ -387,7 +387,7 @@ def test_four_clique():
 
     _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_five_clique():
     # Make a graph that can be disconnected less than 4 edges, but no node has
     # degree less than 4.
@@ -421,7 +421,7 @@ def test_five_clique():
 # Undirected tests
 # ----------------
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_directed_aux_graph():
     # Graph similar to the one in
     # http://journals.plos.org/plosone/article?id=10.1371/journal.pone.0136264
@@ -453,7 +453,7 @@ def test_directed_aux_graph():
     target_3 = fset([{a}, {b}, {c}, {d}, {e}, {f}, {g}, {h}, {i}])
     assert target_3 == components_3
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_gnp_directed():
     # seeds = [3894723670, 500186844, 267231174, 2181982262, 1116750056]
     seeds = [21]
@@ -461,7 +461,7 @@ def test_random_gnp_directed():
         G = nx.gnp_random_graph(20, 0.2, directed=True, seed=seed)
         _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_configuration_directed():
     # seeds = [671221681, 2403749451, 124433910, 672335939, 1193127215]
     seeds = [67]
@@ -471,7 +471,7 @@ def test_configuration_directed():
         G.remove_edges_from(nx.selfloop_edges(G))
         _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_shell_directed():
     # seeds = [3134027055, 4079264063, 1350769518, 1405643020, 530038094]
     seeds = [31]
@@ -480,7 +480,7 @@ def test_shell_directed():
         G = nx.random_shell_graph(constructor, seed=seed).to_directed()
         _check_edge_connectivity(G)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_karate_directed():
     G = nx.karate_club_graph().to_directed()
     _check_edge_connectivity(G)

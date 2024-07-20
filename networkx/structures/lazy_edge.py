@@ -1,10 +1,10 @@
 from collections.abc import Mapping
 
-from networkx.classes.lazygraph_serializer import LazyGraphSerializer
+from networkx.classes.out_of_core_graph_serializer import OutOfCoreGraphSerializer
 
 
 class LazyEdge(Mapping):
-    def __init__(self, source_node, store, serializer: LazyGraphSerializer):
+    def __init__(self, source_node, store, serializer: OutOfCoreGraphSerializer):
         self._source_node = source_node
         self._store = store
         self.__serializer = serializer

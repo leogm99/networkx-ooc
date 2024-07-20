@@ -49,7 +49,7 @@ class TestWikipediaExample:
         [4, 8],
     ]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_graph(self):
         g1 = nx.Graph()
         g2 = nx.Graph()
@@ -68,7 +68,7 @@ class TestWikipediaExample:
     #                  ('g', 2), ('h', 5), ('i', 4), ('j', 7)]
     #        assert_equal(mapping, isomap)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_subgraph(self):
         g1 = nx.Graph()
         g2 = nx.Graph()
@@ -78,7 +78,7 @@ class TestWikipediaExample:
         gm = iso.GraphMatcher(g1, g3)
         assert gm.subgraph_is_isomorphic()
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_subgraph_mono(self):
         g1 = nx.Graph()
         g2 = nx.Graph()
@@ -149,10 +149,10 @@ class TestAtlas:
     def setup_class(cls):
         global atlas
         from networkx.generators import atlas
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             cls.GAG = atlas.graph_atlas_g()
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_graph_atlas(self):
         # Atlas = nx.graph_atlas_g()[0:208] # 208, 6 nodes or less
         Atlas = self.GAG[0:100]
@@ -220,7 +220,7 @@ def test_multiedge():
             # Testing if monomorphism works in multigraphs
             assert gm.subgraph_is_monomorphic()
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_selfloop():
     # Simple test for graphs with selfloops
     edges = [
@@ -251,7 +251,7 @@ def test_selfloop():
                 gm = iso.DiGraphMatcher(g1, g2)
             assert gm.is_isomorphic()
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_selfloop_mono():
     # Simple test for graphs with selfloops
     edges0 = [
@@ -339,7 +339,7 @@ def test_isomorphism_iter2():
         s = len(list(gm.isomorphisms_iter()))
         assert s == 2 * L
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_multiple():
     # Verify that we can use the graph matcher multiple times
     edges = [("A", "B"), ("B", "A"), ("B", "C")]

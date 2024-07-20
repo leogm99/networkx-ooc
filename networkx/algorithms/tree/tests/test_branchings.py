@@ -372,7 +372,7 @@ def test_edmonds3_minbranch2():
 
 # Need more tests
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_mst():
     # Make sure we get the same results for undirected graphs.
     # Example from: https://en.wikipedia.org/wiki/Kruskal's_algorithm
@@ -407,7 +407,7 @@ def test_mst():
     for u, v, d in x.edges(data=True):
         assert ({u, v}, d["weight"]) in edges
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_mixed_nodetypes():
     # Smoke test to make sure no TypeError is raised for mixed node types.
     G = nx.Graph()

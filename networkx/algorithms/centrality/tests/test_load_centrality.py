@@ -30,7 +30,7 @@ class TestLoadCentrality:
         cls.T = nx.balanced_tree(r=2, h=2)
         cls.Gb = nx.Graph()
         cls.Gb.add_edges_from([(0, 1), (0, 2), (1, 3), (2, 3), (2, 4), (4, 5), (3, 5)])
-        if app_mode != 'lazy':
+        if app_mode != 'ooc':
             cls.F = nx.florentine_families_graph()
             cls.LM = nx.les_miserables_graph()
         cls.D = nx.cycle_graph(3, create_using=nx.DiGraph())
@@ -98,7 +98,7 @@ class TestLoadCentrality:
         for n in sorted(G):
             assert c[n] == pytest.approx(d[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_florentine_families_load(self):
         G = self.F
         c = nx.load_centrality(G)
@@ -122,7 +122,7 @@ class TestLoadCentrality:
         for n in sorted(G):
             assert c[n] == pytest.approx(d[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_les_miserables_load(self):
         G = self.LM
         c = nx.load_centrality(G)
@@ -241,7 +241,7 @@ class TestLoadCentrality:
         for n in sorted(G):
             assert c[n] == pytest.approx(d[n], abs=1e-3)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support strings")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="lazy graph does not support strings")
     def test_unnormalized_florentine_families_load(self):
         G = self.F
         c = nx.load_centrality(G, normalized=False)

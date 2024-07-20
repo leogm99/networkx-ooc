@@ -4,7 +4,7 @@ from .digraph import DiGraph
 from .function import *
 from .graph import Graph
 from .graphviews import reverse_view, subgraph_view
-from .lazygraph import LazyGraph
+from .out_of_core_graph import OutOfCoreGraph
 from .multidigraph import MultiDiGraph
 from .multigraph import MultiGraph
 

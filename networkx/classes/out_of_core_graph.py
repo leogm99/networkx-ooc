@@ -5,17 +5,17 @@ from networkx.structures.lazy_node_list import LazyNodeList
 from functools import cached_property
 from networkx.classes.reportviews import LazyDegreeView
 from networkx.classes.coreviews import LazyAdjacencyView
-from networkx.classes.lazygraph_serializer import LazyGraphSerializer
+from networkx.classes.out_of_core_graph_serializer import OutOfCoreGraphSerializer
 from networkx.structures.out_of_core_deque import OutOfCoreDeque
 from networkx.structures.out_of_core_dict_of_lists import OutOfCoreDictOfLists
 from networkx.structures.out_of_core_list import OutOfCoreList
 from networkx.structures.out_of_core_set import OutOfCoreSet
 from networkx.structures.primitive_dicts import IntDict, IntFloatDict, PrimitiveType
 
-__all__ = ["LazyGraph"]
+__all__ = ["OutOfCoreGraph"]
 
 
-class LazyGraph(Graph):
+class OutOfCoreGraph(Graph):
     node_dict_factory = LazyNodeList
     adjlist_outer_dict_factory = LazyAdjacencyList
     adjlist_inner_dict_factory = lambda _: None
@@ -23,7 +23,7 @@ class LazyGraph(Graph):
     def __init__(self, incoming_graph_data=None, **attr):
         node_len = attr.get('node_len', 1)
         if node_len > 1:
-            self._serializer = LazyGraphSerializer(node_len=node_len)
+            self._serializer = OutOfCoreGraphSerializer(node_len=node_len)
             self.node_dict_factory = lambda: LazyNodeList(serializer=self._serializer)
             self.adjlist_outer_dict_factory = lambda: LazyAdjacencyList(serializer=self._serializer)
         super().__init__(incoming_graph_data, **attr)
@@ -41,7 +41,7 @@ class LazyGraph(Graph):
     @classmethod
     def from_edgelist_file(cls, path_to_edgelist: str, sep: str = None):
         G = cls()
-        G.add_edges_from(LazyGraph.read_file_sep(path_to_edgelist, sep))
+        G.add_edges_from(OutOfCoreGraph.read_file_sep(path_to_edgelist, sep))
         return G
 
     @cached_property
@@ -74,8 +74,6 @@ class LazyGraph(Graph):
 
     def add_edges_from(self, ebunch_to_add, **attr):
         for i, x in enumerate(ebunch_to_add):
-            if i % 10000 == 0:
-                print(i)
             if len(x) == 3:
                 u, v, data = x
                 dd = {}

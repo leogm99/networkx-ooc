@@ -303,7 +303,7 @@ def test_interface_only_target():
         pytest.raises(nx.NetworkXError, interface_func, G, t=3)
 
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_edge_connectivity_flow_vs_stoer_wagner():
     graph_funcs = [nx.icosahedral_graph, nx.octahedral_graph, nx.dodecahedral_graph]
     for graph_func in graph_funcs:

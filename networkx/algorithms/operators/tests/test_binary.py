@@ -7,7 +7,7 @@ import networkx as nx
 from networkx.classes.tests import dispatch_interface
 from networkx.utils import edges_equal
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_union_attributes():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -29,7 +29,7 @@ def test_union_attributes():
     assert gh.graph["attr"] == "attr"
     assert gh.graph["name"] == "h"  # h graph attributes take precedent
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_intersection():
     G = nx.Graph()
     H = nx.Graph()
@@ -75,7 +75,7 @@ def test_intersection_node_sets_different():
     assert set(I.nodes()) == {1, 2, 3, 4}
     assert sorted(I.edges()) == [(2, 3)]
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_intersection_attributes():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -93,7 +93,7 @@ def test_intersection_attributes():
     assert set(gh.nodes()) == set(h.nodes())
     assert sorted(gh.edges()) == sorted(g.edges())
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_intersection_attributes_node_sets_different():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -143,7 +143,7 @@ def test_intersection_multigraph_attributes_node_set_different():
     assert sorted(gh.edges()) == [(0, 1)]
     assert sorted(gh.edges(keys=True)) == [(0, 1, 0)]
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_difference():
     G = nx.Graph()
     H = nx.Graph()
@@ -163,7 +163,7 @@ def test_difference():
     assert set(D.nodes()) == {1, 2, 3, 4}
     assert sorted(D.edges()) == [(1, 2), (3, 4)]
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_difference2():
     G = nx.Graph()
     H = nx.Graph()
@@ -183,7 +183,7 @@ def test_difference2():
     assert set(D.nodes()) == {1, 2, 3, 4}
     assert sorted(D.edges()) == [(3, 4)]
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_difference_attributes():
     g = nx.Graph()
     g.add_node(0, x=4)
@@ -242,7 +242,7 @@ def test_symmetric_difference_multigraph():
         [0, 1, 3],
     ]
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_union_and_compose():
     K3 = nx.complete_graph(3)
     P3 = nx.path_graph(3)
@@ -369,7 +369,7 @@ def test_compose_multigraph():
     assert set(GH) == set(G) | set(H)
     assert set(GH.edges(keys=True)) == set(G.edges(keys=True)) | set(H.edges(keys=True))
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_full_join_graph():
     # Simple Graphs
     G = nx.Graph()

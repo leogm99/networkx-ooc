@@ -172,19 +172,19 @@ class MinimumSpanningTreeTestBase:
         shift = [(u + 1, v + 1) for u, v, d in self.minimum_spanning_edgelist]
         assert edges_equal(actual, shift)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_minimum_tree(self):
         T = nx.minimum_spanning_tree(self.G, algorithm=self.algo)
         actual = sorted(T.edges(data=True))
         assert edges_equal(actual, self.minimum_spanning_edgelist)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_maximum_tree(self):
         T = nx.maximum_spanning_tree(self.G, algorithm=self.algo)
         actual = sorted(T.edges(data=True))
         assert edges_equal(actual, self.maximum_spanning_edgelist)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_disconnected(self):
         G = nx.Graph([(0, 1, {"weight": 1}), (2, 3, {"weight": 2})])
         T = nx.minimum_spanning_tree(G, algorithm=self.algo)
@@ -197,7 +197,7 @@ class MinimumSpanningTreeTestBase:
         assert nodes_equal(sorted(T), list(range(3)))
         assert T.number_of_edges() == 0
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_attributes(self):
         G = nx.Graph()
         G.add_edge(1, 2, weight=1, color="red", distance=7)
@@ -210,7 +210,7 @@ class MinimumSpanningTreeTestBase:
         for u, v in T.edges():
             assert T.adj[u][v] == G.adj[u][v]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_weight_attribute(self):
         G = nx.Graph()
         G.add_edge(0, 1, weight=1, distance=7)
@@ -440,7 +440,7 @@ class TestSpanningTreeIterator:
             ],
         ]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_minimum_spanning_tree_iterator(self):
         """
         Tests that the spanning trees are correctly returned in increasing order
@@ -451,7 +451,7 @@ class TestSpanningTreeIterator:
             assert edges_equal(actual, self.spanning_trees[tree_index])
             tree_index += 1
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_maximum_spanning_tree_iterator(self):
         """
         Tests that the spanning trees are correctly returned in decreasing order
@@ -462,7 +462,7 @@ class TestSpanningTreeIterator:
             assert edges_equal(actual, self.spanning_trees[tree_index])
             tree_index -= 1
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_spanning_tree_multiplicative_small():
     """
     Using a fixed seed, sample one tree for repeatability.
@@ -496,7 +496,7 @@ def test_random_spanning_tree_multiplicative_small():
 
     assert nx.utils.edges_equal(solution.edges, sampled_tree.edges)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 @pytest.mark.slow
 def test_random_spanning_tree_multiplicative_large():
     """
@@ -588,7 +588,7 @@ def test_random_spanning_tree_multiplicative_large():
     # reject the null hypothesis
     assert not p < 0.05
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_random_spanning_tree_additive_small():
     """
     Sample a single spanning tree from the additive method.
@@ -622,7 +622,7 @@ def test_random_spanning_tree_additive_small():
 
     assert nx.utils.edges_equal(solution.edges, sampled_tree.edges)
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 @pytest.mark.slow
 def test_random_spanning_tree_additive_large():
     """

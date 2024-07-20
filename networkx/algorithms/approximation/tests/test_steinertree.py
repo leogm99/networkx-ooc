@@ -71,13 +71,13 @@ class TestSteinerTree:
 
         cls.methods = ["kou", "mehlhorn"]
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_connected_metric_closure(self):
         G = self.G1.copy()
         G.add_node(100)
         pytest.raises(nx.NetworkXError, metric_closure, G)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_metric_closure(self):
         M = metric_closure(self.G1)
         mc = [
@@ -105,7 +105,7 @@ class TestSteinerTree:
         ]
         assert edges_equal(list(M.edges(data=True)), mc)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_steiner_tree(self):
         valid_steiner_trees = [
             [

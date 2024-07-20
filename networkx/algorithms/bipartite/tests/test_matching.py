@@ -34,7 +34,7 @@ class TestMatching:
         self.graph.add_nodes_from(range(12))
         self.graph.add_edges_from(edges)
 
-        if (app_mode != 'lazy'):
+        if (app_mode != 'ooc'):
             # Example bipartite graph from issue 2127
             G = nx.Graph()
             G.add_nodes_from(
@@ -110,7 +110,7 @@ class TestMatching:
             assert u in vertices or v in vertices
         # TODO Assert that the vertices are the correct ones.
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_eppstein_matching(self):
         """Tests that David Eppstein's implementation of the Hopcroft--Karp
         algorithm produces a maximum cardinality matching.
@@ -139,17 +139,17 @@ class TestMatching:
         match = hopcroft_karp_matching(self.simple_graph)
         assert match == self.simple_solution
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_eppstein_matching_disconnected(self):
         with pytest.raises(nx.AmbiguousSolution):
             match = eppstein_matching(self.disconnected_graph)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_hopcroft_karp_matching_disconnected(self):
         with pytest.raises(nx.AmbiguousSolution):
             match = hopcroft_karp_matching(self.disconnected_graph)
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_issue_2127(self):
         """Test from issue 2127"""
         # Build the example DAG
@@ -187,7 +187,7 @@ class TestMatching:
         for u, v in G.edges():
             assert u in vertex_cover or v in vertex_cover
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_vertex_cover_issue_3306(self):
         G = nx.Graph()
         edges = [(0, 2), (1, 0), (1, 1), (1, 2), (2, 2)]
@@ -198,7 +198,7 @@ class TestMatching:
         for u, v in G.edges():
             assert u in vertex_cover or v in vertex_cover
 
-    @pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+    @pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
     def test_unorderable_nodes(self):
         a = object()
         b = object()
@@ -211,7 +211,7 @@ class TestMatching:
         for u, v in G.edges():
             assert u in vertex_cover or v in vertex_cover
 
-@pytest.mark.skipif(app_mode == 'lazy', reason="lazy graph does not support this algorithms")
+@pytest.mark.skipif(app_mode == 'ooc', reason="Algorithm not supported for OutOfCoreGraph")
 def test_eppstein_matching():
     """Test in accordance to issue #1927"""
     G = nx.Graph()
