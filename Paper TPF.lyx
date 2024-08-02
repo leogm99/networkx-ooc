@@ -89,44 +89,74 @@
 
 \series bold
 \size larger
-NetworkX-OOC: An Out Of Core implementation for NetworkX
+NetworkX-OOC: Una implementación Out Of Core para NetworkX
 \end_layout
 
 \begin_layout Author
-Leonardo Giampieri, Joaquin Hojman, Francisco Vazquez
+Giampieri, Leonardo
+\begin_inset Newline newline
+\end_inset
+
+Hojman, Joaquin
+\begin_inset Newline newline
+\end_inset
+
+ Vazquez, Francisco
 \end_layout
 
-\begin_layout Section
-Abstract
-\end_layout
-
-\begin_layout Standard
+\begin_layout Abstract
 En el presente trabajo, analizamos las limitaciones de la biblioteca NetworkX
  de Python en el contexto del análisis de grafos de gran tamaño.
  Identificamos que NetworkX enfrenta serias restricciones en cuanto a la
  carga y procesamiento de grafos grandes debido a que trabaja usando únicamente
- memoria ram.
+ memoria.
  Para superar estas limitaciones, desarrollamos una serie de estructuras
- out-of-core que almacenan datos en disco y emulan el funcionamiento de
+ Out of Core que almacenan datos en disco y emulan el funcionamiento de
  las estructuras en memoria de Python, modificamos los algoritmos de NetworkX
- para integrar estas nuevas estructuras, y creamos una clase de Grafo out-of-cor
-e capaz de manejar grafos de gran tamaño almacenando sus diversas partes
- en disco.
- Esta solución permite que grafos que excedan la memoria principal de una
+ para integrar estas nuevas estructuras, y creamos una clase de Grafo Out
+ of Core capaz de manejar grafos de gran tamaño almacenando sus diversas
+ partes en disco.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Esta solución permite que grafos que excedan la memoria principal de una
  máquina puedan ser cargados y analizados, eliminando la limitación de memoria.
  Los experimentos demuestran que nuestro enfoque cumple con éxito el objetivo
- de procesar grafos de gran tamaño, usando notablemente menos memoria que
- la versión original de NetworkX.
+ de procesar grafos de gran tamaño, utilizando entre el 10% y el 33% de
+ la memoria que consume la versión original de NetworkX para grafos de más
+ de 100 mil nodos en los algoritmos analizados.
+ Además, los grafos en disco pesan apenas un 10% de lo que pesaban en memoria
+ con la versión nativa.
  Sin embargo, observamos un aumento significativo en el tiempo de ejecución
  debido a los múltiples accesos en disco, una área que podría ser mejorada
  en investigaciones futuras.
- Nuestra implementación es compatible hacia atrás, permitiendo a los usuarios
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Nuestra implementación es compatible hacia atrás, permitiendo a los usuarios
  de NetworkX aprovechar las nuevas capacidades sin cambiar significativamente
  su código.
 \end_layout
 
 \begin_layout Section
 Introducción
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Introducción"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
@@ -147,6 +177,7 @@ literal "false"
  para abordar conjuntos de datos más grandes y complejos, NetworkX se encuentra
  con ciertas limitaciones relacionadas con la carga y el manejo de grafos
  de gran tamaño.
+ 
 \begin_inset Newline newline
 \end_inset
 
@@ -182,7 +213,7 @@ o a un mayor número de profesionales y organizaciones beneficiarse de estas
 \begin_inset Newline newline
 \end_inset
 
-Proponemos la creación de una nueva clase de Grafo Out Of Core en NetworkX
+Proponemos la creación de una nueva clase de Grafo Out of Core en NetworkX
  que sea capaz de gestionar grafos de gran tamaño, permitiendo su almacenamiento
  y acceso por partes en el disco.
  Esto permitirá que los grafos que excedan la memoria principal de una máquina
@@ -190,7 +221,7 @@ Proponemos la creación de una nueva clase de Grafo Out Of Core en NetworkX
  de la memoria.
  Para soportar esta nueva clase, se modificará la implementación interna
  de los algoritmos existentes, reemplazando las estructuras en memoria por
- implementaciones de las mismas que funcionen out-of-core, manteniendo las
+ implementaciones de las mismas que funcionen Out of Core, manteniendo las
  prácticas y convenciones de nomenclatura establecidas en NetworkX, de modo
  que los usuarios existentes puedan aprovechar las nuevas capacidades sin
  tener que realizar cambios significativos en su código.
@@ -198,35 +229,46 @@ Proponemos la creación de una nueva clase de Grafo Out Of Core en NetworkX
 
 \begin_layout Section
 Diseño
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Diseño"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Para lograr que los algoritmos de NetworkX funcionen de forma totalmente
- out-of-core, es necesario reemplazar las estructuras que carguen datos
- en memoria por una versión de las mismas que guarde los datos en disco,
- es decir, estructuras out-of-core.
+Para lograr que los algoritmos de NetworkX funcionen con grafos que no pueden
+ ser almacenados en su totalidad en memoria es necesario reemplazar las
+ estructuras que carguen datos en memoria por una versión de las mismas
+ que guarde los datos en disco, es decir, estructuras Out of Core (OOC).
  
 \end_layout
 
 \begin_layout Subsection
 Out Of Core Dict
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Out-Of-Core"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-La principal estructura de la cual nuestra implementación depende es un
- OutOfCoreDict, una estructura que wrappea al key value store de LevelDB
- y proporciona una interfaz similar a un diccionario de Python (MutableMapping).
-\begin_inset Newline newline
+La principal estructura de la cual depende nuestra implementación es un
+ OutOfCoreDict (OOCDict), que proporciona una interfaz similar a un diccionario
+ de Python (MutableMapping), y que utiliza LevelDB 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-2"
+literal "false"
+
 \end_inset
 
-
-\begin_inset Newline newline
-\end_inset
-
-Esta estructura permite manejar más datos de los que caben en memoria.
- Se utiliza un buffer en memoria de un tamaño predeterminado que permite
- optimizar las cargas en bulk a disco.
- Esta interfaz acepta claves y valores en bytes arbitrarios.
+ como implementación detrás de escena.
  
 \begin_inset Newline newline
 \end_inset
@@ -235,13 +277,48 @@ Esta estructura permite manejar más datos de los que caben en memoria.
 \begin_inset Newline newline
 \end_inset
 
-La clase OutOfCoreDict implementa todos los métodos de un diccionario normal
- de python, pudiendo reemplazar a éste en los algoritmos donde haga falta.
- Debido a que plyvel únicamente guarda bytes, se implementaron diversas
- interfaces del OutOfCoreDict, cada una con la posibilidad de convertir
- tipos de datos a bytes y guardarlos en plyvel.
- Estas forman la base de varias estructuras que son utilizadas por los algoritmo
-s OOC.
+LevelDB es una key-value store que acepta claves y valores en bytes arbitrarios,
+ y que internamente utiliza árboles LSM 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-3"
+literal "false"
+
+\end_inset
+
+, optimizados para escrituras en bulk, lo cual permite una carga eficiente
+ de grafos grandes.
+ Esto nos interesa debido al objetivo mismo del trabajo, poder cargar cantidades
+ de datos que no entran en memoria.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Nuestra implementación utiliza plyvel 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-4"
+literal "false"
+
+\end_inset
+
+ como binding para LevelDB.
+ En la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Optimización-de-algoritmos"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ exploramos alternativas al uso de LevelDB.
+ 
 \begin_inset Newline newline
 \end_inset
 
@@ -250,13 +327,13 @@ s OOC.
 placement H
 wide false
 sideways false
-status open
+status collapsed
 
 \begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-OutOfCoreDict
+OutOfCoreDict class
 \end_layout
 
 \end_inset
@@ -267,128 +344,159 @@ OutOfCoreDict
 \begin_layout LyX-Code
 
 \color black
-class
-\color inherit
- OutOfCoreDict(MutableMapping):
+class OutOfCoreDict(MutableMapping):
 \end_layout
 
 \begin_deeper
 \begin_layout LyX-Code
-def __setitem__(self, key, value):
-\end_layout
 
-\begin_deeper
-\begin_layout LyX-Code
-self._wb[key] = value
+\color black
+	def __setitem__(self, key, value):
 \end_layout
 
 \begin_layout LyX-Code
-if len(self._wb) > 4000:
-\end_layout
 
-\begin_deeper
-\begin_layout LyX-Code
-self._flush_write_batch()
-\end_layout
-
-\end_deeper
-\end_deeper
-\begin_layout LyX-Code
-
+\color black
+    	    self._wb[key] = value
 \end_layout
 
 \begin_layout LyX-Code
-def __getitem__(self, key):
-\end_layout
 
-\begin_deeper
-\begin_layout LyX-Code
-value = self._wb.get(key)
+\color black
+    	    if len(self._wb) > 4000:
 \end_layout
 
 \begin_layout LyX-Code
-if value is not None:
-\end_layout
 
-\begin_deeper
-\begin_layout LyX-Code
-return value
-\end_layout
+\color black
+             self._flush_write_batch()
+\begin_inset Newline newline
+\end_inset
 
-\end_deeper
-\begin_layout LyX-Code
-data = self._inner.get(key, fill_cache=False)
-\end_layout
 
-\begin_layout LyX-Code
-if data is None:
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-raise KeyError(key)
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-return data
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-
-\end_layout
-
-\begin_layout LyX-Code
-def __init__(self) -> None:
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-self._temp = tempfile.TemporaryDirectory()
-\end_layout
-
-\begin_layout LyX-Code
-self._inner = plyvel.DB(
-\end_layout
-
-\begin_deeper
-\begin_layout LyX-Code
-f"{self._temp.name}",
-\end_layout
-
-\begin_layout LyX-Code
-create_if_missing=True,
-\end_layout
-
-\end_deeper
-\begin_layout LyX-Code
-)
-\end_layout
-
-\begin_layout LyX-Code
-self._wb = {}
-\end_layout
-
-\end_deeper
-\end_deeper
+\begin_inset Newline newline
 \end_inset
 
 
 \end_layout
 
-\begin_layout Section
-Experimentos 
+\begin_layout LyX-Code
+
+\color black
+	def __getitem__(self, key):
 \end_layout
 
-\begin_layout Subsection
-Grafos utilizados 
+\begin_layout LyX-Code
+
+\color black
+    	    value = self._wb.get(key)
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    if value is not None:
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+        	   return value
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    data = self._inner.get(key, fill_cache=False)
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    if data is None:
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+             raise KeyError(key)
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    return data
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+	def __init__(self, dir_=DB_DIR) -> None:
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    self._temp = tempfile.TemporaryDirectory(dir=dir_)
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    self._inner = plyvel.DB(
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+        	  f"{self._temp.name}",
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+        	  create_if_missing=True,
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    )
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    	    self._wb = {}
+\end_layout
+
+\end_deeper
+\end_inset
+
+ 
 \end_layout
 
 \begin_layout Standard
-Para el análisis de resultados utilizamos 5 grafos distintos.
- Inicialmente obtuvimos 2 datasets basados en redes sociales existentes,
- para tener casos de uso basados en datos reales.
+Utilizamos Temp Directory 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-5"
+literal "false"
+
+\end_inset
+
+ (self._temp) ya que LevelDB necesita un lugar para almacenar los datos que
+ se guardan en el diccionario, y no estamos interesados en que estos persistan
+ luego de que el proceso Python termine: esto busca replicar el comportamiento
+ del diccionario nativo de Python.
  
 \begin_inset Newline newline
 \end_inset
@@ -397,8 +505,1577 @@ Para el análisis de resultados utilizamos 5 grafos distintos.
 \begin_inset Newline newline
 \end_inset
 
-Luego, generamos 3 grafos de distinto tamaño utilizando el modelo de Erdős–Rényi
- y NetworkX, con probabilidad de agregar una arista de 
+Temp Directory usa por defecto “/tmp”, que en algunos sistemas puede llegar
+ a estar montado sobre tmpfs 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-6"
+literal "false"
+
+\end_inset
+
+, file system que utiliza memoria y swap.
+ Para los experimentos utilizamos un directorio (referido por DB_DIR) montado
+ en disco para estresar la implementación y lograr una comparación razonable
+ contra la nativa .
+ Se permite cambiar este directorio mediante una variable de entorno.
+ En la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Persistencia-de-datos"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ exploramos posibilidades que nos permitirian persistir las estructuras
+ de datos aun luego de terminar su uso.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Uno de los principales problemas que encontramos con la primera versión
+ del OOCDict fue el tiempo que tomaba la carga del mismo.
+ Lo que se observó fue que muchas de las llamadas al write de plyvel para
+ guardar los elementos del OOCDict ejecutaban llamadas a la syscall write
+ con pocos datos por llamada, de sólo algunas decenas de bytes.
+ Para aumentar el throughput se decidió introducir un buffer en memoria
+ de tamaño fijo a modo de caché de escritura, y recién cuando este se llena
+ se hace una escritura de los mismos en batch.
+ Esto resultó en una reducción significativa del tiempo de carga, debido
+ a que se llaman muchas menos veces a la syscall write, y cada llamada se
+ realiza con una mayor cantidad de datos a escribir.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+La clase OOCDict implementa todos los métodos de un diccionario nativo de
+ Python, pudiendo reemplazar a éste en los algoritmos donde haga falta.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Debido a que plyvel únicamente guarda bytes, debimos definir una forma de
+ serialización/deserialización de la información almacenada.
+ Se probó inicialmente con pickle 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-7"
+literal "false"
+
+\end_inset
+
+, debido a la gran variedad de tipos de datos con los que permite trabajar,
+ incluyendo estructuras complejas.
+ Sin embargo, por el overhead de performance, se decidió utilizarlo de manera
+ auxiliar, como se ilustra en la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Serialización/Deserialización-de"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Se determinó entonces utilizar el módulo struct 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-8"
+literal "false"
+
+\end_inset
+
+ para la serialización y deserialización de datos.
+ Estas modificaciones nos permitieron ganar velocidad, pero por otro lado
+ se perdió la posibilidad de que los datos almacenados sean de tipos arbitrarios.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Se implementaron entonces diversos adaptadores del OOCDict, cada uno especializa
+do en serializar un tipo de dato específico y guardarlo en plyvel.
+ La utilidad de estas estructuras es que abstraen la conversión de los datos
+ desde y hacia bytes.
+ Estas forman la base de varias estructuras que son utilizadas por los algoritmo
+s OOC.
+ El detalle de estas estructuras puede verse en la tabla 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Adaptadores-del-OOCDict"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ y cómo se relacionan con OOCDict en la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Diagrama-de-clases"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="3">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Estructura
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Tipo de dato de clave
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Tipo de dato de valor
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+IntDict
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Int
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+IntFloatDict
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Int
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Float
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+EdgesDict
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Int, Tupla de Ints
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Int, Tupla de Ints
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Adaptadores del OOCDict 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Adaptadores-del-OOCDict"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/OOCDict_adaptadores.png
+	scale 25
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Diagrama de clases que muestra las relaciones de OOCDict, sus adaptadores
+ y LevelDB 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Diagrama-de-clases"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\end_layout
+
+\begin_layout Subsection
+Lazy List 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Lazy-List"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Fue necesario definir una estructura que implementara las operaciones típicas
+ de una lista nativa de Python, llamada LazyList.
+ Esta estructura tiene como atributo una ruta a un archivo temporal en disco
+ que representa la lista, y es en ese archivo donde se guardan los elementos
+ de la misma.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Además, tiene un atributo que indica el tipo de dato que se guarda en la
+ lista, ya que los elementos que se guarden en la misma serán codificados
+ como bytes usando esta información.
+ Por ejemplo, si en la LazyList se guardan integers, la estructura sabe
+ que cada 4 bytes escritos se tiene un dato de tipo integer.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+De esta forma, utilizando mmap 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-9"
+literal "false"
+
+\end_inset
+
+ y sabiendo los bytes que ocupa cada dato, se pueden manejar eficientemente
+ estos archivos que representan las listas, aplicando las operaciones clásicas
+ de la misma.
+ De hecho, las operaciones de longitud, obtener un elemento, o guardar un
+ elemento dado un índice o al final de la lista son todas O(1).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/LazyList-2.png
+	scale 20
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Diagrama de comunicación que ilustra el guardado de los elementos 100 y
+ 101 al final de una LazyList
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/LazyList-3.png
+	scale 20
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Diagrama de comunicación que ilustra la obtención del dato ubicado en la
+ posición 1 en una LazyList
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Por otra parte, nuestra implementación cuenta con una lista llamada OutOfCoreLis
+t (OOCList), basada en un OutOfCoreDict (ver sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Out-Of-Core"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ Cada par clave-valor del OOCDict interno representa para OOCList un par
+ índice-elemento.
+ La ventaja de esta implementación es la posibilidad de soportar listas
+ “sparse” 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-10"
+literal "false"
+
+\end_inset
+
+.
+ Actualmente, OOCList es la estructura que reemplaza a la lista nativa en
+ nuestra implementación, exploramos alternativas para esto en la sección
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Alternativa-para-OutOfCoreList"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+Out of Core Dict of Lists
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Out-of-Core-Dict-Of-Lists"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En los algoritmos donde es necesario utilizar de forma OOC un diccionario
+ de listas la estructura debe ser algo más compleja que un OutOfCoreDict.
+ Un OOCDict acepta como valores una tira de bytes, por lo que podríamos
+ codificar una lista de Python de esta manera y guardarla como valor en
+ el diccionario.
+ El problema es que OOCDict carga completamente en memoria cada valor accedido:
+ para datos chicos como un int o float no habría problema, pero para una
+ lista la misma podría no entrar en memoria.
+ Por otro lado, una OutOfCoreList, donde la lista no está cargada en memoria,
+ no puede ser codificada como bytes e insertada en un OOCDict por la complejidad
+ de la misma.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Lo que se resolvió fue tener una estructura especializada, llamada OutOfCoreDict
+OfLists (OOCDictOfLists): internamente usa un OOCDict, donde la clave del
+ mismo es un elemento, y el valor es una ruta a un archivo temporal en disco
+ que representa la lista, la cual se maneja mediante una LazyList (ver sección
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Lazy-List"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+El algoritmo 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Ejemplo-de-uso"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ provee un ejemplo en código, mientras que la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Diagrama-de-componentes"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ ejemplifica el uso de la estructura mediante.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Ejemplo de uso de OutOfCoreDictOfLists 
+\begin_inset CommandInset label
+LatexCommand label
+name "alg:Ejemplo-de-uso"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+import networkx as nx
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+g = nx.OutOfCoreGraph()
+\end_layout
+
+\begin_layout LyX-Code
+dol = g.int_dict_of_lists()
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+dol[1] = [22, 15]
+\end_layout
+
+\begin_layout LyX-Code
+dol[1].append(7)
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+dol[2] = []
+\end_layout
+
+\begin_layout LyX-Code
+dol[2].append(500)
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+dol[3] = [400, 401, 402]
+\end_layout
+
+\begin_layout LyX-Code
+dol[3].append(403)
+\end_layout
+
+\begin_layout LyX-Code
+dol[3].append(404)
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+print(dol[1][0])  # 22
+\end_layout
+
+\begin_layout LyX-Code
+print(dol[2][0])  # 500
+\end_layout
+
+\begin_layout LyX-Code
+print(dol[3][4])  # 404
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/OOCDictOfLists.png
+	scale 20
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Diagrama de componentes del OOCDictOfLists 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Diagrama-de-componentes"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Out of Core Set
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Out-of-Core-Set"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Todas las estructuras detalladas hasta aquí utilizan OOCDict.
+ Utilizar un OOCDict para implementar un set resultaría en una estructura
+ que ocupa espacio en guardar claves que no serán utilizadas.
+ Es por esto que para desarrollar el OutOfCoreSet (OOCSet) se decidió utilizar
+ una implementación específica; un BitMap de CRoaring 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-11"
+literal "false"
+
+\end_inset
+
+, utilizando Pyroaring 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-12"
+literal "false"
+
+\end_inset
+
+ como bindings de Python.
+ Este optimiza el uso de memoria utilizando algoritmos de compresión 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-13"
+literal "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Subsection
+Out of Core Graph
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Out-of-Core-Graph"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Un Graph de NetworkX tiene listas de adyacencia y de nodos implementadas
+ mediante diccionarios nativos de Python.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Un OutOfCoreGraph (OOCGraph) implementa la mismas funcionalidades que un
+ Graph nativo, reemplazando sus diccionarios en memoria internos por OOCDict
+ (en disco).
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Lazy adjacency list y Lazy node list 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Lazy-adjacency-list"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Para la primera versión del OOCGraph, se reemplazaron los diccionarios de
+ python internos que usa el Graph de NetworkX para representar las listas
+ de nodos y adyacencia por instancias de OOCDict.
+ En esta implementación, recuperar información implicaba deserializar estas
+ estructuras por completo.
+ Esto no solo era lento, ya que el mismo proceso de serialización/deserializació
+n se llevaba a cabo por cada acceso al grafo, sino que también resultaba
+ en spikes en el uso de memoria, propios de que la estructura que se estaba
+ deserializando era un diccionario tan grande como aristas y/o nodos hubiera
+ en el grafo.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Por lo tanto, se decidió implementar una solución que utiliza estructuras
+ lazy, que únicamente operan sobre la información en disco en el momento
+ necesario.
+ Estas estructuras son una Lazy Node List, que almacena como clave un nodo
+ y como valor los atributos del mismo, y una Lazy Adjacency List, que almacena
+ como clave un par ordenado de nodos, y como valor los atributos.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Ambas implementan la interfaz MutableMapping y utilizan OOCDict para su
+ persistencia.
+ Al solicitar los atributos de un nodo o una arista, Lazy Node List y Lazy
+ Adjacency List instancian un LazyNode o LazyEdge, los cuales funcionan
+ como un proxy, como se esquematiza en la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Diagrama-de-objetos"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+: cuando se pide a un LazyNode el atributo del nodo, este se busca en el
+ OOCDict interno de la Lazy Node List.
+ De igual manera, cuando a un LazyEdge se le solicita el atributo de una
+ arista, se busca en el OOCDict interno de la Lazy Adjacency List mediante
+ el par de nodos que conforman la arista, y se devuelve el valor como un
+ diccionario de atributos.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/Diagrama_Objeto_Graph.png
+	scale 18
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Diagrama de objetos de OOCGraph 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Diagrama-de-objetos"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Un LazyEdge se instancia únicamente con un nodo fuente, y luego tiene la
+ capacidad de devolver los atributos que tenga ese nodo fuente con el resto
+ de los nodos con los que forme una arista, como se puede observar en la
+ figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Diagrama-de-comunicación_lazyedge"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/Diagrama_comunicacion_lazyEdge.png
+	scale 20
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Diagrama de comunicación para obtener atributos de un LazyEdge 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Diagrama-de-comunicación_lazyedge"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Serialización/Deserialización de nodos y aristas
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Serialización/Deserialización-de"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Como se expuso en la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Out-Of-Core"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, pickle presenta un overhead de performance al momento de serializar datos,
+ y es por eso que se decidió utilizar el módulo struct.
+ En particular, se utiliza para serializar/deserializar los nodos y aristas
+ del grafo en sus estructuras internas, permitiendo guardar únicamente datos
+ del tipo entero, debido a que serializar este tipo de dato es más performante
+ que serializar estructuras genéricas.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Lo expuesto implica una diferencia con el grafo de NetworkX nativo, que
+ la única restricción que requiere para almacenar nodos y aristas es que
+ estos sean hasheables.
+ Exploramos algunas alternativas para esto en la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Soporte-del-grafo"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Por otro lado, se mantuvo el uso de pickle para serializar/deserializar
+ atributos de los nodos y aristas del grafo, ya que ciertos algoritmos guardan
+ en estos atributos información necesaria de los nodos y aristas en formato
+ de diccionario de Python con claves y valores genéricos.
+ 
+\end_layout
+
+\begin_layout Subsection
+Algoritmos 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Algoritmos"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Los algoritmos de NetworkX no solo interactúan con el grafo sino que además
+ usan estructuras de datos secundarias como diccionarios, listas o sets.
+ Cómo las mismas pueden crecer proporcionalmente al tamaño del grafo, estas
+ deben ser reemplazadas por estructuras OOC.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Se hizo necesario modificar la implementación de los algoritmos cambiando
+ sus estructuras secundarias por su versión OOC, sin embargo, con esta solución
+ se acopla la implementación nativa con las estructuras OOC, impidiendo
+ ejecutar los algoritmos enteramente en memoria.
+ Respetando DRY 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-14"
+literal "false"
+
+\end_inset
+
+, también se deseaba evitar duplicar las implementaciones, una para grafos
+ en memoria y otra OOC.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+La decisión tomada fue que el mismo grafo le informará al algoritmo que
+ estructura utilizar, es decir, el grafo ofrece factory methods para crear
+ estas estructuras adicionales, que para el grafo nativo serán estructuras
+ en memoria y para el OOCGraph serán estructuras OOC.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Tomando el ejemplo de la función auxiliar de Bellman-Ford, _inner_bellman_ford,
+ donde antes instanciaban las estructuras directamente en memoria ahora
+ se instancian obteniéndolas del factory method del grafo: 
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+_inner_bellman_ford on NetworkX
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+def _inner_bellman_ford(
+\end_layout
+
+\begin_layout LyX-Code
+    G,
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+):
+\end_layout
+
+\begin_layout LyX-Code
+  
+\color black
+  ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    pred = {}
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    recent = {}
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    count = {}
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    q = deque()
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    in_q = set()
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+
+\color black
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\color black
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+_inner_bellman_ford on NetworkX-OOC
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+def _inner_bellman_ford(
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    G,
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+):
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    pred = G.int_dict_of_lists()
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_deeper
+\begin_layout LyX-Code
+
+\color black
+recent = G.int_tuple_dict_of_edges()
+\end_layout
+
+\end_deeper
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    count = G.int_dict()
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    q = G.int_deque()
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    in_q = G.set_()
+\end_layout
+
+\begin_layout LyX-Code
+
+\color black
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Luego, dentro de la clase grafo:
+\begin_inset Newline newline
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+NX Graph
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+class Graph:
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+    def set_(self, *args):
+\end_layout
+
+\begin_layout LyX-Code
+        return set(*args)
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+    def int_list(self, *args):
+\end_layout
+
+\begin_layout LyX-Code
+        return list(*args)
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+    def int_dict(self, *args):
+\end_layout
+
+\begin_layout LyX-Code
+        return dict(*args)
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+
+\end_layout
+
+\end_inset
+
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float algorithm
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+OutOfCoreGraph
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout LyX-Code
+class OutOfCoreGraph(Graph):
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+    def set_(self, *args):
+\end_layout
+
+\begin_layout LyX-Code
+        return OutOfCoreSet(*args)
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+    def int_list(self, *args):
+\end_layout
+
+\begin_layout LyX-Code
+        return OutOfCoreList(*args)
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\begin_layout LyX-Code
+    def int_dict(self, *args):
+\end_layout
+
+\begin_layout LyX-Code
+        return IntDict(*args)
+\end_layout
+
+\begin_layout LyX-Code
+    ...
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Con este diseño en mente se modificaron un total de 130 algoritmos de NetworkX
+ para que funcionen de forma OOC.
+ La evidencia de que la biblioteca fue efectivamente modificada en forma
+ compatible hacia atrás es que los tests originales de los algoritmos de
+ NetworkX funcionan en su versión nativa y en la versión OOC.
+ Para conocer la totalidad de los mismos revise la sección 
+\begin_inset Quotes eld
+\end_inset
+
+
+\begin_inset CommandInset ref
+LatexCommand nameref
+reference "Apéndice A"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
+\begin_inset Quotes erd
+\end_inset
+
+ o la lista referenciada en el readme del proyecto, en nuestro repositorio
+ 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-15"
+literal "false"
+
+\end_inset
+
+.
+\end_layout
+
+\begin_layout Section
+Experimentos 
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Experimentos"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Grafos utilizados 
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Grafos-utilizados"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Para el análisis de resultados utilizamos 5 grafos: 2 basados en datasets
+ reales de redes sociales existentes y 3 generados artificialmente.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Los 3 grafos artificiales son de distinto tamaño y se generaron utilizando
+ el modelo de Erdős–Rényi y NetworkX, con probabilidad de agregar una arista
+ de 
 \begin_inset Formula 
 \begin{equation}
 \frac{2*Log(N)}{N}
@@ -414,31 +2091,37 @@ siendo N la cantidad de nodos del grafo.
  Esto nos garantiza una única componente conexa 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-17"
+key "key-16"
 literal "false"
 
 \end_inset
 
-.
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-Se utilizó el modelo de Erdős–Rényi debido a que garantiza una estructura
- similar a una red social, de forma que las 5 redes tienen estructuras similares
-, y también para tener redes de menor tamaño que nos faciliten el testeo.
+, precondición requerida por algunos de los algoritmos de NetworkX analizados
+ en el presente paper.
  
 \begin_inset Newline newline
 \end_inset
 
 
+\begin_inset Newline newline
+\end_inset
+
+De esta forma los 5 grafos tienen estructuras similares: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
 \begin_inset Tabular
 <lyxtabular version="3" rows="6" columns="3">
-<features islongtable="true" longtabularalignment="center">
-<column alignment="center" valignment="top" width="0pt">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <column alignment="center" valignment="top">
 <row>
@@ -446,6 +2129,8 @@ Se utilizó el modelo de Erdős–Rényi debido a que garantiza una estructura
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\series bold
 Grafo
 \end_layout
 
@@ -455,6 +2140,8 @@ Grafo
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\series bold
 Detalles
 \end_layout
 
@@ -464,6 +2151,8 @@ Detalles
 \begin_inset Text
 
 \begin_layout Plain Layout
+
+\series bold
 Source
 \end_layout
 
@@ -496,7 +2185,7 @@ Source
 Erdős–Rényi model 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-18"
+key "key-17"
 literal "false"
 
 \end_inset
@@ -533,7 +2222,7 @@ literal "false"
 Erdős–Rényi model 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-19"
+key "key-18"
 literal "false"
 
 \end_inset
@@ -570,7 +2259,7 @@ literal "false"
 Erdős–Rényi model 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-20"
+key "key-19"
 literal "false"
 
 \end_inset
@@ -607,7 +2296,7 @@ literal "false"
 Pokec social network 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-21"
+key "key-20"
 literal "false"
 
 \end_inset
@@ -644,7 +2333,7 @@ literal "false"
 LiveJournal social network 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-22"
+key "key-21"
 literal "false"
 
 \end_inset
@@ -662,43 +2351,6088 @@ literal "false"
 
 \end_layout
 
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Grafos utilizados
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
 \begin_layout Subsubsection
 Toma de métricas y herramientas
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Toma-de-métricas"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-Para recolectar las métricas de la ejecución utilizamos un script para automatiz
-ar el proceso.
- Se midió el consumo de memoria RAM, la cantidad de operaciones input/output
- a disco del programa bajo test leyendo de /proc y el uso de swap, con soporte
- de la library psutil 
+Se midió el consumo de memoria, la cantidad acumulada de operaciones input/outpu
+t al momento de la medición del programa bajo test leyendo de /proc, y el
+ uso de swap.
+ Se midió el uso de disco de la carpeta donde se almacenan los archivos
+ de LevelDB.
+ Todas las métricas se tomaron a intervalos de sampleo de 10ms.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Sabiendo que cuando se usan estructuras OOC no debería haber uso de swap,
+ este se midió a nivel global del sistema.
+ El objetivo fue corroborar que efectivamente la implementación OOC no estaba
+ usando más memoria de la esperada.
+ Observamos que nunca se llegó al límite de la memoria disponible en el
+ sistema, y que el comportamiento del swap fue inconsistente, lo cual sugiere
+ que el swap medido es parte del ruido del sistema y no está relacionado
+ con los algoritmos que analizamos.
+ 
+\end_layout
+
+\begin_layout Subsection
+Carga del grafo
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Carga-del-grafo"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Análisis temporal
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Análisis-temporal"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A continuación, se presenta una tabla comparando los tiempos de carga para
+ los diferentes grafos, cargandolos en la versión nativa de NetworkX y en
+ la versión OOC, medido en segundos: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.80
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.44
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.85
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+16.6
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5.82
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+40.67
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+302.00
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7.42
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+92.61
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+646.44
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6.98
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+184.93
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1154.55
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6.24
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiempos de cargas para los diferentes grafos.
+ En el calculo de error de las mediciones se observaron resultados despreciables
+, por lo que se tomó la decisión de redondear el mismo a 0.01.
+ Se tomaron 5 mediciones para cada caso, el resultado indicado es el promedio
+ de esas mediciones.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Como era de esperarse, los tiempos de carga aumentan cuando el grafo se
+ carga de forma OOC debido a las escrituras en disco: entre unas 4.5 y 7.5
+ veces más lento.
+ 
+\end_layout
+
+\begin_layout Subsubsection
+Análisis espacial
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Análisis-espacial"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+A continuación, se presenta una tabla comparando el uso de memoria al cargar
+ los diferentes grafos, en la versión nativa de NetworkX y en la versión
+ OOC, en megabytes: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+53.80
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.05
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.37
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.03
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.75
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+303.18
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.06
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+57.30
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.62
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.19
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3235.84
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+81.92
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.11
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.03
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5238.64
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.06
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+122.88
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.15
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.02
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8652.80 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+153.60 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.60
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.02
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria en la carga de los diferentes grafos.
+ Se tomaron 5 mediciones para cada caso, el resultado indicado es el promedio
+ de esas mediciones.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Podemos apreciar que en el caso del grafo de NetworkX se carga todo el grafo
+ en memoria, mientras que para el OutOfCoreGraph al tener mayormente la
+ data almacenada en disco el crecimiento de uso de memoria es menor: un
+ 75% de la memoria original para grafos chicos, y luego entre 2% y 20% de
+ la memoria original conforme los grafos aumentan de tamaño.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+El uso de memoria no es nulo en los grafos OOC debido a que las estructuras
+ internas hacen uso de caching para optimizar las operaciones de lectura
+ y escritura.
+ 
+\end_layout
+
+\begin_layout Subsection
+Análisis de algoritmos
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Análisis-de-algoritmos"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Se presentan los resultados de los siguientes algoritmos:
+\end_layout
+
+\begin_layout Itemize
+Predecessor (unweighted)
+\end_layout
+
+\begin_layout Itemize
+Degree centrality
+\end_layout
+
+\begin_layout Itemize
+Eigenvector centrality
+\end_layout
+
+\begin_layout Itemize
+Randomized partitioning (approximation)
+\end_layout
+
+\begin_layout Itemize
+Single source dijkstra
+\end_layout
+
+\begin_layout Itemize
+Single source bellman-ford
+\end_layout
+
+\begin_layout Standard
+Los mismos fueron elegidos debido a que son de distintas familias y utilizan
+ varias estructuras secundarias, como puede verse en la tabla 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Estructuras-de-los"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="6">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Algoritmo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCDict
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCList
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCSet
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCDictOfLists
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCDeque
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Predecessor
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Degree centrality
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Eigenvector centrality
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Single source dijkstra
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+Single Source Bellman-Ford
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+x
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Estructuras de los algoritmos analizados 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Estructuras-de-los"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Predecessors
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Predecessors"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename C:/Users/User/Documents/Personal/FIUBA/networkx/MemTesting/memory_usage_plot_Predecessor_consolidated.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory Used by Process Over Time - Predecessors
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename C:/Users/User/Documents/Personal/FIUBA/networkx/MemTesting/disk_usage_plot_Predecessor.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Disk space used by process over time - Predecessors
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0338
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.2039
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.1566
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.4544
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+93.4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.2254
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.1052
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+47.0946
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.6136
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+38.4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+42.5711
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.4445
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1586.3832
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+139.4725
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+37.3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+52.3224
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7.6354
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2832.3912
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+141.4864
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+54.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+71.8172
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.7653
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5551.3701
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+117.6728
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+77.3
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiempos de ejecución de Predecessors para los diferentes grafos.
+ Se tomaron 5 mediciones para cada caso del NX Graph y 3 mediciones para
+ cada caso del OOCGraph.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+54.64
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.82
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+42.82
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.19
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+0.78
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+312.61
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.13
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+72.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.22
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+0.23
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+3317.03
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.27
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+377.54
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+14.03
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+0.11
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+5295.47
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5.26
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+616.80
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+22.06
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+0.12
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\family roman
+\series medium
+\shape up
+\size normal
+\emph off
+\bar no
+\strikeout off
+\xout off
+\uuline off
+\uwave off
+\noun off
+\color none
+8871.40
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+894.62
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+22.75
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.10
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria en la ejecución de Predecessors para los diferentes grafos.
+ Se tomaron 5 mediciones para cada caso del NX Graph y 3 mediciones para
+ cada caso del OOCGraph.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Degree Centrality
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Degree-Centrality"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory used by process over time - Degree Centrality
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Disk space used by process over time - Degree Centrality
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (ooc/ Nx)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0041
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0001
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.6687
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0180
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+163.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0591
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0011
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.3524
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0372
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+175.2
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.8362
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0027
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+157.5144
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.2258
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+188.4
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.3137
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0073
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+188.9905
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7.2324
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+143.9
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.7380
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0609
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+576.0167
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+19.5377
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+154.1
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiempos de ejecución de Degree Centrality para los diferentes grafos.
+ Se tomaron 5 mediciones para todos los casos.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+52.04
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.19
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+39.37
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.30
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.75
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+301.97
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.20
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+60.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.57
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.20
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3133.39
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.08
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+324.66
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.10
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5067.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+12.79
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+349.02
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6.84
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.07
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10109.32
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.75
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+735.32
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+60.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.07
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria en la ejecución de Degree Centrality para los diferentes
+ grafos.
+ Se tomaron 5 mediciones para todos los casos.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Eigenvector Centrality
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Eigenvector-Centrality"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Graficos/memory_usage_plot_Eigenvector_Centrality_consolidated.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory used by process over time - Eigenvector Centrality
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Graficos/disk_usage_plot_Eigenvector_Centrality.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Disk space used by process over time - Eigenvector Centrality
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (ooc/ Nx)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.3352
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0132
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+13.9997
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.1646
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+41.76
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+6.4924
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.2515
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+396.7913
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5.1044
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+60.11
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+85.7446
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.1576
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5435.7982
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+39.2811
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+63.39
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiempos de ejecución de Eigenvector Centrality para los diferentes grafos.
+ Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
+ del OOCGraph.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+53.2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.06
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+50.7
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.08
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.95
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+315.28
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.26
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+84.57
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.26
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3315.84 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.54
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+460.80 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11.85
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.14
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria en la ejecución de Eigenvector Centrality para los diferentes
+ grafos.
+ Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
+ del OOCGraph.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Single Source Dijkstra
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Single-Source-Dijkstra"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Graficos/memory_usage_plot_Single_Source_Dijkstra_consolidated.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory used by process over time - Single Source Dijkstra
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Graficos/disk_usage_plot_Single_Source_Dijkstra.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Disk space used by process over time - Single Source Dijkstra
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (ooc/ Nx)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0750
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0036
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+203.6936
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+20.9666
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2715.91
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.7674
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0416
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2868.9704
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+430.6724
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1623.27
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+34.7484
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.3309
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+34224.5996
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2780.0263
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+984.92
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiempos de ejecución de Single Source Dijkstra para los diferentes grafos.
+ Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
+ del OOCGraph.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+54.55
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.13
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+46.01
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.002
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.84
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+328.13
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+109.91
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.54
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.33
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3456.48 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+481.28 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3.99
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.14
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria en la ejecución de Single Source Dijkstra para los diferentes
+ grafos.
+ Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
+ del OOCGraph.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsubsection
+Single Source Bellman-Ford
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Single-Source-Bellman-Ford"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Graficos/memory_usage_plot_Single_Source_Bellman_Ford_consolidated.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memory used by process over time - Single Source Bellman-Ford
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\begin_inset Graphics
+	filename Graficos/disk_usage_plot_Single_Source_Bellman_Ford.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Disk space by time over process - Single Source Bellman-Ford
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (s)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (ooc/ Nx)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.1299
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.0023
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+966.3301
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+109.1089
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7156.35
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.9494
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.2237
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+11464.4196
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+173.6607
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4305.71
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+65.6851
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+7.3296
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+122257.3702
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4250.2523
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2325.61
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Tiempos de ejecución de Single Source Bellman-Ford para los diferentes grafos.
+ Se tomaron 2 mediciones para cada caso.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="4" columns="7">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+NX Graph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+OOCGraph (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Ratio (OOC/NX)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+56.38
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.45
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+50.44
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.08
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.89
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+342.69
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.16
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+78.17
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.12
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.22
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3575.36
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.10
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+430.08
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+12.71
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.12
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria en la ejecución de Single Source Bellman-Ford para los diferentes
+ grafos.
+ Se tomaron 2 mediciones para cada caso.
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Section
+Conclusiones
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Conclusiones"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Actualmente, NetworkX es una de las bibliotecas más utilizadas y versátiles
+ para Python en el contexto del análisis de grafos.
+ Sin embargo, a medida que el tamaño de los grafos que se intentan analizar
+ aumenta, NetworkX se encuentra con limitaciones relacionadas con la carga
+ y el manejo de dichos grafos.
+ Observamos a través de los experimentos que, tal como está la librería
+ actualmente, conforme se procesan grafos de mayor tamaño se tiene la necesidad
+ de poseer cada vez una mayor cantidad de memoria disponible para poder
+ ejecutar los algoritmos, mayormente debido a que la biblioteca no utiliza
+ el espacio del disco para el procesamiento.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Para solucionar las limitaciones de carga de NetworkX se crearon una serie
+ de estructuras OOC que funcionan guardando los datos en disco, cuya finalidad
+ es emular el funcionamiento de las estructuras en memoria de Python, para
+ luego modificar los algoritmos de NetworkX reemplazando estas últimas por
+ su versión OOC.
+ Luego, se creó una nueva clase de grafo OOC, capaz de gestionar grafos
+ de gran tamaño permitiendo su almacenamiento y acceso por partes en el
+ disco.
+ La combinación de estructuras y grafo OOC permite que los grafos que excedan
+ la memoria principal de una máquina puedan ser cargados y analizados de
+ manera eficiente, evitando la limitación de la memoria.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+La biblioteca fue implementada de forma compatible hacia atrás, por lo que
+ los usuarios pueden usar tanto la versión original de NetworkX como las
+ funcionalidades OOC.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Los experimentos demuestran que el objetivo de permitir ejecutar la biblioteca
+ con grafos de gran tamaño se cumplió exitosamente.
+ Grafos que pesan muchos GBs en la versión original de NetworkX se almacenan
+ en el disco con nuestra versión OOC utilizando entre el 10% y el 33% de
+ la memoria que consume la versión original de NetworkX para grafos de más
+ de 100 mil nodos en los algoritmos analizados, lo que permite el procesamiento
+ y análisis sin necesidad de tener grandes recursos.
+ Además, los grafos en disco pesan apenas un 10% de lo que pesaban en memoria
+ con la versión nativa, debido a la manera eficiente en que OOCGraph serializa
+ y guarda la representación de los nodos y aristas.
+ El contrapunto de la implementación es que el tiempo de ejecución cuando
+ se usa la versión OOC se incrementa notoriamente debido a los múltiples
+ accesos en disco.
+ Esto último podría ser solucionado en un trabajo futuro buscando alternativas
+ para implementar las estructuras OOC u optimizando los algoritmos.
+ Por otra parte, se mantuvieron las prácticas y convenciones de nomenclatura
+ establecidas en NetworkX, de modo que los usuarios existentes pueden aprovechar
+ las nuevas capacidades sin tener que realizar cambios significativos en
+ su código.
+ 
+\end_layout
+
+\begin_layout Section
+Trabajo futuro
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Trabajo-futuro"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Subsection
+Soporte del grafo más allá de enteros
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Soporte-del-grafo"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Una limitación que tiene la clase OutOfCoreGraph es que únicamente acepta
+ el tipo de dato entero para nodos o aristas.
+ Esta característica también la comparten las estructuras OOC (aunque algunas
+ de ellas aceptan floats).
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Para agregar la posibilidad de guardar otros tipos de datos en el grafo
+ y estructuras, deberían modificarse tanto la clase LazyNode (para el OOCGraph)
+ como las diversas estructuras OOC para que sean capaces de serializar/deseriali
+zar diferentes tipos de datos.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Una mejor solución sería implementar un wrapper sobre el OOCGraph, que reciba
+ cualquier tipo de dato como nodo o arista y lo mapee a un integer, que
+ es el dato que realmente se guardará en el grafo.
+ Este wrapper debería funcionar de forma OOC y tener la capacidad de serializar
+ y deserializar diversos tipos de datos.
+ Como punto de partida podría usarse, por ejemplo, un OutOfCoreDict.
+ 
+\end_layout
+
+\begin_layout Subsection
+Optimización de algoritmos
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Optimización-de-algoritmos"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+La presente implementación no reescribe los algoritmos de NetworkX para
+ hacerlos más eficientes, sino que reemplaza las estructuras en memoria
+ por su variante OOC.
+ Tal como están desarrollados, los algoritmos asumen costo uniforme de acceso
+ a memoria, lo cual no es cierto ya que ciertas operaciones suceden en la
+ caché de las estructuras OOC, y otras necesitan acceder a disco para recuperar
+ la información.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Existen implementaciones de algoritmos como BFS/DFS 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-23"
+key "key-27"
+literal "false"
+
+\end_inset
+
+ optimizados específicamente para minimizar la cantidad de operaciones de
+ I/O.
+ Estas implementaciones podrían reemplazar a las actuales para optimizar
+ el acceso a disco y por ende la performance de los algoritmos que utilizan
+ estructuras OOC.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Otra opción es buscar optimizar las estructuras OOC.
+ Las estructuras OOC que utilizan internamente un OOCDict utilizan internamente
+ LevelDB, por lo que en vistas de mejorar los resultados obtenidos en los
+ experimentos se podrían analizar algunas alternativas más eficientes, o
+ incluso una o múltiples implementaciones custom de dicha biblioteca, que
+ quizás podrían ser específicas para cada estructura o algoritmo.
+ 
+\end_layout
+
+\begin_layout Subsection
+Alternativa para OutOfCoreList
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Alternativa-para-OutOfCoreList"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+La estructura OOC que reemplaza a la lista de Python en nuestra implementación
+ de los algoritmos de NetworkX, OutOfCoreList, utiliza internamente un OutOfCore
+Dict.
+ En vistas de mejorar la performance de la implementación, podria reemplazarse
+ en los algoritmos OOCList por LazyList, más eficiente debido que no cuenta
+ con el overhead que agrega LevelDB al OOCDict.
+ 
+\end_layout
+
+\begin_layout Subsection
+Persistencia de datos
+\begin_inset CommandInset label
+LatexCommand label
+name "subsec:Persistencia-de-datos"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Nuestra implementación descarta todos los archivos utilizados por LevelDB
+ en las estructuras OOC que lo utilizan internamente luego de terminado
+ el proceso.
+ Una posible mejora implicaría cambiar el diseño para persistir la información
+ de las estructuras de datos más allá de la vida del proceso, implementado
+ un sistema de checkpointing 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-28"
 literal "false"
 
 \end_inset
 
 .
- Se utilizó un intervalo de sampleo de 10ms.
+ Esto nos permitiría, por ejemplo, no tener que cargar de cero un OOCGraph
+ que ya cargamos previamente, ahorrando el tiempo de carga del mismo.
 \end_layout
 
-\begin_layout Subsubsection
-Medición de swap 
+\begin_layout Section
+Agradecimientos
+\begin_inset CommandInset label
+LatexCommand label
+name "sec:Agradecimientos"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
-El swap se midió a nivel global del sistema, lo cual introdujo ruido inesperado
- a las métricas que fuimos tomando.
- Hemos encontrado casos donde aparece swap donde no debería aparecer, ya
- sea en corridas con networkX normal o ooc.
- Cómo estamos midiendo la memoria ram utilizada, podemos decir que nunca
- se llegó al límite de la memoria disponible en el sistema.
- También, tenemos corridas del mismo algoritmo donde no aparece swap, donde
- aparece swap al principio y donde aparece swap al final.
- Este comportamiento aleatorio nos permite deducir que el swap medido es
- parte del ruido inherente del sistema y no de los algoritmos que estamos
- analizando.
+Queremos agradecer a Martin Di Paola por su apoyo, guía y por las inspiradoras
+ discusiones que nos permitieron llevar a cabo este proyecto.
+ Este proyecto fue desarrollado por estudiantes de la Universidad de Buenos
+ Aires (UBA) como trabajo final de la carrera para obtener el título de
+ Ingenieros en Informática y no tiene relación alguna con los desarrolladores
+ originales de NetworkX.
  
 \end_layout
 
@@ -706,6 +8440,7 @@ El swap se midió a nivel global del sistema, lo cual introdujo ruido inesperado
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-1"
+literal "false"
 
 \end_inset
 
@@ -723,23 +8458,7 @@ target "https://networkx.org/"
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-2"
-
-\end_inset
-
-Plyvel: 
-\begin_inset CommandInset href
-LatexCommand href
-target "https://plyvel.readthedocs.io/ "
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-key "key-3"
+literal "false"
 
 \end_inset
 
@@ -756,7 +8475,116 @@ target "https://github.com/google/leveldb"
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-10"
+key "key-3"
+literal "false"
+
+\end_inset
+
+LSM Trees: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/Log-structured_merge-tree"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-4"
+literal "false"
+
+\end_inset
+
+Plyvel: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://plyvel.readthedocs.io/ "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-5"
+literal "false"
+
+\end_inset
+
+tempfile: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.python.org/3/library/tempfile.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-6"
+literal "false"
+
+\end_inset
+
+tmpfs: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.kernel.org/filesystems/tmpfs.html"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-7"
+literal "false"
+
+\end_inset
+
+Pickle: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.python.org/3/library/pickle.html "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-8"
+literal "false"
+
+\end_inset
+
+Struct: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://docs.python.org/3/library/struct.html "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-9"
+literal "false"
 
 \end_inset
 
@@ -773,14 +8601,33 @@ target "https://docs.python.org/3/library/mmap.html "
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-11"
+key "key-10"
+literal "false"
 
 \end_inset
 
-NetworkX OOC: 
+Sparse arrays: 
 \begin_inset CommandInset href
 LatexCommand href
-target "https://github.com/leogm99/networkx "
+target "https://scientific-python.org/grants/sparse_arrays/"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-11"
+literal "false"
+
+\end_inset
+
+Cyroaring: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://github.com/RoaringBitmap/CRoaring "
 
 \end_inset
 
@@ -791,6 +8638,7 @@ target "https://github.com/leogm99/networkx "
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-12"
+literal "false"
 
 \end_inset
 
@@ -808,13 +8656,16 @@ target "https://pypi.org/project/pyroaring/ "
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-13"
+literal "false"
 
 \end_inset
 
-Small World: 
+PyRoaring BitMap Benchmarks: 
 \begin_inset CommandInset href
 LatexCommand href
-target "https://en.wikipedia.org/wiki/Small-world_network "
+name "Pyroaring Repository"
+target "https://github.com/Ezibenroc/PyRoaringBitMap?tab=readme-ov-file#benchmark"
+literal "false"
 
 \end_inset
 
@@ -825,13 +8676,14 @@ target "https://en.wikipedia.org/wiki/Small-world_network "
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-14"
+literal "false"
 
 \end_inset
 
-Struct: 
+DRY: 
 \begin_inset CommandInset href
 LatexCommand href
-target "https://docs.python.org/3/library/struct.html "
+target "https://en.wikipedia.org/wiki/Don%27t_repeat_yourself "
 
 \end_inset
 
@@ -842,13 +8694,15 @@ target "https://docs.python.org/3/library/struct.html "
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-15"
+literal "false"
 
 \end_inset
 
-Pickle: 
+NetworkX OOC: 
 \begin_inset CommandInset href
 LatexCommand href
-target "https://docs.python.org/3/library/pickle.html "
+target "https://github.com/leogm99/networkx-ooc"
+literal "false"
 
 \end_inset
 
@@ -859,25 +8713,7 @@ target "https://docs.python.org/3/library/pickle.html "
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-16"
-
-\end_inset
-
-Predecessor (unweighted) algorithm: 
-\begin_inset CommandInset href
-LatexCommand href
-name "NetworkxX algorithms documentation "
-target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/shortest_paths/unweighted.html#predecessor"
 literal "false"
-
-\end_inset
-
- 
-\end_layout
-
-\begin_layout Bibliography
-\begin_inset CommandInset bibitem
-LatexCommand bibitem
-key "key-17"
 
 \end_inset
 
@@ -890,13 +8726,23 @@ literal "false"
 
 \end_inset
 
+, 
+\begin_inset CommandInset href
+LatexCommand href
+name "Erdös-Rényi paper"
+target "https://www.renyi.hu/~p_erdos/1960-10.pdf"
+literal "false"
+
+\end_inset
+
 
 \end_layout
 
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-18"
+key "key-17"
+literal "false"
 
 \end_inset
 
@@ -915,7 +8761,8 @@ literal "false"
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-19"
+key "key-18"
+literal "false"
 
 \end_inset
 
@@ -934,7 +8781,8 @@ literal "false"
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-20"
+key "key-19"
+literal "false"
 
 \end_inset
 
@@ -953,7 +8801,8 @@ literal "false"
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-21"
+key "key-20"
+literal "false"
 
 \end_inset
 
@@ -970,7 +8819,8 @@ target "https://snap.stanford.edu/data/soc-Pokec.html"
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-22"
+key "key-21"
+literal "false"
 
 \end_inset
 
@@ -988,14 +8838,37 @@ target "http://snap.stanford.edu/data/soc-LiveJournal1.html "
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
-key "key-23"
+key "key-22"
+literal "false"
 
 \end_inset
 
-psutil: 
+Predecessors Algorithm: 
 \begin_inset CommandInset href
 LatexCommand href
-target "https://pypi.org/project/psutil/ "
+name "Predecessors Algorithm NetworkX source code"
+target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/shortest_paths/unweighted.html#predecessor"
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-23"
+literal "false"
+
+\end_inset
+
+Degree Centrality Algorithm: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Degree Centrality Algorithm NetworkX source code"
+target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/centrality/degree_alg.html#degree_centrality "
+literal "false"
 
 \end_inset
 
@@ -1006,13 +8879,92 @@ target "https://pypi.org/project/psutil/ "
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
 key "key-24"
+literal "false"
 
 \end_inset
 
-strace: 
+Eigenvector Centrality Algorithm: 
 \begin_inset CommandInset href
 LatexCommand href
-target "https://strace.io/ "
+name "Eigenvector Centrality Algorithm NetworkX source code"
+target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/centrality/eigenvector.html#eigenvector_centrality "
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-25"
+literal "false"
+
+\end_inset
+
+Single Source Dijkstra Algorithm: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Single Source Dijkstra Algorithm NetworkX source code"
+target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/shortest_paths/weighted.html#single_source_dijkstra "
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-26"
+literal "false"
+
+\end_inset
+
+Single Source Bellman-Ford Algorithm: 
+\begin_inset CommandInset href
+LatexCommand href
+name "Single Source Bellman-Ford Algorithm NetworkX source code"
+target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/shortest_paths/weighted.html#single_source_bellman_ford "
+literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-27"
+literal "false"
+
+\end_inset
+
+External Memory Graph Traversal: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/External_memory_graph_traversal "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-28"
+literal "false"
+
+\end_inset
+
+Checkpointing: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/Application_checkpointing "
 
 \end_inset
 
@@ -1020,18 +8972,25 @@ target "https://strace.io/ "
 \end_layout
 
 \begin_layout Section*
-APÉNDICE A: Algoritmos implementados 
+APÉNDICE A: Algoritmos implementados
+\begin_inset CommandInset label
+LatexCommand label
+name "Apéndice A"
+
+\end_inset
+
+
 \end_layout
 
 \begin_layout Standard
 Se listan a continuación las familias de algoritmos y sus subcategorías
- que tienen algoritmos implementados de forma totalmente out-of-core.
+ que tienen algoritmos implementados de forma totalmente Out Of Core.
  Para ver el detalle de cuáles algoritmos se implementaron para cada categoría/s
 ubcategoría, vea el detalle en la lista referenciada en el readme del proyecto,
  en nuestro repositorio 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-11"
+key "key-15"
 literal "false"
 
 \end_inset
@@ -1388,14 +9347,14 @@ begin{itemize}
 
         
 \backslash
-item connected
+item Connected
 \end_layout
 
 \begin_layout Plain Layout
 
         
 \backslash
-item weakly connected
+item Weakly connected
 \end_layout
 
 \begin_layout Plain Layout
@@ -1454,35 +9413,35 @@ begin{itemize}
 
         
 \backslash
-item unweighted
+item Unweighted
 \end_layout
 
 \begin_layout Plain Layout
 
         
 \backslash
-item weighted
+item Weighted
 \end_layout
 
 \begin_layout Plain Layout
 
         
 \backslash
-item generic
+item Generic
 \end_layout
 
 \begin_layout Plain Layout
 
         
 \backslash
-item dense
+item Dense
 \end_layout
 
 \begin_layout Plain Layout
 
         
 \backslash
-item astar
+item Astar
 \end_layout
 
 \begin_layout Plain Layout
