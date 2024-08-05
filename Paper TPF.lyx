@@ -8,6 +8,31 @@
 \begin_preamble
 \usepackage{array}
 \usepackage{pdfcolparallel}
+\usepackage{listings}
+\usepackage{xcolor}
+
+\lstset{ 
+  language=Python,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue},
+  commentstyle=\color{gray},
+  stringstyle=\color{red},
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  stepnumber=1,
+  numbersep=10pt,
+  backgroundcolor=\color{white},
+  showspaces=false,
+  showstringspaces=false,
+  showtabs=false,
+  frame=single,
+  rulecolor=\color{black},
+  tabsize=2,
+  captionpos=b,
+  breaklines=true,
+  breakatwhitespace=false,
+  title=\lstname
+}
 \end_preamble
 \use_default_options true
 \maintain_unincluded_children false
@@ -127,11 +152,11 @@ En el presente trabajo, analizamos las limitaciones de la biblioteca NetworkX
 Esta solución permite que grafos que excedan la memoria principal de una
  máquina puedan ser cargados y analizados, eliminando la limitación de memoria.
  Los experimentos demuestran que nuestro enfoque cumple con éxito el objetivo
- de procesar grafos de gran tamaño, utilizando entre el 10% y el 33% de
- la memoria que consume la versión original de NetworkX para grafos de más
+ de procesar grafos de gran tamaño, utilizando entre el 7% y el 33% de la
+ memoria que consume la versión original de NetworkX para grafos de más
  de 100 mil nodos en los algoritmos analizados.
- Además, los grafos en disco pesan apenas un 10% de lo que pesaban en memoria
- con la versión nativa.
+ Además, los grafos en disco ocupan apenas un 10% de lo que utilizan en
+ memoria con la versión nativa.
  Sin embargo, observamos un aumento significativo en el tiempo de ejecución
  debido a los múltiples accesos en disco, una área que podría ser mejorada
  en investigaciones futuras.
@@ -259,8 +284,12 @@ name "subsec:Out-Of-Core"
 
 \begin_layout Standard
 La principal estructura de la cual depende nuestra implementación es un
- OutOfCoreDict (OOCDict), que proporciona una interfaz similar a un diccionario
- de Python (MutableMapping), y que utiliza LevelDB 
+ OutOfCoreDict (
+\begin_inset Formula $OOCDict$
+\end_inset
+
+) , que proporciona una interfaz similar a un diccionario de Python (MutableMapp
+ing), y que utiliza LevelDB 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-2"
@@ -330,6 +359,125 @@ sideways false
 status collapsed
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class OutOfCoreDict(MutableMapping):
+\end_layout
+
+\begin_layout Plain Layout
+
+	def __setitem__(self, key, value):
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    self._wb[key] = value
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    if len(self._wb) > 4000:
+\end_layout
+
+\begin_layout Plain Layout
+
+             self._flush_write_batch()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	def __getitem__(self, key):
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    value = self._wb.get(key)
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    if value is not None:
+\end_layout
+
+\begin_layout Plain Layout
+
+        	   return value
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    data = self._inner.get(key, fill_cache=False)
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    if data is None:
+\end_layout
+
+\begin_layout Plain Layout
+
+             raise KeyError(key)
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    return data
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+	def __init__(self, dir_=DB_DIR) -> None:
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    self._temp = tempfile.TemporaryDirectory(dir=dir_)
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    self._inner = plyvel.DB(
+\end_layout
+
+\begin_layout Plain Layout
+
+        	  f"{self._temp.name}",
+\end_layout
+
+\begin_layout Plain Layout
+
+        	  create_if_missing=True,
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    )
+\end_layout
+
+\begin_layout Plain Layout
+
+    	    self._wb = {}
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
@@ -341,147 +489,13 @@ OutOfCoreDict class
 
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
-class OutOfCoreDict(MutableMapping):
 \end_layout
 
-\begin_deeper
-\begin_layout LyX-Code
-
-\color black
-	def __setitem__(self, key, value):
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    self._wb[key] = value
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    if len(self._wb) > 4000:
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-             self._flush_write_batch()
-\begin_inset Newline newline
 \end_inset
 
 
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-	def __getitem__(self, key):
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    value = self._wb.get(key)
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    if value is not None:
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-        	   return value
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    data = self._inner.get(key, fill_cache=False)
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    if data is None:
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-             raise KeyError(key)
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    return data
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-	def __init__(self, dir_=DB_DIR) -> None:
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    self._temp = tempfile.TemporaryDirectory(dir=dir_)
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    self._inner = plyvel.DB(
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-        	  f"{self._temp.name}",
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-        	  create_if_missing=True,
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    )
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
-    	    self._wb = {}
-\end_layout
-
-\end_deeper
-\end_inset
-
- 
 \end_layout
 
 \begin_layout Standard
@@ -493,9 +507,13 @@ literal "false"
 
 \end_inset
 
- (self._temp) ya que LevelDB necesita un lugar para almacenar los datos que
- se guardan en el diccionario, y no estamos interesados en que estos persistan
- luego de que el proceso Python termine: esto busca replicar el comportamiento
+ (
+\begin_inset Formula $self.\_temp$
+\end_inset
+
+) ya que LevelDB necesita un lugar para almacenar los datos que se guardan
+ en el diccionario, y no estamos interesados en que estos persistan luego
+ de que el proceso Python termine: esto busca replicar el comportamiento
  del diccionario nativo de Python.
  
 \begin_inset Newline newline
@@ -539,10 +557,18 @@ noprefix "false"
 \end_inset
 
 Uno de los principales problemas que encontramos con la primera versión
- del OOCDict fue el tiempo que tomaba la carga del mismo.
+ del 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ fue el tiempo que tomaba la carga del mismo.
  Lo que se observó fue que muchas de las llamadas al write de plyvel para
- guardar los elementos del OOCDict ejecutaban llamadas a la syscall write
- con pocos datos por llamada, de sólo algunas decenas de bytes.
+ guardar los elementos del 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ ejecutaban llamadas a la syscall write con pocos datos por llamada, de
+ sólo algunas decenas de bytes.
  Para aumentar el throughput se decidió introducir un buffer en memoria
  de tamaño fijo a modo de caché de escritura, y recién cuando este se llena
  se hace una escritura de los mismos en batch.
@@ -557,8 +583,12 @@ Uno de los principales problemas que encontramos con la primera versión
 \begin_inset Newline newline
 \end_inset
 
-La clase OOCDict implementa todos los métodos de un diccionario nativo de
- Python, pudiendo reemplazar a éste en los algoritmos donde haga falta.
+La clase 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ implementa todos los métodos de un diccionario nativo de Python, pudiendo
+ reemplazar a éste en los algoritmos donde haga falta.
  
 \begin_inset Newline newline
 \end_inset
@@ -572,7 +602,7 @@ Debido a que plyvel únicamente guarda bytes, debimos definir una forma de
  Se probó inicialmente con pickle 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-7"
+key "key-29"
 literal "false"
 
 \end_inset
@@ -617,8 +647,12 @@ literal "false"
 \begin_inset Newline newline
 \end_inset
 
-Se implementaron entonces diversos adaptadores del OOCDict, cada uno especializa
-do en serializar un tipo de dato específico y guardarlo en plyvel.
+Se implementaron entonces diversos adaptadores del 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+, cada uno especializado en serializar un tipo de dato específico y guardarlo
+ en plyvel.
  La utilidad de estas estructuras es que abstraen la conversión de los datos
  desde y hacia bytes.
  Estas forman la base de varias estructuras que son utilizadas por los algoritmo
@@ -633,7 +667,11 @@ noprefix "false"
 
 \end_inset
 
- y cómo se relacionan con OOCDict en la figura 
+ y cómo se relacionan con 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ en la figura 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "fig:Diagrama-de-clases"
@@ -795,7 +833,11 @@ Int, Tupla de Ints
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Adaptadores del OOCDict 
+Adaptadores del 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ 
 \begin_inset CommandInset label
 LatexCommand label
 name "tab:Adaptadores-del-OOCDict"
@@ -837,8 +879,11 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Diagrama de clases que muestra las relaciones de OOCDict, sus adaptadores
- y LevelDB 
+Diagrama de clases que muestra las relaciones de 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+, sus adaptadores y LevelDB 
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Diagrama-de-clases"
@@ -989,7 +1034,11 @@ Diagrama de comunicación que ilustra la obtención del dato ubicado en la
 
 \begin_layout Standard
 Por otra parte, nuestra implementación cuenta con una lista llamada OutOfCoreLis
-t (OOCList), basada en un OutOfCoreDict (ver sección 
+t (
+\begin_inset Formula $OOCList$
+\end_inset
+
+), basada en un OutOfCoreDict (ver sección 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Out-Of-Core"
@@ -1000,21 +1049,31 @@ noprefix "false"
 \end_inset
 
 ).
- Cada par clave-valor del OOCDict interno representa para OOCList un par
- índice-elemento.
+ Cada par clave-valor del 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ interno representa para 
+\begin_inset Formula $OOCList$
+\end_inset
+
+ un par índice-elemento.
  La ventaja de esta implementación es la posibilidad de soportar listas
  “sparse” 
 \begin_inset CommandInset citation
 LatexCommand cite
-key "key-10"
+key "key-30"
 literal "false"
 
 \end_inset
 
 .
- Actualmente, OOCList es la estructura que reemplaza a la lista nativa en
- nuestra implementación, exploramos alternativas para esto en la sección
- 
+ Actualmente, 
+\begin_inset Formula $OOCList$
+\end_inset
+
+ es la estructura que reemplaza a la lista nativa en nuestra implementación,
+ exploramos alternativas para esto en la sección 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Alternativa-para-OutOfCoreList"
@@ -1042,15 +1101,25 @@ name "subsec:Out-of-Core-Dict-Of-Lists"
 \begin_layout Standard
 En los algoritmos donde es necesario utilizar de forma OOC un diccionario
  de listas la estructura debe ser algo más compleja que un OutOfCoreDict.
- Un OOCDict acepta como valores una tira de bytes, por lo que podríamos
- codificar una lista de Python de esta manera y guardarla como valor en
- el diccionario.
- El problema es que OOCDict carga completamente en memoria cada valor accedido:
- para datos chicos como un int o float no habría problema, pero para una
- lista la misma podría no entrar en memoria.
+ Un 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ acepta como valores una tira de bytes, por lo que podríamos codificar una
+ lista de Python de esta manera y guardarla como valor en el diccionario.
+ El problema es que 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ carga completamente en memoria cada valor accedido: para datos chicos como
+ un int o float no habría problema, pero para una lista la misma podría
+ no entrar en memoria.
  Por otro lado, una OutOfCoreList, donde la lista no está cargada en memoria,
- no puede ser codificada como bytes e insertada en un OOCDict por la complejidad
- de la misma.
+ no puede ser codificada como bytes e insertada en un 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ por la complejidad de la misma.
  
 \begin_inset Newline newline
 \end_inset
@@ -1060,10 +1129,17 @@ En los algoritmos donde es necesario utilizar de forma OOC un diccionario
 \end_inset
 
 Lo que se resolvió fue tener una estructura especializada, llamada OutOfCoreDict
-OfLists (OOCDictOfLists): internamente usa un OOCDict, donde la clave del
- mismo es un elemento, y el valor es una ruta a un archivo temporal en disco
- que representa la lista, la cual se maneja mediante una LazyList (ver sección
- 
+OfLists (
+\begin_inset Formula $OOCDictOfLists$
+\end_inset
+
+): internamente usa un 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+, donde la clave del mismo es un elemento, y el valor es una ruta a un archivo
+ temporal en disco que representa la lista, la cual se maneja mediante una
+ LazyList (ver sección 
 \begin_inset CommandInset ref
 LatexCommand ref
 reference "subsec:Lazy-List"
@@ -1113,6 +1189,99 @@ sideways false
 status collapsed
 
 \begin_layout Plain Layout
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+import networkx as nx
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+g = nx.OutOfCoreGraph()
+\end_layout
+
+\begin_layout Plain Layout
+
+dol = g.int_dict_of_lists()
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[1] = [22, 15]
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[1].append(7)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[2] = []
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[2].append(500)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[3] = [400, 401, 402]
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[3].append(403)
+\end_layout
+
+\begin_layout Plain Layout
+
+dol[3].append(404)
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\begin_layout Plain Layout
+
+print(dol[1][0])  # 22
+\end_layout
+
+\begin_layout Plain Layout
+
+print(dol[2][0])  # 500
+\end_layout
+
+\begin_layout Plain Layout
+
+print(dol[3][4])  # 404
+\end_layout
+
+\end_inset
+
+
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
@@ -1129,98 +1298,6 @@ name "alg:Ejemplo-de-uso"
 \end_inset
 
 
-\end_layout
-
-\begin_layout LyX-Code
-import networkx as nx
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-g = nx.OutOfCoreGraph()
-\end_layout
-
-\begin_layout LyX-Code
-dol = g.int_dict_of_lists()
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-dol[1] = [22, 15]
-\end_layout
-
-\begin_layout LyX-Code
-dol[1].append(7)
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-dol[2] = []
-\end_layout
-
-\begin_layout LyX-Code
-dol[2].append(500)
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-dol[3] = [400, 401, 402]
-\end_layout
-
-\begin_layout LyX-Code
-dol[3].append(403)
-\end_layout
-
-\begin_layout LyX-Code
-dol[3].append(404)
-\begin_inset Newline newline
-\end_inset
-
-
-\begin_inset Newline newline
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-print(dol[1][0])  # 22
-\end_layout
-
-\begin_layout LyX-Code
-print(dol[2][0])  # 500
-\end_layout
-
-\begin_layout LyX-Code
-print(dol[3][4])  # 404
 \end_layout
 
 \end_inset
@@ -1251,7 +1328,21 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Diagrama de componentes del OOCDictOfLists 
+Diagrama de componentes del 
+\begin_inset Formula $OOCDictOfLists$
+\end_inset
+
+ para el caso que se ejemplifica en el algoritmo 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "alg:Ejemplo-de-uso"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Diagrama-de-componentes"
@@ -1288,11 +1379,23 @@ name "subsec:Out-of-Core-Set"
 \end_layout
 
 \begin_layout Standard
-Todas las estructuras detalladas hasta aquí utilizan OOCDict.
- Utilizar un OOCDict para implementar un set resultaría en una estructura
- que ocupa espacio en guardar claves que no serán utilizadas.
- Es por esto que para desarrollar el OutOfCoreSet (OOCSet) se decidió utilizar
- una implementación específica; un BitMap de CRoaring 
+Todas las estructuras detalladas hasta aquí utilizan 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+.
+ Utilizar un 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ para implementar un set resultaría en una estructura que ocupa espacio
+ en guardar claves que no serán utilizadas.
+ Es por esto que para desarrollar el OutOfCoreSet (
+\begin_inset Formula $OOCSet$
+\end_inset
+
+) se decidió utilizar una implementación específica; un BitMap de CRoaring
+ 
 \begin_inset CommandInset citation
 LatexCommand cite
 key "key-11"
@@ -1342,8 +1445,15 @@ Un Graph de NetworkX tiene listas de adyacencia y de nodos implementadas
 \begin_inset Newline newline
 \end_inset
 
-Un OutOfCoreGraph (OOCGraph) implementa la mismas funcionalidades que un
- Graph nativo, reemplazando sus diccionarios en memoria internos por OOCDict
+Un OutOfCoreGraph (
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+) implementa la mismas funcionalidades que un Graph nativo, reemplazando
+ sus diccionarios en memoria internos por 
+\begin_inset Formula $OOCDict$
+\end_inset
+
  (en disco).
  
 \end_layout
@@ -1360,9 +1470,17 @@ name "subsec:Lazy-adjacency-list"
 \end_layout
 
 \begin_layout Standard
-Para la primera versión del OOCGraph, se reemplazaron los diccionarios de
- python internos que usa el Graph de NetworkX para representar las listas
- de nodos y adyacencia por instancias de OOCDict.
+Para la primera versión del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+, se reemplazaron los diccionarios de python internos que usa el Graph de
+ NetworkX para representar las listas de nodos y adyacencia por instancias
+ de 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+.
  En esta implementación, recuperar información implicaba deserializar estas
  estructuras por completo.
  Esto no solo era lento, ya que el mismo proceso de serialización/deserializació
@@ -1390,8 +1508,11 @@ Por lo tanto, se decidió implementar una solución que utiliza estructuras
 \begin_inset Newline newline
 \end_inset
 
-Ambas implementan la interfaz MutableMapping y utilizan OOCDict para su
- persistencia.
+Ambas implementan la interfaz MutableMapping y utilizan 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ para su persistencia.
  Al solicitar los atributos de un nodo o una arista, Lazy Node List y Lazy
  Adjacency List instancian un LazyNode o LazyEdge, los cuales funcionan
  como un proxy, como se esquematiza en la figura 
@@ -1405,11 +1526,18 @@ noprefix "false"
 \end_inset
 
 : cuando se pide a un LazyNode el atributo del nodo, este se busca en el
- OOCDict interno de la Lazy Node List.
+ 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ interno de la Lazy Node List.
  De igual manera, cuando a un LazyEdge se le solicita el atributo de una
- arista, se busca en el OOCDict interno de la Lazy Adjacency List mediante
- el par de nodos que conforman la arista, y se devuelve el valor como un
- diccionario de atributos.
+ arista, se busca en el 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ interno de la Lazy Adjacency List mediante el par de nodos que conforman
+ la arista, y se devuelve el valor como un diccionario de atributos.
  
 \begin_inset Newline newline
 \end_inset
@@ -1433,7 +1561,11 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Diagrama de objetos de OOCGraph 
+Diagrama de objetos que muestra el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ y sus estructuras internas
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Diagrama-de-objetos"
@@ -1494,7 +1626,8 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Diagrama de comunicación para obtener atributos de un LazyEdge 
+Diagrama de comunicación que ilustra como se obtienen atributos de un LazyEdge
+ 
 \begin_inset CommandInset label
 LatexCommand label
 name "fig:Diagrama-de-comunicación_lazyedge"
@@ -1626,7 +1759,11 @@ literal "false"
 La decisión tomada fue que el mismo grafo le informará al algoritmo que
  estructura utilizar, es decir, el grafo ofrece factory methods para crear
  estas estructuras adicionales, que para el grafo nativo serán estructuras
- en memoria y para el OOCGraph serán estructuras OOC.
+ en memoria y para el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ serán estructuras OOC.
  
 \begin_inset Newline newline
 \end_inset
@@ -1635,8 +1772,11 @@ La decisión tomada fue que el mismo grafo le informará al algoritmo que
 \begin_inset Newline newline
 \end_inset
 
-Tomando el ejemplo de la función auxiliar de Bellman-Ford, _inner_bellman_ford,
- donde antes instanciaban las estructuras directamente en memoria ahora
+Tomando el ejemplo de la función auxiliar de Bellman-Ford, 
+\begin_inset Formula $\_inner\_bellman\_ford$
+\end_inset
+
+, donde antes instanciaban las estructuras directamente en memoria ahora
  se instancian obteniéndolas del factory method del grafo: 
 \begin_inset Newline newline
 \end_inset
@@ -1649,13 +1789,16 @@ Tomando el ejemplo de la función auxiliar de Bellman-Ford, _inner_bellman_ford,
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-_inner_bellman_ford on NetworkX
+\begin_inset Formula $\_inner\_bellman\_ford$
+\end_inset
+
+, en NetworkX (superior) y en NetworkX-OOC (inferior)
 \end_layout
 
 \end_inset
@@ -1664,186 +1807,159 @@ _inner_bellman_ford on NetworkX
 \end_layout
 
 \begin_layout LyX-Code
+
+\end_layout
+
+\begin_layout LyX-Code
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
 def _inner_bellman_ford(
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     G,
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
 ):
 \end_layout
 
-\begin_layout LyX-Code
-  
-\color black
-  ...
+\begin_layout Plain Layout
+
+    ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     pred = {}
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     recent = {}
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     count = {}
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     q = deque()
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     in_q = set()
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     ...
 \end_layout
 
-\begin_layout LyX-Code
-
-\end_layout
-
 \end_inset
 
 
-\end_layout
-
-\begin_layout Standard
-
-\color black
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status collapsed
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
 
 \begin_layout Plain Layout
 
-\color black
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-_inner_bellman_ford on NetworkX-OOC
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-
-\color black
 def _inner_bellman_ford(
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     G,
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
 ):
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     pred = G.int_dict_of_lists()
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_deeper
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
-recent = G.int_tuple_dict_of_edges()
+    recent = G.int_tuple_dict_of_edges()
 \end_layout
 
-\end_deeper
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     count = G.int_dict()
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     q = G.int_deque()
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     in_q = G.set_()
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
 
-\color black
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
@@ -1869,13 +1985,16 @@ Luego, dentro de la clase grafo:
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-NX Graph
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ (superior) y OutOfCoreGraph (inferior)
 \end_layout
 
 \end_inset
@@ -1884,124 +2003,140 @@ NX Graph
 \end_layout
 
 \begin_layout LyX-Code
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
 class Graph:
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     def set_(self, *args):
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
         return set(*args)
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     def int_list(self, *args):
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
         return list(*args)
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     ...
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     def int_dict(self, *args):
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
         return dict(*args)
 \end_layout
 
-\begin_layout LyX-Code
+\begin_layout Plain Layout
+
     ...
 \end_layout
 
+\end_inset
+
+
+\end_layout
+
 \begin_layout LyX-Code
+\begin_inset listings
+lstparams "language=Python"
+inline false
+status open
+
+\begin_layout Plain Layout
+
+class OutOfCoreGraph(Graph):
+\end_layout
+
+\begin_layout Plain Layout
+
+    ...
+\end_layout
+
+\begin_layout Plain Layout
+
+    def set_(self, *args):
+\end_layout
+
+\begin_layout Plain Layout
+
+        return OutOfCoreSet(*args)
+\end_layout
+
+\begin_layout Plain Layout
+
+    ...
+\end_layout
+
+\begin_layout Plain Layout
+
+    def int_list(self, *args):
+\end_layout
+
+\begin_layout Plain Layout
+
+        return OutOfCoreList(*args)
+\end_layout
+
+\begin_layout Plain Layout
+
+    ...
+\end_layout
+
+\begin_layout Plain Layout
+
+    def int_dict(self, *args):
+\end_layout
+
+\begin_layout Plain Layout
+
+        return IntDict(*args)
+\end_layout
+
+\begin_layout Plain Layout
+
+    ...
+\end_layout
+
+\end_inset
+
 
 \end_layout
 
 \end_inset
 
  
-\end_layout
-
-\begin_layout Standard
-\begin_inset Float algorithm
-placement H
-wide false
-sideways false
-status collapsed
-
-\begin_layout Plain Layout
-\begin_inset Caption Standard
-
-\begin_layout Plain Layout
-OutOfCoreGraph
-\end_layout
-
-\end_inset
-
-
-\end_layout
-
-\begin_layout LyX-Code
-class OutOfCoreGraph(Graph):
-\end_layout
-
-\begin_layout LyX-Code
-    ...
-\end_layout
-
-\begin_layout LyX-Code
-    def set_(self, *args):
-\end_layout
-
-\begin_layout LyX-Code
-        return OutOfCoreSet(*args)
-\end_layout
-
-\begin_layout LyX-Code
-    ...
-\end_layout
-
-\begin_layout LyX-Code
-    def int_list(self, *args):
-\end_layout
-
-\begin_layout LyX-Code
-        return OutOfCoreList(*args)
-\end_layout
-
-\begin_layout LyX-Code
-    ...
-\end_layout
-
-\begin_layout LyX-Code
-    def int_dict(self, *args):
-\end_layout
-
-\begin_layout LyX-Code
-        return IntDict(*args)
-\end_layout
-
-\begin_layout LyX-Code
-    ...
-\end_layout
-
-\end_inset
-
-
 \end_layout
 
 \begin_layout Standard
@@ -2114,7 +2249,7 @@ De esta forma los 5 grafos tienen estructuras similares:
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
 \align center
@@ -2355,7 +2490,14 @@ literal "false"
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Grafos utilizados
+Grafos utilizados para experimentos y análisis de resultados
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Grafos-utilizados"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2483,9 +2625,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -2508,9 +2653,12 @@ NX Graph (s)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -2564,7 +2712,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.18
+0.16
 \end_layout
 
 \end_inset
@@ -2582,7 +2730,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.80
+0.82
 \end_layout
 
 \end_inset
@@ -2591,7 +2739,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+0.06
 \end_layout
 
 \end_inset
@@ -2600,7 +2748,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-4.44
+5.1
 \end_layout
 
 \end_inset
@@ -2629,7 +2777,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-2.85
+2.67
 \end_layout
 
 \end_inset
@@ -2638,7 +2786,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+0.14
 \end_layout
 
 \end_inset
@@ -2647,7 +2795,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-16.6
+16.37
 \end_layout
 
 \end_inset
@@ -2656,7 +2804,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+0.49
 \end_layout
 
 \end_inset
@@ -2665,7 +2813,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-5.82
+6.1
 \end_layout
 
 \end_inset
@@ -2694,7 +2842,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-40.67
+38.37
 \end_layout
 
 \end_inset
@@ -2703,7 +2851,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+2.25
 \end_layout
 
 \end_inset
@@ -2712,7 +2860,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-302.00
+297.94
 \end_layout
 
 \end_inset
@@ -2721,7 +2869,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+4.73
 \end_layout
 
 \end_inset
@@ -2730,7 +2878,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-7.42
+7.7
 \end_layout
 
 \end_inset
@@ -2759,7 +2907,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-92.61
+101.42
 \end_layout
 
 \end_inset
@@ -2768,7 +2916,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+4.93
 \end_layout
 
 \end_inset
@@ -2777,7 +2925,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-646.44
+646.61
 \end_layout
 
 \end_inset
@@ -2786,7 +2934,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+16.60
 \end_layout
 
 \end_inset
@@ -2795,7 +2943,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-6.98
+6.37
 \end_layout
 
 \end_inset
@@ -2824,7 +2972,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-184.93
+190.78
 \end_layout
 
 \end_inset
@@ -2833,7 +2981,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+29.56
 \end_layout
 
 \end_inset
@@ -2842,7 +2990,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-1154.55
+1515.81
 \end_layout
 
 \end_inset
@@ -2851,7 +2999,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.01
+143.55
 \end_layout
 
 \end_inset
@@ -2860,7 +3008,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-6.24
+7.9
 \end_layout
 
 \end_inset
@@ -2878,10 +3026,23 @@ Ratio (OOC/NX)
 
 \begin_layout Plain Layout
 Tiempos de cargas para los diferentes grafos.
- En el calculo de error de las mediciones se observaron resultados despreciables
-, por lo que se tomó la decisión de redondear el mismo a 0.01.
- Se tomaron 5 mediciones para cada caso, el resultado indicado es el promedio
- de esas mediciones.
+ Se tomaron alrededor de 30 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 20 mediciones para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Tiempos-de-cargas"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -2896,8 +3057,8 @@ Tiempos de cargas para los diferentes grafos.
 
 \begin_layout Standard
 Como era de esperarse, los tiempos de carga aumentan cuando el grafo se
- carga de forma OOC debido a las escrituras en disco: entre unas 4.5 y 7.5
- veces más lento.
+ carga de forma OOC debido a las escrituras en disco: entre unas 5 y 8 veces
+ aproximadamente más lento.
  
 \end_layout
 
@@ -2964,9 +3125,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -2989,9 +3153,12 @@ NX Graph (Mb)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -3045,7 +3212,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-53.80
+51.26
 \end_layout
 
 \end_inset
@@ -3054,7 +3221,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.05
+0.19
 \end_layout
 
 \end_inset
@@ -3063,7 +3230,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-4.37
+38.74
 \end_layout
 
 \end_inset
@@ -3072,7 +3239,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.03
+0.22
 \end_layout
 
 \end_inset
@@ -3110,7 +3277,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-303.18
+289.10
 \end_layout
 
 \end_inset
@@ -3119,7 +3286,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.06
+0.15
 \end_layout
 
 \end_inset
@@ -3128,7 +3295,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-57.30
+52.33
 \end_layout
 
 \end_inset
@@ -3137,7 +3304,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.62
+1.47
 \end_layout
 
 \end_inset
@@ -3146,7 +3313,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.19
+0.18
 \end_layout
 
 \end_inset
@@ -3175,7 +3342,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-3235.84
+3022.98
 \end_layout
 
 \end_inset
@@ -3193,7 +3360,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-81.92
+84.33
 \end_layout
 
 \end_inset
@@ -3202,7 +3369,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.11
+2.27
 \end_layout
 
 \end_inset
@@ -3240,7 +3407,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-5238.64
+4878.13
 \end_layout
 
 \end_inset
@@ -3249,7 +3416,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.06
+0.09
 \end_layout
 
 \end_inset
@@ -3258,7 +3425,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-122.88
+108.91
 \end_layout
 
 \end_inset
@@ -3267,7 +3434,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-1.15
+3.14
 \end_layout
 
 \end_inset
@@ -3305,7 +3472,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-8652.80 
+9743.20
 \end_layout
 
 \end_inset
@@ -3314,7 +3481,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.17
+2.54
 \end_layout
 
 \end_inset
@@ -3323,7 +3490,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-153.60 
+161.19
 \end_layout
 
 \end_inset
@@ -3332,7 +3499,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.60
+3.57 
 \end_layout
 
 \end_inset
@@ -3341,7 +3508,7 @@ Ratio (OOC/NX)
 \begin_inset Text
 
 \begin_layout Plain Layout
-0.02
+0.01
 \end_layout
 
 \end_inset
@@ -3359,8 +3526,14 @@ Ratio (OOC/NX)
 
 \begin_layout Plain Layout
 Uso de memoria en la carga de los diferentes grafos.
- Se tomaron 5 mediciones para cada caso, el resultado indicado es el promedio
- de esas mediciones.
+ Se tomaron 7 mediciones para cada caso.
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Uso-de-memoria"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -3378,21 +3551,525 @@ Uso de memoria en la carga de los diferentes grafos.
 \end_layout
 
 \begin_layout Standard
-Podemos apreciar que en el caso del grafo de NetworkX se carga todo el grafo
- en memoria, mientras que para el OutOfCoreGraph al tener mayormente la
- data almacenada en disco el crecimiento de uso de memoria es menor: un
- 75% de la memoria original para grafos chicos, y luego entre 2% y 20% de
- la memoria original conforme los grafos aumentan de tamaño.
+Podemos apreciar que para el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ el crecimiento del uso de memoria es menor que para el grafo de NetworkX:
+ se utiliza un 75% de la memoria original para grafos chicos, y luego entre
+ 1% y 18% de la memoria original conforme los grafos aumentan de tamaño.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Graph LoadLogYLogX.png
+	scale 65
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de memoria durante la carga de los grafos mencionados en la tabla 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Grafos-utilizados"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, con escala logarítmica en el eje X y lineal en el eje Y.
+ La sombra que se aprecia alrededor de las líneas del gráfico corresponde
+ al intervalo de confianza calculado con las distintas mediciones para el
+ mismo caso.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Uso-de-memoria"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En el gráfico 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Uso-de-memoria"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ podemos observar como el uso de memoria crece exponencialmente en el caso
+ del grafo nativo de NetworkX, debido a que toda la información del mismo
+ se persiste en memoria.
+ Mientras que para 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ se aprecia como el uso de memoria se mantiene relativamente constante,
+ ya que las estructuras OOC guardan los datos en disco.
+ El uso de memoria no es nulo en los 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ debido a que las estructuras internas hacen uso de caching para optimizar
+ las operaciones de lectura y escritura.
+ 
 \begin_inset Newline newline
 \end_inset
 
 
-\begin_inset Newline newline
+\end_layout
+
+\begin_layout Subsubsection
+Análisis espacial en disco
+\end_layout
+
+\begin_layout Standard
+La siguiente tabla muestra el uso de disco al cargar los diferentes grafos,
+ en la versión nativa de NetworkX y en la versión OOC, en megabytes: 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float table
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Tabular
+<lyxtabular version="3" rows="6" columns="4">
+<features tabularvalignment="middle">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<column alignment="center" valignment="top">
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Grafo
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+Nodos
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
 \end_inset
 
-El uso de memoria no es nulo en los grafos OOC debido a que las estructuras
- internas hacen uso de caching para optimizar las operaciones de lectura
- y escritura.
+
+\series bold
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+
+\series bold
+\begin_inset Formula $\pm$
+\end_inset
+
+ (Mb)
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+10.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2.64
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.07
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+2
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+100.000
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+30.33
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.75
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+3
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.000.000 
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+294.53
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+0.59
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+1.632.803
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+522.85
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+8.89
+\end_layout
+
+\end_inset
+</cell>
+</row>
+<row>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+5
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+4.847.571
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+988.89
+\end_layout
+
+\end_inset
+</cell>
+<cell alignment="center" valignment="top" topline="true" bottomline="true" leftline="true" rightline="true" usebox="none">
+\begin_inset Text
+
+\begin_layout Plain Layout
+14.12
+\end_layout
+
+\end_inset
+</cell>
+</row>
+</lyxtabular>
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de disco en la carga de los grafos OOC.
+ Se tomaron 7 mediciones para cada caso.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "tab:Uso-de-disco"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En el caso del grafo de NetworkX no se utiliza el disco para cargar el grafo,
+ cosa que sí sucede con 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
+ La diferencia entre el espacio en disco utilizado por 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ y el uso de memoria para los mismos grafos utilizado en NetworkX nativo
+ (ver tabla 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Uso-de-memoria"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+) puede explicarse teniendo en cuenta la información que se guarda en cada
+ caso; mientras que NetworkX nativo utiliza estructuras de diccionarios
+ anidadas, 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ serializa y guarda la representación entera de los nodos y aristas, lo
+ cual es más liviano.
+ Podemos observar que el espacio que se ocupa en disco para almacenar los
+ grafos OOC es de apenas el aproximadamente 10% de lo que ocupan en memoria
+ con la versión nativa.
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status collapsed
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/disk_usage_plot_Graph Load.png
+	scale 65
+
+\end_inset
+
+
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Uso de disco durante la carga de los grafos mencionados en la tabla 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "tab:Grafos-utilizados"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, con escala lineal en ambos ejes.
+ La sombra que se aprecia alrededor de las líneas del gráfico corresponde
+ al intervalo de confianza calculado con las distintas mediciones para el
+ mismo caso.
+ 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:Uso-de-disco"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En el gráfico 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Uso-de-disco"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ podemos observar el caso inverso al gráfico 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:Uso-de-memoria"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+.
+ El grafo nativo de NetworkX no usa disco, por lo que las líneas del mismo
+ se mantienen constantes en 0.
+ En el caso de 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+, al utilizar estructuras que guardan los datos en disco, vemos como el
+ uso del mismo se ve reflejado en el gráfico.
  
 \end_layout
 
@@ -3421,10 +4098,6 @@ Degree centrality
 
 \begin_layout Itemize
 Eigenvector centrality
-\end_layout
-
-\begin_layout Itemize
-Randomized partitioning (approximation)
 \end_layout
 
 \begin_layout Itemize
@@ -3486,9 +4159,10 @@ Algoritmo
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCDict$
+\end_inset
 
-\series bold
-OOCDict
+
 \end_layout
 
 \end_inset
@@ -3497,9 +4171,10 @@ OOCDict
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCList$
+\end_inset
 
-\series bold
-OOCList
+
 \end_layout
 
 \end_inset
@@ -3508,9 +4183,10 @@ OOCList
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCSet$
+\end_inset
 
-\series bold
-OOCSet
+
 \end_layout
 
 \end_inset
@@ -3519,9 +4195,10 @@ OOCSet
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCDictOfLists$
+\end_inset
 
-\series bold
-OOCDictOfLists
+
 \end_layout
 
 \end_inset
@@ -3530,9 +4207,10 @@ OOCDictOfLists
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCDeque$
+\end_inset
 
-\series bold
-OOCDeque
+
 \end_layout
 
 \end_inset
@@ -3861,16 +4539,33 @@ name "subsec:Predecessors"
 \end_layout
 
 \begin_layout Standard
+El algoritmo de Predecessors Unweighted de NetworkX 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-22"
+literal "false"
+
+\end_inset
+
+ encuentra el camino más corto desde un nodo fuente a todos los demás nodos
+ en un gráfico no pesado.
+ Devuelve un diccionario donde cada clave es un nodo y su valor es el nodo
+ predecesor en el camino más corto desde la fuente.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename C:/Users/User/Documents/Personal/FIUBA/networkx/MemTesting/memory_usage_plot_Predecessor_consolidated.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Predecessor.png
+	scale 65
 
 \end_inset
 
@@ -3881,7 +4576,15 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Memory Used by Process Over Time - Predecessors
+Memoria utilizada a traves del tiempo para el algoritmo de Predecessors,
+ con escala lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:predecessors-memoria"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -3895,16 +4598,46 @@ Memory Used by Process Over Time - Predecessors
 \end_layout
 
 \begin_layout Standard
+En la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:predecessors-memoria"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ podemos apreciar diversas ejecuciones de Predecessors, con grafos en su
+ versión OOC y en la versión nativa de NetworkX.
+ El gráfico muestra el uso de memoria a través de la ejecución del algoritmo.
+ El algoritmo utiliza BFS para explorar los nodos y almacenar información
+ de predecesores y niveles.
+ La información se guarda en listas, diccionarios, y diccionarios de listas.
+ Se observa el crecimiento de memoria en el caso de NetworkX nativo debido
+ a que los datos para procesar el algoritmo se almacenan en memoria.
+ En el caso de 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+, el uso de memoria es mucho más eficiente porque las estructuras de datos
+ no se cargan completamente en memoria, sino que únicamente lo hacen los
+ datos que se necesitan en cada momento.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename C:/Users/User/Documents/Personal/FIUBA/networkx/MemTesting/disk_usage_plot_Predecessor.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/disk_usage_plot_Predecessor.png
+	scale 65
 
 \end_inset
 
@@ -3915,8 +4648,11 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Disk space used by process over time - Predecessors
-\end_layout
+Espacio en disco utilizado a traves del tiempo para el algoritmo de Predecessors
+, con escala lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:predecessors-disco"
 
 \end_inset
 
@@ -3926,6 +4662,76 @@ Disk space used by process over time - Predecessors
 \end_inset
 
 
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+En la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:predecessors-disco"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ podemos ver el impacto en disco de utilizar estructuras OOC.
+ Existe consumo de disco en el caso de los algoritmos con estructuras OOC,
+ debido a que se almacena información en las listas, diccionarios, y diccionario
+s de listas OOC, mientras que los algoritmos nativos no utilizan disco.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+El algoritmo carga todos los nodos como claves de un 
+\begin_inset Formula $OOCDictOfLists$
+\end_inset
+
+ y como valor una lista con los predecesores entre cada nodo y la fuente.
+ El tamaño de estas listas estará acotado por el diámetro del grafo 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-29"
+literal "false"
+
+\end_inset
+
+.
+ Esto implica que el espacio en disco ocupado por estas listas depende del
+ tamaño del grafo y de la estructura del mismo.
+ Luego, si bien el algoritmo también utiliza como estructuras auxiliares
+ 
+\begin_inset Formula $OOCList$
+\end_inset
+
+ y 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+, la que realmente impacta en el uso de disco es el 
+\begin_inset Formula $OOCDictOfLists$
+\end_inset
+
+.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+A continuación se muestra el tiempo promedio de ejecución en segundos para
+ varias ejecuciones del algoritmo de predecessors para diversos grafos,
+ en su versión OOC y en su versión nativa de NetworkX, sin contar la carga
+ del grafo: 
 \end_layout
 
 \begin_layout Standard
@@ -3974,9 +4780,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -3999,9 +4808,12 @@ NX Graph (s)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -4369,8 +5181,15 @@ Ratio (OOC/NX)
 
 \begin_layout Plain Layout
 Tiempos de ejecución de Predecessors para los diferentes grafos.
- Se tomaron 5 mediciones para cada caso del NX Graph y 3 mediciones para
- cada caso del OOCGraph.
+ Se tomaron 5 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 3 mediciones para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
@@ -4385,6 +5204,13 @@ Tiempos de ejecución de Predecessors para los diferentes grafos.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+A continuación se muestra el uso promedio de memoria para varias ejecuciones
+ del algoritmo de predecessors para diversos grafos, en su versión OOC y
+ en su versión nativa de NetworkX, sin contar la carga del grafo, en megabytes.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -4433,9 +5259,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -4458,9 +5287,12 @@ NX Graph (Mb)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -4942,8 +5774,15 @@ Ratio (OOC/NX)
 
 \begin_layout Plain Layout
 Uso de memoria en la ejecución de Predecessors para los diferentes grafos.
- Se tomaron 5 mediciones para cada caso del NX Graph y 3 mediciones para
- cada caso del OOCGraph.
+ Se tomaron 5 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 3 mediciones para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
@@ -4954,6 +5793,30 @@ Uso de memoria en la ejecución de Predecessors para los diferentes grafos.
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Se observa un claro trade-off entre utilizar menos memoria cuando se utiliza
+ el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ a cambio de que el tiempo de ejecución de los algoritmos se incremente
+ notablemente.
+ Con el grafo 3 se aprecia claramente que el grafo OOC utiliza un 10% de
+ la memoria pero tarda aproximadamente 40 veces más en términos de tiempo.
+ En la sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Optimización-de-algoritmos"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ exploramos algunos puntos de mejora posibles en cuanto a tiempo de ejecución.
+ 
 \end_layout
 
 \begin_layout Subsubsection
@@ -4968,29 +5831,60 @@ name "subsec:Degree-Centrality"
 \end_layout
 
 \begin_layout Standard
+El algoritmo de Degree Centrality en NetworkX 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-23"
+literal "false"
+
+\end_inset
+
+ calcula la importancia de cada nodo en un grafo basándose en el grado 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-30"
+literal "false"
+
+\end_inset
+
+ del mismo.
+ Devuelve un diccionario donde cada clave es un nodo y su valor es la fracción
+ de nodos a los que está conectado.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Degree Centrality.png
+	scale 65
 
-\end_layout
+\end_inset
 
-\begin_layout Plain Layout
+
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Memory used by process over time - Degree Centrality
-\end_layout
+Memoria utilizada a traves del tiempo para el algoritmo de Degree Centrality,
+ con escala lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:degree-memoria"
 
 \end_inset
 
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 
@@ -5000,13 +5894,124 @@ Memory used by process over time - Degree Centrality
 \end_layout
 
 \begin_layout Standard
+Degree Centrality tiene un tiempo de ejecución menor a otros algoritmos
+ analizados, debido a que no tiene un procesamiento tan intensivo.
+ En la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:degree-memoria"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ vemos que el caso del grafo con 4.8 millones de nodos en la versión nativa
+ tarda menos de 5 segundos mientras que el equivalente OOC tarda unos 10
+ minutos.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Degree CentralityTest2.png
+	scale 50
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Caption Standard
+
+\begin_layout Plain Layout
+Memoria utilizada a traves del tiempo para el algoritmo de Degree Centrality,
+ entre los minutos 24 y 35, para el grafo de 4.8 millones de nodos, con escala
+ lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:degree-memoria-2"
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Standard
+Si observamos más en detalle el caso con 4.8 millones de nodos, en la figura
+ 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:degree-memoria-2"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, vemos que el uso de memoria tiene una tendencia creciente, y de manera
+ periódica hay picos altos y bajos.
+ Esto tiene una explicación doble; el algoritmo carga la centralidad de
+ cada nodo en un 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ a medida que itera la lista de adyacencia del grafo.
+ Para calcular esta centralidad se lee la lista de adyacencia del grafo,
+ lectura que implica la carga de caches LRU de LevelDB, que ocupan espacio
+ en memoria.
+ A medida que las centralidades de cada nodo se van almacenando en el 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+, se llena el caché del mismo (ver sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Out-Of-Core"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+).
+ 
+\end_layout
+
+\begin_layout Standard
+\begin_inset Float figure
+placement H
+wide false
+sideways false
+status open
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/disk_usage_plot_Degree Centrality.png
+	scale 65
+
+\end_inset
+
 
 \end_layout
 
@@ -5014,7 +6019,15 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Disk space used by process over time - Degree Centrality
+Espacio en disco utilizado a traves del tiempo para el algoritmo de Degree
+ Centrality, con escala lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:degree-disco"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -5022,13 +6035,16 @@ Disk space used by process over time - Degree Centrality
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+A continuación se muestra el tiempo promedio de ejecución en segundos para
+ varias ejecuciones del algoritmo de Degree Centrality para diversos grafos,
+ en su versión OOC y en su versión nativa de NetworkX, sin contar la carga
+ del grafo, en megabytes: 
 \end_layout
 
 \begin_layout Standard
@@ -5077,9 +6093,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -5102,9 +6121,12 @@ NX Graph (s)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -5483,6 +6505,10 @@ Tiempos de ejecución de Degree Centrality para los diferentes grafos.
 \end_layout
 
 \begin_layout Standard
+A continuación se muestra el uso promedio de memoria para varias ejecuciones
+ del algoritmo de Degree Centrality para diversos grafos, en su versión
+ OOC y en su versión nativa de NetworkX, sin contar la carga del grafo.
+ 
 \begin_inset Float table
 placement H
 wide false
@@ -5528,9 +6554,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -5553,9 +6582,12 @@ NX Graph (Mb)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -5932,13 +6964,20 @@ Uso de memoria en la ejecución de Degree Centrality para los diferentes
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Nuevamente observamos un trade-off entre utilizar menos memoria cuando se
+ utiliza el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+ a costa de que el tiempo de ejecución de los algoritmos se incremente notableme
+nte.
+ 
 \end_layout
 
 \begin_layout Subsubsection
@@ -5953,16 +6992,45 @@ name "subsec:Eigenvector-Centrality"
 \end_layout
 
 \begin_layout Standard
+El algoritmo de Eigenvector Centrality en NetworkX 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-24"
+literal "false"
+
+\end_inset
+
+ mide la influencia de un nodo en un grafo, teniendo en cuenta no sólo el
+ número de aristas que tiene (como en Degree Centrality), sino también la
+ importancia de los nodos a los que está conectado.
+ Devuelve un diccionario donde cada clave es un nodo y su valor es una puntuació
+n que indica su centralidad e importancia en la red.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename Graficos/memory_usage_plot_Eigenvector_Centrality_consolidated.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Eigenvector Centrality.png
+	scale 65
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Plain Layout
+\align center
+\begin_inset Graphics
+	filename C:/Users/User/Documents/ImgsLyx/disk_usage_plot_Eigenvector Centrality.png
+	scale 65
 
 \end_inset
 
@@ -5973,15 +7041,20 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Memory used by process over time - Eigenvector Centrality
-\end_layout
+Memoria (superior) y espacio en disco (inferior) utilizados a traves del
+ tiempo para el algoritmo de Eigenvector Centrality, con escala lineal en
+ ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:eigenvector-memoria-disco"
 
 \end_inset
 
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 
@@ -5991,41 +7064,64 @@ Memory used by process over time - Eigenvector Centrality
 \end_layout
 
 \begin_layout Standard
-\begin_inset Float figure
-placement H
-wide false
-sideways false
-status collapsed
+Eigenvector Centrality calcula la centralidad del grafo de manera iterativa,
+ finalizando cuando se llega al punto de convergencia o al alcanzar la cantidad
+ máxima de iteraciones.
+ El algoritmo utiliza un 
+\begin_inset Formula $OOCDict$
+\end_inset
 
-\begin_layout Plain Layout
-\begin_inset Graphics
-	filename Graficos/disk_usage_plot_Eigenvector_Centrality.png
-	scale 50
+ inicial, indexado por los nodos del grafo, y por cada iteración, ajusta
+ esta estructura hasta llegar a la centralidad de convergencia.
+ Esto requiere, por cada iteración, generar una copia del 
+\begin_inset Formula $OOCDict$
+\end_inset
 
+, con lo cual durante el procesamiento conviven ambos diccionarios.
+\begin_inset Newline newline
 \end_inset
 
 
-\end_layout
+\begin_inset Newline newline
+\end_inset
 
-\begin_layout Plain Layout
-\begin_inset Caption Standard
+Teniendo en cuenta las medidas de disco y memoria del 
+\begin_inset Formula $OOCGraph$
+\end_inset
 
-\begin_layout Plain Layout
-Disk space used by process over time - Eigenvector Centrality
-\end_layout
+ de 1 millón de nodos, en la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:eigenvector-memoria-disco"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
-
-\end_layout
-
+ se observa que se alinean saltos pronunciados en el uso de disco, en los
+ minutos 20, 40, 60 y 80, con variaciones en el uso de memoria.
+ Cada uno de estos coincide con la copia de la estructura de centralidad
+ calculada en la iteración anterior.
+ En el minuto 20, al ser la primera iteración del algoritmo, el impacto
+ en disco es mayor ya que se crea la copia por primera vez.
+ En las siguientes iteraciones, como esa estructura auxiliar se elimina
+ y luego se vuelve a generar una copia, el impacto es mucho menor.
+ De hecho, se puede ver una pequeña baja en uso de disco y luego una estabilizac
+ión.
+ 
+\begin_inset Newline newline
 \end_inset
 
 
+\begin_inset Newline newline
+\end_inset
+
+A continuación se muestra el tiempo promedio de ejecución en segundos para
+ varias ejecuciones del algoritmo de Eigenvector Centrality para diversos
+ grafos, en su versión OOC y en su versión nativa de NetworkX, sin contar
+ la carga del grafo.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -6074,9 +7170,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -6099,9 +7198,12 @@ NX Graph (s)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -6339,16 +7441,19 @@ Ratio (ooc/ Nx)
 
 \begin_layout Plain Layout
 Tiempos de ejecución de Eigenvector Centrality para los diferentes grafos.
- Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
- del OOCGraph.
+ Se tomaron 6 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 2 para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -6358,6 +7463,10 @@ Tiempos de ejecución de Eigenvector Centrality para los diferentes grafos.
 \end_layout
 
 \begin_layout Standard
+A continuación se muestra el uso promedio de memoria para varias ejecuciones
+ del algoritmo de Eigenvector Centrality para diversos grafos, en su versión
+ OOC y en su versión nativa de NetworkX, sin contar la carga del grafo,
+ en megabytes: 
 \begin_inset Float table
 placement H
 wide false
@@ -6403,9 +7512,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -6428,9 +7540,12 @@ NX Graph (Mb)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -6669,16 +7784,19 @@ Ratio (OOC/NX)
 \begin_layout Plain Layout
 Uso de memoria en la ejecución de Eigenvector Centrality para los diferentes
  grafos.
- Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
- del OOCGraph.
+ Se tomaron 6 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 2 para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
 
-
-\end_layout
-
-\begin_layout Plain Layout
 
 \end_layout
 
@@ -6699,16 +7817,32 @@ name "subsec:Single-Source-Dijkstra"
 \end_layout
 
 \begin_layout Standard
+El algoritmo de Dijkstra en NetworkX 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-25"
+literal "false"
+
+\end_inset
+
+ encuentra el camino más corto desde un nodo fuente a todos los demás nodos
+ en un grafo.
+ Devuelve un diccionario en el que las claves son los nodos del grafo y
+ los valores son las distancias desde el nodo fuente.
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename Graficos/memory_usage_plot_Single_Source_Dijkstra_consolidated.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Single Source DijkstraLogYLogX.png
+	scale 65
 
 \end_inset
 
@@ -6719,15 +7853,19 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Memory used by process over time - Single Source Dijkstra
-\end_layout
+Memoria utilizada a traves del tiempo para el algoritmo de Single Source
+ Dijkstra, con escala logaritmica en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:dijkstra-memoria"
 
 \end_inset
 
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
+
 
 \end_layout
 
@@ -6737,16 +7875,52 @@ Memory used by process over time - Single Source Dijkstra
 \end_layout
 
 \begin_layout Standard
+Durante el procesamiento de Single Source Dijkstra se accede a la lista
+ de adyacencia del grafo para lograr generar los caminos mínimos, accesos
+ que no son lineales.
+ Para optimizar este acceso a ciertas claves, LevelDB utiliza caches LRU.
+ Como en el caso de este algoritmo los nodos que acceden a la lista de adyacenci
+a son random, y por lo general no se vuelve a acceder a la misma adyacencia
+ (no se vuelve a indexar el mismo nodo), ocurre que los cachés se llenan
+ y se vacían, generando la aparición de los picos y valles que se observan
+ en la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:dijkstra-memoria"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+ para el caso OOC.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Se observa que conforme el algoritmo va progresando, la aparición de picos
+ y valles comienza a acelerarse.
+ Esto se debe a que en el grafo hay más nodos ya recorridos y menos caminos
+ por recorrer, por ende hay menos escrituras en disco, lo que implica menos
+ procesamiento, que finalmente acelera el progreso del algoritmo.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename Graficos/disk_usage_plot_Single_Source_Dijkstra.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/disk_usage_plot_Single Source Dijkstra.png
+	scale 65
 
 \end_inset
 
@@ -6757,7 +7931,15 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Disk space used by process over time - Single Source Dijkstra
+Espacio en disco utilizado a traves del tiempo para el algoritmo de Single
+ Source Dijkstra, con escala lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:dijkstra-disco"
+
+\end_inset
+
+ 
 \end_layout
 
 \end_inset
@@ -6765,13 +7947,38 @@ Disk space used by process over time - Single Source Dijkstra
 
 \end_layout
 
-\begin_layout Plain Layout
-
-\end_layout
-
 \end_inset
 
 
+\end_layout
+
+\begin_layout Standard
+Se observa un crecimiento cuasi-lineal en la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:dijkstra-disco"
+plural "false"
+caps "false"
+noprefix "false"
+
+\end_inset
+
+, acelerado en el primer tercio del gráfico, con una pendiente más alta,
+ y luego se ve una leve desaceleración.
+ La explicación está en línea con la del uso de memoria, conforme avanza
+ el algoritmo se realizan menos escrituras a disco.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+A continuación se muestra el tiempo promedio de ejecución en segundos para
+ varias ejecuciones del algoritmo de Single Source Dijkstra para diversos
+ grafos, en su versión OOC y en su versión nativa de NetworkX, sin contar
+ la carga del grafo.
+ 
 \end_layout
 
 \begin_layout Standard
@@ -6820,9 +8027,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -6845,9 +8055,12 @@ NX Graph (s)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -7085,8 +8298,15 @@ Ratio (ooc/ Nx)
 
 \begin_layout Plain Layout
 Tiempos de ejecución de Single Source Dijkstra para los diferentes grafos.
- Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
- del OOCGraph.
+ Se tomaron 6 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 2 para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
@@ -7104,6 +8324,10 @@ Tiempos de ejecución de Single Source Dijkstra para los diferentes grafos.
 \end_layout
 
 \begin_layout Standard
+A continuación se muestra el uso promedio de memoria para varias ejecuciones
+ del algoritmo de Single Source Dijkstra para diversos grafos, en su versión
+ OOC y en su versión nativa de NetworkX, sin contar la carga del grafo,
+ en megabytes: 
 \begin_inset Float table
 placement H
 wide false
@@ -7149,9 +8373,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -7174,9 +8401,12 @@ NX Graph (Mb)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -7415,8 +8645,15 @@ Ratio (OOC/NX)
 \begin_layout Plain Layout
 Uso de memoria en la ejecución de Single Source Dijkstra para los diferentes
  grafos.
- Se tomaron 6 mediciones para cada caso del NX Graph y 2 para cada caso
- del OOCGraph.
+ Se tomaron 6 mediciones para cada caso del 
+\begin_inset Formula $NXGraph$
+\end_inset
+
+ y 2 para cada caso del 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+.
 \end_layout
 
 \end_inset
@@ -7445,16 +8682,35 @@ name "subsec:Single-Source-Bellman-Ford"
 \end_layout
 
 \begin_layout Standard
+El algoritmo de Single Source Bellman-Ford de NetworkX 
+\begin_inset CommandInset citation
+LatexCommand cite
+key "key-26"
+literal "false"
+
+\end_inset
+
+ encuentra el camino más corto desde un nodo fuente a todos los demás nodos
+ en un grafo, incluso si el grafo tiene aristas con pesos negativos, donde
+ el costo total de recorrer un ciclo es negativo.
+ Devuelve un diccionario en el que las claves son los nodos del grafo y
+ los valores son las distancias desde el nodo fuente, e informa si hay ciclos
+ negativos en el grafo.
+ 
+\end_layout
+
+\begin_layout Standard
 \begin_inset Float figure
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename Graficos/memory_usage_plot_Single_Source_Bellman_Ford_consolidated.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/memory_usage_plot_Single Source Bellman FordLogX.png
+	scale 65
 
 \end_inset
 
@@ -7465,7 +8721,8 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Memory used by process over time - Single Source Bellman-Ford
+Memoria utilizada a traves del tiempo para el algoritmo de Single Source
+ Bellman-Ford, con escala logaritmica en el eje X y lineal en el eje Y
 \end_layout
 
 \end_inset
@@ -7487,12 +8744,13 @@ Memory used by process over time - Single Source Bellman-Ford
 placement H
 wide false
 sideways false
-status collapsed
+status open
 
 \begin_layout Plain Layout
+\align center
 \begin_inset Graphics
-	filename Graficos/disk_usage_plot_Single_Source_Bellman_Ford.png
-	scale 50
+	filename C:/Users/User/Documents/ImgsLyx/disk_usage_plot_Single Source Bellman Ford.png
+	scale 65
 
 \end_inset
 
@@ -7503,7 +8761,15 @@ status collapsed
 \begin_inset Caption Standard
 
 \begin_layout Plain Layout
-Disk space by time over process - Single Source Bellman-Ford
+Espacio en disco utilizado a traves del tiempo para el algoritmo de Single
+ Source Bellman-Ford, con escala lineal en ambos ejes 
+\begin_inset CommandInset label
+LatexCommand label
+name "fig:bellman-disco"
+
+\end_inset
+
+
 \end_layout
 
 \end_inset
@@ -7511,13 +8777,62 @@ Disk space by time over process - Single Source Bellman-Ford
 
 \end_layout
 
-\begin_layout Plain Layout
+\end_inset
 
-\end_layout
+En la figura 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "fig:bellman-disco"
+plural "false"
+caps "false"
+noprefix "false"
 
 \end_inset
 
+ se observa que existe un uso intensivo de disco durante el principio de
+ la ejecución (hasta el minuto 100, aproximadamente).
+ Esto se debe a que en ese periodo de tiempo Bellman-Ford carga diversas
+ estructuras OOC con datos: itera la lista de adyacencia, crea los diccionarios
+ de predecesores para los nodos no recorridos, actualiza el diccionario
+ de distancias, etc.
+ A medida que el algoritmo progresa y recorre los nodos, las escrituras
+ disminuyen, de forma similar a lo que ocurría en Single Source Dijkstra
+ (ver sección 
+\begin_inset CommandInset ref
+LatexCommand ref
+reference "subsec:Single-Source-Dijkstra"
+plural "false"
+caps "false"
+noprefix "false"
 
+\end_inset
+
+).
+ Esto coincide con el amesetamiento del uso de disco.
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+Una vez terminado ese procesamiento, Bellman-Ford genera los caminos mínimos
+ a partir de la lista de predecesores, que se observa en la figura como
+ un crecimiento cuasi-lineal en el uso de disco, a partir del minuto 100
+ aproximadamente.
+ 
+\begin_inset Newline newline
+\end_inset
+
+
+\begin_inset Newline newline
+\end_inset
+
+A continuación se muestra el tiempo promedio de ejecución en segundos para
+ varias ejecuciones del algoritmo de Single Source Bellman-Ford para diversos
+ grafos, en su versión OOC y en su versión nativa de NetworkX, sin contar
+ la carga del grafo.
+ 
 \begin_inset Float table
 placement H
 wide false
@@ -7563,9 +8878,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -7588,9 +8906,12 @@ NX Graph (s)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (s)
+ (s)
 \end_layout
 
 \end_inset
@@ -7846,6 +9167,10 @@ Tiempos de ejecución de Single Source Bellman-Ford para los diferentes grafos.
 \end_layout
 
 \begin_layout Standard
+A continuación se muestra el uso promedio de memoria para varias ejecuciones
+ del algoritmo de Single Source Bellman-Ford para diversos grafos, en su
+ versión OOC y en su versión nativa de NetworkX, sin contar la carga del
+ grafo, en megabytes: 
 \begin_inset Float table
 placement H
 wide false
@@ -7891,9 +9216,12 @@ Nodos
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $NXGraph$
+\end_inset
+
 
 \series bold
-NX Graph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -7916,9 +9244,12 @@ NX Graph (Mb)
 \begin_inset Text
 
 \begin_layout Plain Layout
+\begin_inset Formula $OOCGraph$
+\end_inset
+
 
 \series bold
-OOCGraph (Mb)
+ (Mb)
 \end_layout
 
 \end_inset
@@ -8235,14 +9566,14 @@ La biblioteca fue implementada de forma compatible hacia atrás, por lo que
 
 Los experimentos demuestran que el objetivo de permitir ejecutar la biblioteca
  con grafos de gran tamaño se cumplió exitosamente.
- Grafos que pesan muchos GBs en la versión original de NetworkX se almacenan
- en el disco con nuestra versión OOC utilizando entre el 10% y el 33% de
+ Grafos que ocupan muchos GBs en la versión original de NetworkX se almacenan
+ en el disco con nuestra versión OOC utilizando entre el 7% y el 33% de
  la memoria que consume la versión original de NetworkX para grafos de más
  de 100 mil nodos en los algoritmos analizados, lo que permite el procesamiento
  y análisis sin necesidad de tener grandes recursos.
- Además, los grafos en disco pesan apenas un 10% de lo que pesaban en memoria
- con la versión nativa, debido a la manera eficiente en que OOCGraph serializa
- y guarda la representación de los nodos y aristas.
+ Además, los grafos en disco ocupan apenas un 10% de lo que utilizan en
+ memoria con la versión nativa, debido a la manera eficiente en que OOCGraph
+ serializa y guarda la representación de los nodos y aristas.
  El contrapunto de la implementación es que el tiempo de ejecución cuando
  se usa la versión OOC se incrementa notoriamente debido a los múltiples
  accesos en disco.
@@ -8290,9 +9621,12 @@ Una limitación que tiene la clase OutOfCoreGraph es que únicamente acepta
 \end_inset
 
 Para agregar la posibilidad de guardar otros tipos de datos en el grafo
- y estructuras, deberían modificarse tanto la clase LazyNode (para el OOCGraph)
- como las diversas estructuras OOC para que sean capaces de serializar/deseriali
-zar diferentes tipos de datos.
+ y estructuras, deberían modificarse tanto la clase LazyNode (para el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+) como las diversas estructuras OOC para que sean capaces de serializar/deserial
+izar diferentes tipos de datos.
 \begin_inset Newline newline
 \end_inset
 
@@ -8300,9 +9634,12 @@ zar diferentes tipos de datos.
 \begin_inset Newline newline
 \end_inset
 
-Una mejor solución sería implementar un wrapper sobre el OOCGraph, que reciba
- cualquier tipo de dato como nodo o arista y lo mapee a un integer, que
- es el dato que realmente se guardará en el grafo.
+Una mejor solución sería implementar un wrapper sobre el 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
+, que reciba cualquier tipo de dato como nodo o arista y lo mapee a un integer,
+ que es el dato que realmente se guardará en el grafo.
  Este wrapper debería funcionar de forma OOC y tener la capacidad de serializar
  y deserializar diversos tipos de datos.
  Como punto de partida podría usarse, por ejemplo, un OutOfCoreDict.
@@ -8356,11 +9693,14 @@ literal "false"
 \end_inset
 
 Otra opción es buscar optimizar las estructuras OOC.
- Las estructuras OOC que utilizan internamente un OOCDict utilizan internamente
- LevelDB, por lo que en vistas de mejorar los resultados obtenidos en los
- experimentos se podrían analizar algunas alternativas más eficientes, o
- incluso una o múltiples implementaciones custom de dicha biblioteca, que
- quizás podrían ser específicas para cada estructura o algoritmo.
+ Las estructuras OOC que utilizan internamente un 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+ utilizan internamente LevelDB, por lo que en vistas de mejorar los resultados
+ obtenidos en los experimentos se podrían analizar algunas alternativas
+ más eficientes, o incluso una o múltiples implementaciones custom de dicha
+ biblioteca, que quizás podrían ser específicas para cada estructura o algoritmo.
  
 \end_layout
 
@@ -8380,8 +9720,16 @@ La estructura OOC que reemplaza a la lista de Python en nuestra implementación
  de los algoritmos de NetworkX, OutOfCoreList, utiliza internamente un OutOfCore
 Dict.
  En vistas de mejorar la performance de la implementación, podria reemplazarse
- en los algoritmos OOCList por LazyList, más eficiente debido que no cuenta
- con el overhead que agrega LevelDB al OOCDict.
+ en los algoritmos 
+\begin_inset Formula $OOCList$
+\end_inset
+
+ por LazyList, más eficiente debido que no cuenta con el overhead que agrega
+ LevelDB al 
+\begin_inset Formula $OOCDict$
+\end_inset
+
+.
  
 \end_layout
 
@@ -8411,7 +9759,10 @@ literal "false"
 \end_inset
 
 .
- Esto nos permitiría, por ejemplo, no tener que cargar de cero un OOCGraph
+ Esto nos permitiría, por ejemplo, no tener que cargar de cero un 
+\begin_inset Formula $OOCGraph$
+\end_inset
+
  que ya cargamos previamente, ahorrando el tiempo de carga del mismo.
 \end_layout
 
@@ -8858,6 +10209,24 @@ literal "false"
 \begin_layout Bibliography
 \begin_inset CommandInset bibitem
 LatexCommand bibitem
+key "key-29"
+literal "false"
+
+\end_inset
+
+Graph diameter: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://en.wikipedia.org/wiki/Distance_(graph_theory)#Related_concepts "
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
 key "key-23"
 literal "false"
 
@@ -8869,6 +10238,24 @@ LatexCommand href
 name "Degree Centrality Algorithm NetworkX source code"
 target "https://networkx.org/documentation/stable/_modules/networkx/algorithms/centrality/degree_alg.html#degree_centrality "
 literal "false"
+
+\end_inset
+
+
+\end_layout
+
+\begin_layout Bibliography
+\begin_inset CommandInset bibitem
+LatexCommand bibitem
+key "key-30"
+literal "false"
+
+\end_inset
+
+Node degree: 
+\begin_inset CommandInset href
+LatexCommand href
+target "https://es.wikipedia.org/wiki/Grado_(teor%C3%ADa_de_grafos) "
 
 \end_inset
 
